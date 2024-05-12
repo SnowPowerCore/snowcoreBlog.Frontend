@@ -1,0 +1,3 @@
+[submodule "snowcoreBlog.Universal"]
+	path = snowcoreBlog.Universal
+	url = https://github.com/SnowPowerCore/snowcoreBlog.Universal
