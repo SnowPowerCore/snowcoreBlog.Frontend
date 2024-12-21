@@ -5,6 +5,10 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Host", "Host\snowcoreBlog.Frontend.Host.csproj", "{853DFF5A-F4CA-4C6F-97D5-B7E9CC05254C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.PublicApi", "snowcoreBlog.Universal\PublicApi\snowcoreBlog.PublicApi.csproj", "{9B8F9EB8-2976-4BB9-9F14-631B2F452C12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.ReadersManagement", "snowcoreBlog.Frontend.ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj", "{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{853DFF5A-F4CA-4C6F-97D5-B7E9CC05254C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{853DFF5A-F4CA-4C6F-97D5-B7E9CC05254C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{853DFF5A-F4CA-4C6F-97D5-B7E9CC05254C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B8F9EB8-2976-4BB9-9F14-631B2F452C12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B8F9EB8-2976-4BB9-9F14-631B2F452C12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B8F9EB8-2976-4BB9-9F14-631B2F452C12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B8F9EB8-2976-4BB9-9F14-631B2F452C12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
