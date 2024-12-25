@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.PublicApi", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.ReadersManagement", "snowcoreBlog.Frontend.ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj", "{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Core", "snowcoreBlog.Frontend.Core\snowcoreBlog.Frontend.Core.csproj", "{CADDA3AF-8F0E-498A-A4D2-261A12FEACAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Infrastructure", "snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj", "{8FDECCF7-2FF2-4F1D-9855-0EEB519F946E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +34,13 @@ Global
 		{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CADDA3AF-8F0E-498A-A4D2-261A12FEACAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CADDA3AF-8F0E-498A-A4D2-261A12FEACAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CADDA3AF-8F0E-498A-A4D2-261A12FEACAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CADDA3AF-8F0E-498A-A4D2-261A12FEACAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FDECCF7-2FF2-4F1D-9855-0EEB519F946E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FDECCF7-2FF2-4F1D-9855-0EEB519F946E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FDECCF7-2FF2-4F1D-9855-0EEB519F946E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FDECCF7-2FF2-4F1D-9855-0EEB519F946E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
