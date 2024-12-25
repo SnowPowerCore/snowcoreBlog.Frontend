@@ -4,19 +4,30 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EmccMaximumHeapSize>268435456</EmccMaximumHeapSize>
   </PropertyGroup>
-
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.0" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.11.0" />
+    <PackageReference Include="TimeWarp.State" Version="11.0.0" />
+    <PackageReference Include="TimeWarp.State.Policies" Version="11.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj" />
     <ProjectReference Include="..\snowcoreBlog.Universal\PublicApi\snowcoreBlog.PublicApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\" />
+    <Folder Include="Components\Fluent\" />
+    <Folder Include="Features\" />
   </ItemGroup>
 
 </Project>

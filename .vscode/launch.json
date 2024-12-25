@@ -1,0 +1,43 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "C#: snowcoreBlog.Frontend.Host",
+            "type": "blazorwasm",
+            "request": "launch",
+            "cwd": "${workspaceFolder}\\Host",
+            "url": "https://localhost:7288"
+        },
+        {
+            "name": "Watch: snowcoreBlog.Frontend.Host",
+            "type": "coreclr",
+            "request": "launch",
+            "cwd": "${workspaceFolder}\\Host",
+            "program": "dotnet",
+            "args": [
+                "watch",
+                "--project",
+                ".",
+                "--verbose"
+            ],
+            "preLaunchTask": "build"
+        },
+        {
+            "name": "Attach: snowcoreBlog.Frontend.Host",
+            "type": "blazorwasm",
+            "request": "attach",
+            "cwd": "${workspaceFolder}\\Host",
+            "browser": "edge",
+            "url": "https://localhost:7288",
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug with Hot Reload: snowcoreBlog.Frontend.Host",
+            "configurations": [
+                "Watch: snowcoreBlog.Frontend.Host",
+                "Attach: snowcoreBlog.Frontend.Host"
+            ]
+        }
+    ]
+}
