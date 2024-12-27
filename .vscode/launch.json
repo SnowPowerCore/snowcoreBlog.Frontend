@@ -33,7 +33,7 @@
     ],
     "compounds": [
         {
-            "name": "Debug with Hot Reload: snowcoreBlog.Frontend.Host",
+            "name": "Start with Hot Reload: snowcoreBlog.Frontend.Host",
             "configurations": [
                 "Watch: snowcoreBlog.Frontend.Host",
                 "Attach: snowcoreBlog.Frontend.Host"
