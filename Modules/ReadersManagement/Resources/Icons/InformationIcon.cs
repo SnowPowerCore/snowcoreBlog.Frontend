@@ -1,0 +1,9 @@
+using Microsoft.FluentUI.AspNetCore.Components;
+using snowcoreBlog.Frontend.SharedComponents.Models;
+
+namespace snowcoreBlog.Frontend.ReadersManagement.Resources.Icons;
+
+public class InformationIcon : RandomIdIcon
+{
+    public InformationIcon() : base(nameof(InformationIcon), IconVariant.Color, IconSize.Size24, """<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 48 48"><defs><linearGradient id="paint0_linear_378174_9443{0}" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#0FAFFF"></stop><stop offset="1" stop-color="#2764E7"></stop></linearGradient><linearGradient id="paint1_linear_378174_9443{0}" x1="9.73" y1="6.94" x2="13.01" y2="17.74" gradientUnits="userSpaceOnUse"><stop stop-color="#FDFDFD"></stop><stop offset="1" stop-color="#CCEAFF"></stop></linearGradient></defs><path fill="url(#paint0_linear_378174_9443{0})" d="M44.041,24.122c0,11.045-8.955,20-20,20s-20-8.955-20-20s8.955-20,20-20	S44.041,13.077,44.041,24.122z"/><path d="M22,36h4c0.552,0,1-0.448,1-1V20c0-0.552-0.448-1-1-1h-4c-0.552,0-1,0.448-1,1v15	C21,35.552,21.448,36,22,36z" opacity=".05"/><path d="M22.227,35.5h3.547c0.401,0,0.727-0.325,0.727-0.727V20.227c0-0.401-0.325-0.727-0.727-0.727h-3.547	c-0.401,0-0.727,0.325-0.727,0.727v14.547C21.5,35.175,21.825,35.5,22.227,35.5z" opacity=".07"/><ellipse cx="24" cy="15.402" fill="url(#paint1_linear_378174_9443{0})" opacity=".05" rx="3.988" ry="3.609"/><path fill="#fff" d="M24,17.732c1.7,0,2.65-1.068,2.65-2.388C26.65,14.024,25.647,13,24,13s-2.65,1.024-2.65,2.344	C21.35,16.664,22.3,17.732,24,17.732z"/><rect width="4" height="15" x="22" y="20" fill="#fff"/></svg>""") { }
+}

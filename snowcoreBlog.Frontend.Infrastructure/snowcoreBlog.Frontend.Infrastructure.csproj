@@ -10,4 +10,9 @@
     <ProjectReference Include="..\snowcoreBlog.Frontend.Core\snowcoreBlog.Frontend.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication"
+      Version="9.0.0" />
+  </ItemGroup>
+
 </Project>

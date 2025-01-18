@@ -1,0 +1,152 @@
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components.Extensions;
+using Microsoft.FluentUI.AspNetCore.Components.Utilities;
+
+namespace snowcoreBlog.Frontend.SharedComponents.Components.Fluent;
+
+/// <summary>
+/// FluentIcon is a component that renders an icon from the Fluent System icon set.
+/// </summary>
+public partial class FluentRandomIdIcon<RandomIdIcon> : FluentComponentBase
+    where RandomIdIcon : Models.RandomIdIcon, new()
+{
+    private RandomIdIcon _icon = default!;
+
+    /// <summary />
+    protected string? ClassValue => new CssBuilder(Class)
+        .Build();
+
+    /// <summary />
+    protected string? StyleValue => new StyleBuilder(Style)
+        .AddStyle("width", Width ?? $"{_icon.Width}px", Width != string.Empty)
+        .AddStyle("fill", GetIconColor(), () => _icon.Variant != IconVariant.Color)
+        .AddStyle("cursor", "pointer", OnClick.HasDelegate)
+        .AddStyle("display", "inline-block", !_icon.ContainsSVG)
+        .Build();
+
+    /// <summary>
+    /// Gets or sets the slot where the icon is displayed in.
+    /// </summary>
+    [Parameter]
+    public string? Slot { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets the title for the icon.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets the icon drawing and fill color. 
+    /// Value comes from the <see cref="AspNetCore.Components.Color"/> enumeration. Defaults to Accent.
+    /// </summary>
+    [Parameter]
+    public Color? Color { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon drawing and fill color to a custom value.
+    /// Needs to be formatted as an HTML hex color string (#rrggbb or #rgb) or CSS variable.
+    /// ⚠️ Only available when Color is set to Color.Custom.
+    /// </summary>
+    [Parameter]
+    public string? CustomColor { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon width.
+    /// If not set, the icon size will be used.
+    /// </summary>
+    [Parameter]
+    public string? Width { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Icon object to render.
+    /// </summary>
+    [Parameter]
+    public RandomIdIcon Value
+    {
+        get => _icon;
+        set => _icon = value;
+    }
+
+    /// <summary>
+    /// Allows for capturing a mouse click on an icon.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the icon is focusable (adding tabindex="0" and role="button"),
+    /// allows the icon to be focused sequentially (generally with the Tab key).
+    /// </summary>
+    [Parameter]
+    public bool Focusable { get; set; } = false;
+
+    /// <summary />
+    protected virtual Task OnClickHandlerAsync(MouseEventArgs e)
+    {
+        if (OnClick.HasDelegate)
+        {
+            return OnClick.InvokeAsync(e);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary />
+    protected virtual Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (OnClick.HasDelegate)
+        {
+            if (e.Key == "Enter" || e.Key == "NumpadEnter")
+            {
+                return OnClickHandlerAsync(new MouseEventArgs());
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary />
+    protected override void OnParametersSet()
+    {
+        _icon ??= new RandomIdIcon();
+
+        if (!string.IsNullOrEmpty(CustomColor) && Color != Microsoft.FluentUI.AspNetCore.Components.Color.Custom)
+        {
+            throw new ArgumentException("CustomColor can only be used when Color is set to Color.Custom.");
+        }
+    }
+
+    /// <summary>
+    /// Returns FluentIcon.CustomColor, or FluentIcon.Color, or Icon.Color.
+    /// </summary>
+    /// <returns></returns>
+    private string GetIconColor()
+    {
+        var defaultColor = Microsoft.FluentUI.AspNetCore.Components.Color.Accent.ToAttributeValue()!;
+
+        if (Color == Microsoft.FluentUI.AspNetCore.Components.Color.Custom && !string.IsNullOrEmpty(CustomColor))
+        {
+            return CustomColor;
+        }
+
+        if (Color == Microsoft.FluentUI.AspNetCore.Components.Color.Custom && !string.IsNullOrEmpty(_icon.Color))
+        {
+            return _icon.Color;
+        }
+
+        if (Color != null)
+        {
+            return Color.ToAttributeValue() ?? defaultColor;
+        }
+
+        if (!string.IsNullOrEmpty(_icon.Color))
+        {
+            return _icon.Color;
+        }
+
+        return defaultColor;
+    }
+}

@@ -28,7 +28,8 @@
             "request": "attach",
             "cwd": "${workspaceFolder}\\Host",
             "browser": "edge",
-            "url": "https://localhost:7288"
+            "url": "https://localhost:7288",
+            "timeout": 45000
         }
     ],
     "compounds": [
