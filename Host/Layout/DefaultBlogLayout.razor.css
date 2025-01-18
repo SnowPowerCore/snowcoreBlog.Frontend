@@ -4,6 +4,11 @@
     flex-direction: column;
 }
 
+.root-layout-item {
+    height: 100svh;
+    max-height: 100svh;
+}
+
 main {
     flex: 1;
 }

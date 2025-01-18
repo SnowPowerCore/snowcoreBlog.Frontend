@@ -1,5 +1,4 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -7,11 +6,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Host"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.PublicApi", "snowcoreBlog.Universal\PublicApi\snowcoreBlog.PublicApi.csproj", "{9B8F9EB8-2976-4BB9-9F14-631B2F452C12}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.ReadersManagement", "snowcoreBlog.Frontend.ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj", "{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.ReadersManagement", "Modules\ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj", "{7A5844B8-FF6E-4B6F-8271-4FBCCB0CEB69}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Core", "snowcoreBlog.Frontend.Core\snowcoreBlog.Frontend.Core.csproj", "{CADDA3AF-8F0E-498A-A4D2-261A12FEACAA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Infrastructure", "snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj", "{8FDECCF7-2FF2-4F1D-9855-0EEB519F946E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.SharedComponents", "Modules\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj", "{1C3B99D3-E72E-432B-AFFE-ED1740C76899}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,5 +43,9 @@ Global
 		{8FDECCF7-2FF2-4F1D-9855-0EEB519F946E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FDECCF7-2FF2-4F1D-9855-0EEB519F946E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FDECCF7-2FF2-4F1D-9855-0EEB519F946E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C3B99D3-E72E-432B-AFFE-ED1740C76899}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C3B99D3-E72E-432B-AFFE-ED1740C76899}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C3B99D3-E72E-432B-AFFE-ED1740C76899}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C3B99D3-E72E-432B-AFFE-ED1740C76899}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

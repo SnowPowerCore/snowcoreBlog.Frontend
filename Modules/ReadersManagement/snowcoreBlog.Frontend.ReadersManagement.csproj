@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EmccMaximumHeapSize>268435456</EmccMaximumHeapSize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.0" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.11.0" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Emoji" Version="4.11.0" />
+    <PackageReference Include="Morris.Blazor.FluentValidation" Version="3.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj" />
+    <ProjectReference Include="..\..\snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\snowcoreBlog.Universal\PublicApi\snowcoreBlog.PublicApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\" />
+    <Folder Include="Components\Fluent\" />
+    <Folder Include="Features\" />
+  </ItemGroup>
+
+</Project>

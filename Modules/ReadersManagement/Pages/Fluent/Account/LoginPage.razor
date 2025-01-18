@@ -1,0 +1,156 @@
+﻿@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
+@using snowcoreBlog.Frontend.ReadersManagement.Resources
+@using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
+@using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+
+@page "/login"
+
+<div class="h-100 d-flex justify-content-center align-items-center">
+    <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
+        <FluentGridItem HiddenWhen="GridItemHidden.SmAndDown">
+            <div class="d-grid">
+                <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
+                    <FluentStack Class="px-3 py-2" Orientation="Orientation.Vertical">
+                        <FluentSpacer />
+                        <FluentTabs Style="justify-items: center;">
+                            <FluentTab Label="Passkey" Class="px-0 py-0">
+                                <Header>
+                                    <div class="d-flex flex-column align-items-center">
+                                        <FluentIcon Value="@(new Icons.Color.Size24.Vault())" />
+                                        <FluentSpacer Width="5" />
+                                        Passkey
+                                    </div>
+                                </Header>
+                                <Content>
+                                    <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
+                                        <FluentSpacer />
+                                        <FluentSpacer />
+                                        <FluentTextField Name="login" Label="Email" InputMode="InputMode.Email" Required Size="40" />
+                                        <FluentSpacer />
+                                        <FluentLabel>
+                                            <FluentAnchor Appearance="Appearance.Hypertext" Href="javascript: void(0);">
+                                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
+                                                    VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
+                                                    <FluentRandomIdIcon Width="24px" Value="@(new QuestionIcon())" />
+                                                    <FluentSpacer Width="5" />
+                                                    Why is password field missing?
+                                                </FluentStack>
+                                            </FluentAnchor>
+                                        </FluentLabel>
+                                        <FluentSpacer />
+                                        <FluentButton Class="align-self-end" Type="ButtonType.Submit"
+                                            Appearance="Appearance.Accent">Log in
+                                        </FluentButton>
+                                    </FluentStack>
+                                </Content>
+                            </FluentTab>
+                            <FluentTab Label="Authenticator app" Class="px-0 py-0">
+                                <Header>
+                                    <div class="d-flex flex-column align-items-center">
+                                        <FluentEmoji Width="24px"
+                                            Value="@(new Emojis.Objects.Color.Default.MobilePhoneWithArrow())" />
+                                        <FluentSpacer Width="5" />
+                                        Authenticator app
+                                    </div>
+                                </Header>
+                                <Content>
+                                    <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
+                                        <FluentSpacer />
+                                        <FluentSpacer />
+                                        <FluentTextField Name="login" Label="Email" InputMode="InputMode.Email" Required Size="40" />
+                                        <FluentSpacer />
+                                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
+                                            VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
+                                            <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
+                                            <FluentSpacer Width="5" />
+                                            On the next step, you will be asked to provide<br/>one-time code.
+                                        </FluentStack>
+                                        <FluentSpacer />
+                                        <FluentButton Class="align-self-end" Type="ButtonType.Submit"
+                                            Appearance="Appearance.Accent">Verify
+                                        </FluentButton>
+                                    </FluentStack>
+                                </Content>
+                            </FluentTab>
+                            <FluentTab Label="Other" Class="px-0 py-0">
+                                <Header>
+                                    <div class="d-flex flex-column align-items-center">
+                                        <FluentIcon Value="@(new Icons.Color.Size24.PeopleTeam())" />
+                                        <FluentSpacer Width="5" />
+                                        Other
+                                    </div>
+                                </Header>
+                                <Content>
+                                    <FluentStack Orientation="Orientation.Vertical">
+                                        <FluentSpacer />
+                                        <FluentSpacer />
+                                        <FluentLabel Alignment="HorizontalAlignment.Center">
+                                            You can log in using any provider available here.<br />
+                                            If there is no account associated, a new account will be created.<br />
+                                            By clicking any button below you agree with<FluentAnchor
+                                                Id="termsAndConditionsInfo" Appearance="Appearance.Hypertext"
+                                                Href="javascript: void(0);">terms &
+                                                conditions.</FluentAnchor>
+                                            <FluentTooltip Anchor="termsAndConditionsInfo" Delay="10" MaxWidth="150px"
+                                                Position="TooltipPosition.Right">
+                                                Please, click here to navigate to the terms & conditions document.<br />
+                                                We
+                                                suggest you read it carefully and thoroughly.
+                                            </FluentTooltip>
+                                        </FluentLabel>
+                                        <FluentSpacer />
+                                        <FluentSpacer />
+                                        <div class="d-flex align-self-center gap-3">
+                                            <FluentButton Appearance="Appearance.Neutral"
+                                                Style="height: 72px; width: 72px;">
+                                                <FluentIcon Value="@(new AppleLogoIcon())" Width="24px" />
+                                            </FluentButton>
+                                            <FluentSpacer />
+                                            <FluentButton Appearance="Appearance.Neutral"
+                                                Style="height: 72px; width: 72px;">
+                                                <FluentIcon Value="@(new GoogleLogoIcon())" Width="24px" />
+                                            </FluentButton>
+                                            <FluentSpacer />
+                                            <FluentButton Appearance="Appearance.Neutral"
+                                                Style="height: 72px; width: 72px;">
+                                                <FluentIcon Value="@(new MicrosoftLogoIcon())" Width="24px" />
+                                            </FluentButton>
+                                        </div>
+                                    </FluentStack>
+                                </Content>
+                            </FluentTab>
+                        </FluentTabs>
+                        <FluentSpacer />
+                        <FluentSpacer />
+                        <FluentDivider Class="w-100" Orientation="Orientation.Horizontal"
+                            Role="DividerRole.Presentation" />
+                        <FluentSpacer />
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
+                            VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
+                            <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
+                            <FluentSpacer Width="5" />
+                            <FluentLabel>If you don't have an account, you can register.</FluentLabel>
+                        </FluentStack>
+                        <FluentSpacer />
+                        <FluentButton Class="align-self-end" Appearance="Appearance.Neutral">
+                            Register
+                        </FluentButton>
+                        <FluentSpacer />
+                        <FluentSpacer />
+                    </FluentStack>
+                </FluentCard>
+                <div class="bg-icon-container position-relative">
+                    <FluentIcon Value="@(new Icons.Color.Size24.Person())" Width="256px" />
+                </div>
+            </div>
+        </FluentGridItem>
+        <FluentGridItem HiddenWhen="GridItemHidden.MdAndUp" Style="max-width: none;">
+        </FluentGridItem>
+    </FluentGrid>
+</div>
+
+@code
+{
+    private void OnBreakpointEnterHandler(GridItemSize size) { }
+}
