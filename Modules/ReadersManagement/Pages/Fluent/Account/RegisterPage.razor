@@ -19,6 +19,7 @@
                 <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
                     <FluentStack Class="px-3" Orientation="Orientation.Vertical">
                         <EditForm Class="w-100" Model=@CreateNewAccount OnSubmit=SubmitForm>
+                            <altcha-widget challengeurl="https://localhost:5050/api/readers/captcha/challenge" auto="onload"></altcha-widget>
                             <Validate ValidationProperties=@(ValidationProperties.Set.FluentValidator<RequestCreateReaderAccountValidation>()) />
                             <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                 <FluentSpacer />
@@ -86,6 +87,9 @@
 
 @code
 {
+    [SupplyParameterFromForm]
+    private string? Captcha { get; set; } = string.Empty;
+
     private RequestCreateReaderAccountDto CreateNewAccount { get; set; } =
         new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
 
