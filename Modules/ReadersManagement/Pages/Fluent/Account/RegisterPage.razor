@@ -19,7 +19,7 @@
                 <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
                     <FluentStack Class="px-3" Orientation="Orientation.Vertical">
                         <EditForm Class="w-100" Model=@CreateNewAccount OnSubmit=SubmitForm>
-                            <altcha-widget challengeurl="https://localhost/api/readers/captcha/challenge/v1" auto="onload"></altcha-widget>
+                            <altcha-widget challengeurl="https://localhost/api/readers/captcha/challenge/v1"></altcha-widget>
                             <Validate ValidationProperties=@(ValidationProperties.Set.FluentValidator<RequestCreateReaderAccountValidation>()) />
                             <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                 <FluentSpacer />
