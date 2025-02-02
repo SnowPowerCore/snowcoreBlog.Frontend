@@ -29,7 +29,6 @@
   <ItemGroup>
     <Folder Include="Components\" />
     <Folder Include="Components\Fluent\" />
-    <Folder Include="Features\" />
   </ItemGroup>
 
 </Project>
