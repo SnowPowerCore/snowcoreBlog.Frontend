@@ -1,6 +1,7 @@
 using Apizr;
 using Microsoft.AspNetCore.Antiforgery;
 using snowcoreBlog.PublicApi.Api;
+using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using snowcoreBlog.PublicApi.Extensions;
 using TimeWarp.State;
 
@@ -30,10 +31,10 @@ partial class AntiforgeryState
             {
                 var response = await _tokensApi.ExecuteAsync(static (opt, api) =>
                     api.GetAntiforgeryToken(opt));
-                var data = response.ToData<AntiforgeryTokenSet>(out var errors);
-                if (data is not default(AntiforgeryTokenSet) && errors.Count == 0)
+                var data = response.ToData<AntiforgeryResultDto>(out var errors);
+                if (data is not default(AntiforgeryResultDto) && errors.Count == 0)
                 {
-                    AntiforgeryState.RequestVerificationToken = data!.RequestToken;
+                    AntiforgeryState.RequestVerificationToken = data!.RequestToken!;
                 }
             }
         }
