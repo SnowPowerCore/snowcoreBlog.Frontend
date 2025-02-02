@@ -1,3 +1,5 @@
+using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -15,7 +17,9 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddTimeWarpState(options =>
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazoredSessionStorage();
+builder.Services.AddTimeWarpState(static options =>
 {
     options.Assemblies = [
         typeof(snowcoreBlog.Frontend.ReadersManagement.Extensions.WebApplicationBuilderExtensions).Assembly,
@@ -25,7 +29,8 @@ builder.Services.AddTimeWarpState(options =>
 });
 builder.AddReadersManagement();
 builder.AddSharedComponents();
-builder.Services.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(default);
+builder.Services.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options =>
+    options.WithBaseAddress("https://localhost:5050"));
 builder.Services.AddFluentUIComponents();
 builder.Services.AddFormValidation(static config =>
     config.AddFluentValidation(typeof(ApiResponse).Assembly));
