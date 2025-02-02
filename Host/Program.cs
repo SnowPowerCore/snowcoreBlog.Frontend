@@ -16,16 +16,16 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.AddReadersManagement();
 builder.Services.AddApizr(
-    registry => { },
-    config => config
-        .ConfigureHttpClientBuilder(builder => builder.AddStandardResilienceHandler())
+    static registry => { },
+    static config => config
+        .ConfigureHttpClientBuilder(static builder => builder.AddStandardResilienceHandler())
         .WithLogging(
             HttpTracerMode.ExceptionsOnly,
             HttpMessageParts.ResponseAll,
             LogLevel.Error)
 );
 builder.Services.AddFluentUIComponents();
-builder.Services.AddFormValidation(config =>
+builder.Services.AddFormValidation(static config =>
     config.AddFluentValidation(typeof(ApiResponse).Assembly));
 builder.Services.AddScoped(sp => new HttpClient
 {
