@@ -4,6 +4,7 @@
 @using Morris.Blazor.FluentValidation
 @using Morris.Blazor.Validation
 @using Morris.Blazor.Validation.Extensions
+@using snowcoreBlog.Frontend.ReadersManagement.Features.Register;
 @using snowcoreBlog.Frontend.ReadersManagement.Resources
 @using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
@@ -11,6 +12,7 @@
 @using snowcoreBlog.PublicApi.Validation.Dto
 
 @page "/register"
+@inherits TimeWarpStateComponent
 
 <div class="h-100 d-flex justify-content-center align-items-center">
     <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
@@ -18,7 +20,7 @@
             <div class="d-grid my-5">
                 <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
                     <FluentStack Class="px-3" Orientation="Orientation.Vertical">
-                        <EditForm Class="w-100" Model=@CreateNewAccount OnSubmit=SubmitForm>
+                        <EditForm class="w-100" Model=@CreateNewAccount OnSubmit=SubmitForm>
                             <Validate ValidationProperties=@(ValidationProperties.Set.FluentValidator<RequestCreateReaderAccountValidation>()) />
                             <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                 <FluentSpacer />
@@ -91,8 +93,13 @@
     [SupplyParameterFromForm]
     private string? Captcha { get; set; } = string.Empty;
 
-    private RequestCreateReaderAccountDto CreateNewAccount { get; set; } =
-        new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
+    private RequestCreateReaderAccountDto? CreateNewAccount { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        CreateNewAccount = GetState<RegisterState>().CurrentModel;
+        return Task.CompletedTask;
+    }
 
     private void SubmitForm(EditContext editContext)
 	{
