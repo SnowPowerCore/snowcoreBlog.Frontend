@@ -12,9 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Antiforgery" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer"
-      Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.0" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.0" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.11.0" />
     <PackageReference Include="TimeWarp.State" Version="11.0.0" />
@@ -24,12 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\snowcoreBlog.Universal\PublicApi\snowcoreBlog.PublicApi.csproj" />
-    <ProjectReference
-      Include="..\..\snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Features\" />
+    <ProjectReference Include="..\..\snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
