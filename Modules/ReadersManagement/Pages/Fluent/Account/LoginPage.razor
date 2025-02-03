@@ -7,6 +7,8 @@
 @page "/login"
 @attribute [StreamRendering]
 
+@inject NavigationManager _navigation
+
 <div class="h-100 d-flex justify-content-center align-items-center">
     <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
         <FluentGridItem HiddenWhen="GridItemHidden.SmAndDown">
@@ -134,7 +136,7 @@
                             <FluentLabel>If you don't have an account, you can register.</FluentLabel>
                         </FluentStack>
                         <FluentSpacer />
-                        <FluentButton Class="align-self-end" Appearance="Appearance.Neutral">
+                        <FluentButton OnClick="@(() => _navigation.NavigateTo("/register"))" Class="align-self-end" Appearance="Appearance.Neutral">
                             Register
                         </FluentButton>
                         <FluentSpacer />
