@@ -30,11 +30,9 @@
 
 @code
 {
-    private readonly IComponentRenderMode _interactiveAutoNoPrerendering = new InteractiveAutoRenderMode(prerender: false);
-
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
     private IComponentRenderMode? PageRenderMode =>
-        HttpContext.AcceptsInteractiveRouting() ? _interactiveAutoNoPrerendering : default;
+        HttpContext.AcceptsInteractiveRouting() ? InteractiveAuto : default;
 }
