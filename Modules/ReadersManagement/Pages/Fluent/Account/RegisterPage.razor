@@ -12,6 +12,7 @@
 @using snowcoreBlog.PublicApi.Validation.Dto
 
 @page "/register"
+@attribute [StreamRendering]
 @inherits TimeWarpStateComponent
 
 <div class="h-100 d-flex justify-content-center align-items-center">
@@ -93,12 +94,16 @@
     [SupplyParameterFromForm]
     private string? Captcha { get; set; } = string.Empty;
 
-    private RequestCreateReaderAccountDto? CreateNewAccount { get; set; }
+    private RequestCreateReaderAccountDto? CreateNewAccount { get; set; } = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        CreateNewAccount = GetState<RegisterState>().CurrentModel;
-        return Task.CompletedTask;
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            CreateNewAccount = GetState<RegisterState>().CurrentModel;
+        }
     }
 
     private void SubmitForm(EditContext editContext)

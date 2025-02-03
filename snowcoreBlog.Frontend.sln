@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Infra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.SharedComponents", "Modules\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj", "{1C3B99D3-E72E-432B-AFFE-ED1740C76899}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Client", "snowcoreBlog.Frontend.Client\snowcoreBlog.Frontend.Client.csproj", "{18DD2ED2-8469-4FDD-9564-DD104A755272}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,5 +49,9 @@ Global
 		{1C3B99D3-E72E-432B-AFFE-ED1740C76899}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C3B99D3-E72E-432B-AFFE-ED1740C76899}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C3B99D3-E72E-432B-AFFE-ED1740C76899}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18DD2ED2-8469-4FDD-9564-DD104A755272}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18DD2ED2-8469-4FDD-9564-DD104A755272}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18DD2ED2-8469-4FDD-9564-DD104A755272}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18DD2ED2-8469-4FDD-9564-DD104A755272}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
