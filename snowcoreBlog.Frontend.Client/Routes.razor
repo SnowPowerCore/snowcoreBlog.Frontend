@@ -3,12 +3,12 @@
 @inherits TimeWarpStateComponent
 
 <CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="[
-            typeof(snowcoreBlog.Frontend.ReadersManagement.Extensions.WebApplicationBuilderExtensions).Assembly,
-            typeof(snowcoreBlog.Frontend.SharedComponents.Extensions.WebApplicationBuilderExtensions).Assembly,
+    <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="[
+            typeof(snowcoreBlog.Frontend.ReadersManagement.Extensions.ServiceCollectionExtensions).Assembly,
+            typeof(snowcoreBlog.Frontend.SharedComponents.Extensions.ServiceCollectionExtensions).Assembly,
         ]">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(DefaultBlogLayout)">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.DefaultBlogLayout)">
                 <NotAuthorized>
                     <FluentLabel>You're not authorized to view this content.</FluentLabel>
                 </NotAuthorized>
@@ -20,7 +20,7 @@
         </Found>
         <NotFound>
             <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(DefaultBlogLayout)">
+            <LayoutView Layout="@typeof(Layout.DefaultBlogLayout)">
                 <p role="alert">Sorry, there's nothing at this address.</p>
             </LayoutView>
         </NotFound>
@@ -29,9 +29,14 @@
 
 @code
 {
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var antiforgery = GetState<AntiforgeryState>();
-        await antiforgery.GetAndSetRequestVerificationToken();
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            var antiforgery = GetState<AntiforgeryState>();
+            await antiforgery.GetAndSetRequestVerificationToken();
+        }
     }
 }

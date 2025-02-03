@@ -9,6 +9,13 @@
             "url": "https://localhost:7288"
         },
         {
+            "name": "Updated C#: snowcoreBlog.Frontend.Host",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}\\Host\\snowcoreBlog.Frontend.Host.csproj",
+            "launchConfigurationId": "TargetFramework=;https"
+        },
+        {
             "name": "Watch: snowcoreBlog.Frontend.Host",
             "type": "coreclr",
             "request": "launch",
