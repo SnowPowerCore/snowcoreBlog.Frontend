@@ -1,4 +1,5 @@
-﻿@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+﻿@using Apizr
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
 @using Microsoft.AspNetCore.Components.Forms
 @using Morris.Blazor.FluentValidation
@@ -8,14 +9,18 @@
 @using snowcoreBlog.Frontend.ReadersManagement.Resources
 @using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery
+@using snowcoreBlog.PublicApi.Api
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
+@using snowcoreBlog.PublicApi.Extensions
 @using snowcoreBlog.PublicApi.Validation.Dto
 
 @page "/register"
 @attribute [StreamRendering]
 @inherits TimeWarpStateComponent
 
-@inject NavigationManager _navigation
+@inject NavigationManager Navigation
+@inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi;
 
 <div class="h-100 d-flex justify-content-center align-items-center">
     <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
@@ -23,7 +28,7 @@
             <div class="d-grid my-5">
                 <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
                     <FluentStack Class="px-3" Orientation="Orientation.Vertical">
-                        <EditForm class="w-100" Model=@CreateNewAccount OnSubmit=SubmitForm>
+                        <EditForm class="w-100" EditContext="@_registerContext" OnSubmit=SubmitForm >
                             <Validate ValidationProperties=@(ValidationProperties.Set.FluentValidator<RequestCreateReaderAccountValidation>()) />
                             <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                 <FluentSpacer />
@@ -74,7 +79,7 @@
                             <FluentLabel>If you already have an account, you can login.</FluentLabel>
                         </FluentStack>
                         <FluentSpacer />
-                        <FluentButton OnClick="@(() => _navigation.NavigateTo("/login"))" Class="align-self-end" Appearance="Appearance.Neutral">
+                        <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Class="align-self-end" Appearance="Appearance.Neutral">
                             Login
                         </FluentButton>
                         <FluentSpacer />
@@ -93,10 +98,18 @@
 
 @code
 {
+    private EditContext? _registerContext;
+    private readonly RequestCreateReaderAccountDto _emptyState = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
+
     [SupplyParameterFromForm]
     private string? Captcha { get; set; } = string.Empty;
 
-    private RequestCreateReaderAccountDto? CreateNewAccount { get; set; } = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
+    private RequestCreateReaderAccountDto? CreateNewAccount { get; set; }
+
+    public RegisterPage()
+    {
+        CreateNewAccount = _emptyState;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -105,16 +118,40 @@
         if (firstRender)
         {
             CreateNewAccount = GetState<RegisterState>().CurrentModel;
+
+            _registerContext = new EditContext(CreateNewAccount);
+            _registerContext.OnFieldChanged += RegisterContext_OnFieldChanged;
         }
     }
 
-    private void SubmitForm(EditContext editContext)
+    private void RegisterContext_OnFieldChanged(object? sender, FieldChangedEventArgs? e)
+    {
+        var createNewAccountState = GetState<RegisterState>();
+        _ = createNewAccountState.SetCurrentInput(CreateNewAccount);
+    }
+
+    private async Task SubmitForm(EditContext editContext)
 	{
 		var success = editContext.ValidateObjectTree();
         if (!success)
             return;
 
-        
+        if (string.IsNullOrEmpty(Captcha))
+            return;
+
+        var requestData = (RequestCreateReaderAccountDto)editContext.Model;
+        var antiforgery = GetState<AntiforgeryState>();
+
+        var response = await ReaderAccountApi.ExecuteAsync((opt, api) =>
+            api.RequestCreateByEmail(requestData, antiforgery.RequestVerificationToken, Captcha, opt));
+        var data = response.ToData<RequestReaderAccountCreationResultDto>(out var errors);
+        if (data is not default(RequestReaderAccountCreationResultDto)
+            && data.Id != Guid.Empty
+            && errors.Count == 0)
+        {
+            await GetState<RegisterState>().SetCurrentInput(_emptyState);
+            Navigation.NavigateTo("/register/info/confirm");
+        }
 	}
 
     private void OnBreakpointEnterHandler(GridItemSize size) { }

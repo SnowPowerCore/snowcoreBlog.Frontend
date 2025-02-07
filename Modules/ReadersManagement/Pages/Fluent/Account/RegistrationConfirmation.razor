@@ -1,0 +1,71 @@
+﻿@using Apizr
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
+@using Microsoft.AspNetCore.Components.Forms
+@using Morris.Blazor.FluentValidation
+@using Morris.Blazor.Validation
+@using Morris.Blazor.Validation.Extensions
+@using snowcoreBlog.Frontend.ReadersManagement.Features.Register;
+@using snowcoreBlog.Frontend.ReadersManagement.Resources
+@using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
+@using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery
+@using snowcoreBlog.PublicApi.Api
+@using snowcoreBlog.PublicApi.BusinessObjects.Dto
+@using snowcoreBlog.PublicApi.Extensions
+@using snowcoreBlog.PublicApi.Validation.Dto
+
+@page "/register/info/confirm"
+@attribute [StreamRendering]
+@inherits TimeWarpStateComponent
+
+@inject NavigationManager Navigation
+
+<div class="h-100 d-flex justify-content-center align-items-center">
+    <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
+        <FluentGridItem HiddenWhen="GridItemHidden.SmAndDown">
+            <div class="d-grid my-5">
+                <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
+                    <FluentStack Class="px-3" Orientation="Orientation.Vertical">
+                        <FluentSpacer />
+                        <FluentSpacer />
+                        <FluentDivider Class="w-100" Orientation="Orientation.Horizontal"
+                            Role="DividerRole.Presentation" />
+                        <FluentSpacer />
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
+                            VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
+                            <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
+                            <FluentSpacer Width="5" />
+                            <FluentLabel>If you already have an account, you can login.</FluentLabel>
+                        </FluentStack>
+                        <FluentSpacer />
+                        <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Class="align-self-end" Appearance="Appearance.Neutral">
+                            Login
+                        </FluentButton>
+                        <FluentSpacer />
+                        <FluentSpacer />
+                    </FluentStack>
+                </FluentCard>
+                <div class="bg-icon-container position-relative">
+                    <FluentIcon Value="@(new Icons.Color.Size24.BuildingPeople())" Width="256px" />
+                </div>
+            </div>
+        </FluentGridItem>
+        <FluentGridItem HiddenWhen="GridItemHidden.MdAndUp" Style="max-width: none;">
+        </FluentGridItem>
+    </FluentGrid>
+</div>
+
+@code
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+        }
+    }
+
+    private void OnBreakpointEnterHandler(GridItemSize size) { }
+}
