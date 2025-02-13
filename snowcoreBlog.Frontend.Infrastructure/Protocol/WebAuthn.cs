@@ -14,7 +14,7 @@ public class WebAuthn
     public WebAuthn(IJSRuntime js)
     {
         _initializer = Task.Run(async () =>
-            _jsModule = await js.InvokeAsync<IJSObjectReference>("import", "./_content/snowcoreBlog.Frontend.Host/js/WebAuthn.js"));
+            _jsModule = await js.InvokeAsync<IJSObjectReference>("import", "./js/WebAuthn.js"));
     }
 
     /// <summary>

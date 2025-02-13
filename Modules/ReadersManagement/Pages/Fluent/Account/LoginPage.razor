@@ -61,6 +61,7 @@
                                             </FluentLabel>
                                             <FluentSpacer />
                                             <altcha-widget challengeurl="https://localhost/api/readers/captcha/challenge/v1" hidefooter hidelogo auto="onload"></altcha-widget>
+                                            <FluentSpacer />
                                             <FluentButton Class="align-self-end" Type="ButtonType.Submit"
                                                 Appearance="Appearance.Accent">Log in
                                             </FluentButton>
@@ -157,6 +158,7 @@
                         </FluentStack>
                         <FluentSpacer />
                         <FluentButton OnClick="@(() => Navigation.NavigateTo("/register"))" Class="align-self-end" Appearance="Appearance.Neutral">
+                            Register
                         </FluentButton>
                     </FluentStack>
                 </FluentCard>
@@ -178,6 +180,11 @@
     private string? Captcha { get; set; } = string.Empty;
 
     private RequestAssertionOptionsDto? PasswordlessLogin { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        PasswordlessLogin = _emptyState;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

@@ -98,7 +98,7 @@
 
 @code
 {
-    private EditContext? _registerContext;
+    private EditContext? _registerContext = new(new object());
     private readonly RequestCreateReaderAccountDto _emptyState = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
 
     [SupplyParameterFromForm]
@@ -106,7 +106,7 @@
 
     private RequestCreateReaderAccountDto? CreateNewAccount { get; set; }
 
-    public RegisterPage()
+    protected override void OnParametersSet()
     {
         CreateNewAccount = _emptyState;
     }
