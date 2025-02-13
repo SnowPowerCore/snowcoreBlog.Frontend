@@ -8,21 +8,47 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Apizr.Extensions.Microsoft.DependencyInjection" Version="6.4.1" />
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer"
+      Version="9.0.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.0" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.11.0" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.7.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Modules\ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj" />
-    <ProjectReference Include="..\Modules\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj" />
-    <ProjectReference Include="..\snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj" />
+    <ProjectReference
+      Include="..\Modules\ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj" />
+    <ProjectReference
+      Include="..\Modules\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj" />
+    <ProjectReference
+      Include="..\snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj" />
     <ProjectReference Include="..\snowcoreBlog.Universal\PublicApi\snowcoreBlog.PublicApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Remove="wwwroot\WebAuthn.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="wwwroot\js\WebAuthn.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\js\WebAuthn.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

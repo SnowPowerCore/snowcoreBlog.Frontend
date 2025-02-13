@@ -11,5 +11,5 @@ public static class WebAuthnExtensions
     /// <param name="services"></param>
     /// <returns></returns>
     public static IServiceCollection AddWebAuthn(this IServiceCollection services) =>
-        services.AddSingleton<WebAuthn>();
+        services.AddScoped<WebAuthn>();
 }

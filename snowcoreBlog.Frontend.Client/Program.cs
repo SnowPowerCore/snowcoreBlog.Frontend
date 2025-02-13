@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Morris.Blazor.Validation;
+using snowcoreBlog.Frontend.Infrastructure.Extensions;
 using snowcoreBlog.Frontend.Infrastructure.Providers;
 using snowcoreBlog.Frontend.ReadersManagement.Extensions;
 using snowcoreBlog.Frontend.SharedComponents.Extensions;
@@ -41,6 +42,7 @@ public class Program
                 typeof(TimeWarp.State.Plus.AssemblyMarker).Assembly
             ];
         });
+        serviceCollection.AddWebAuthn();
         serviceCollection.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options =>
             options.WithBaseAddress("https://localhost:5050"));
         serviceCollection.AddFluentUIComponents();
