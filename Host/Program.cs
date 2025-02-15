@@ -1,3 +1,4 @@
+using snowcoreBlog.Frontend.ClientShared.Extensions;
 using snowcoreBlog.Frontend.Host.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,7 +8,7 @@ builder.Services.AddRazorComponents()
 	.AddInteractiveServerComponents()
 	.AddInteractiveWebAssemblyComponents();
 
-snowcoreBlog.Frontend.Client.Program.ConfigureServices(builder.Services);
+builder.Services.AddClient();
 
 var app = builder.Build();
 
