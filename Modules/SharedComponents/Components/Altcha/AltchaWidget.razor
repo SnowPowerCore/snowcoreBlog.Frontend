@@ -1,0 +1,39 @@
+﻿@using snowcoreBlog.Frontend.Infrastructure.Events
+
+@inject IJSRuntime JSRuntime
+
+<altcha-widget
+    id="@AltchaId"
+    challengeurl="@ChallengeUrl"
+    hidefooter
+    hidelogo
+    auto="@AutoCheck"
+    @onverifiedEvent=OnVerified>
+</altcha-widget>
+
+@code
+{
+    private const string AltchaId = "altcha";
+
+    [Parameter]
+    public string ChallengeUrl { get; set; } = string.Empty;
+
+    [Parameter]
+    public string AutoCheck { get; set; } = "onload";
+
+    [Parameter]
+    public EventCallback<AltchaWidgetVerifiedEventArgs> OnVerified { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import",
+                $"./_content/snowcoreBlog.Frontend.SharedComponents/Components/Altcha/{nameof(AltchaWidget)}.razor.js");
+            
+            if (jsModule is not default(IJSObjectReference))
+                await jsModule.InvokeVoidAsync("altchaScriptHookVerifiedEvent", AltchaId);
+        }
+    }
+}
