@@ -5,9 +5,11 @@
 @using Morris.Blazor.FluentValidation
 @using Morris.Blazor.Validation
 @using Morris.Blazor.Validation.Extensions
+@using snowcoreBlog.Frontend.Infrastructure.Events
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Register;
 @using snowcoreBlog.Frontend.ReadersManagement.Resources
 @using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
+@using snowcoreBlog.Frontend.SharedComponents.Components.Altcha
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
 @using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery
 @using snowcoreBlog.PublicApi.Api
@@ -60,7 +62,9 @@
                                 </FluentCheckbox>
                                 <FluentValidationMessage For=@(() => CreateNewAccount.ConfirmedAgreement) />
                                 <FluentSpacer />
-                                <altcha-widget challengeurl="https://localhost/api/readers/captcha/challenge/v1" hidefooter hidelogo auto="onload"></altcha-widget>
+                                <AltchaWidget
+                                    ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
+                                    OnVerified="HandleOnVerified"/>
                                 <FluentSpacer />
                                 <FluentButton Class="align-self-end" Type="ButtonType.Submit"
                                     Appearance="Appearance.Accent">Register
@@ -101,7 +105,6 @@
     private EditContext? _registerContext = new(new object());
     private readonly RequestCreateReaderAccountDto _emptyState = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
 
-    [SupplyParameterFromForm]
     private string? Captcha { get; set; } = string.Empty;
 
     private RequestCreateReaderAccountDto? CreateNewAccount { get; set; }
@@ -128,6 +131,11 @@
     {
         var createNewAccountState = GetState<RegisterState>();
         _ = createNewAccountState.SetCurrentInput(CreateNewAccount);
+    }
+
+    private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
+    {
+        Captcha = verifyArgs.Payload;
     }
 
     private async Task SubmitForm(EditContext editContext)

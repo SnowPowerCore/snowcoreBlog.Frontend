@@ -5,9 +5,11 @@
 @using Morris.Blazor.FluentValidation
 @using Morris.Blazor.Validation
 @using Morris.Blazor.Validation.Extensions
+@using snowcoreBlog.Frontend.Infrastructure.Events
 @using snowcoreBlog.Frontend.Infrastructure.Protocol
 @using snowcoreBlog.Frontend.ReadersManagement.Resources
 @using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
+@using snowcoreBlog.Frontend.SharedComponents.Components.Altcha;
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
 @using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery
 @using snowcoreBlog.PublicApi.Api
@@ -60,7 +62,9 @@
                                                 </FluentAnchor>
                                             </FluentLabel>
                                             <FluentSpacer />
-                                            <altcha-widget challengeurl="https://localhost/api/readers/captcha/challenge/v1" hidefooter hidelogo auto="onload"></altcha-widget>
+                                            <AltchaWidget
+                                                ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
+                                                OnVerified="HandleOnVerified"/>
                                             <FluentSpacer />
                                             <FluentButton Class="align-self-end" Type="ButtonType.Submit"
                                                 Appearance="Appearance.Accent">Log in
@@ -194,6 +198,11 @@
         {
             PasswordlessLogin = _emptyState;
         }
+    }
+
+    private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
+    {
+        Captcha = verifyArgs.Payload;
     }
 
     private async Task SubmitForm(EditContext editContext)
