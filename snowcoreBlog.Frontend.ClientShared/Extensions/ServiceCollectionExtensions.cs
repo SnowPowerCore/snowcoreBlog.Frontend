@@ -38,6 +38,7 @@ public static class ServiceCollectionExtensions
             config.AddFluentValidation(typeof(ApiResponse).Assembly));
 
         serviceCollection.AddAuthorizationCore();
+        serviceCollection.AddCascadingAuthenticationState();
         serviceCollection.AddScoped<AuthenticationStateProvider, BlogAuthStateProvider>();
         return serviceCollection;
     }
