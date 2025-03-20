@@ -2,6 +2,11 @@ using snowcoreBlog.Frontend.ClientShared.Extensions;
 using snowcoreBlog.Frontend.Host.Components;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseDefaultServiceProvider(static (c, opts) =>
+{
+    opts.ValidateScopes = true;
+    opts.ValidateOnBuild = true;
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

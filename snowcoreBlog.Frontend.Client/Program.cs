@@ -8,6 +8,11 @@ public class Program
     private static Task Main(string[] args)
     {
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
+        builder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions
+        {
+            ValidateScopes = true,
+            ValidateOnBuild = true
+        }));
         builder.Services.AddScoped(sp => new HttpClient
         {
             BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
