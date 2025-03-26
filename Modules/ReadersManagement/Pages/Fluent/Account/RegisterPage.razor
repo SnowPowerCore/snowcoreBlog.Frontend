@@ -55,10 +55,10 @@
                                 </FluentCheckbox>
                                 <FluentValidationMessage For=@(() => CreateNewAccount.InitialEmailConsent) />
                                 <FluentCheckbox @bind-Value="@CreateNewAccount.ConfirmedAgreement" Required>
-                                    I agree with the<FluentAnchor
+                                    I agree with the <FluentAnchor
                                         Id="termsAndConditionsInfo" Appearance="Appearance.Hypertext"
                                         Href="javascript: void(0);">Terms &
-                                        Conditions</FluentAnchor>document.
+                                        Conditions</FluentAnchor> document.
                                 </FluentCheckbox>
                                 <FluentValidationMessage For=@(() => CreateNewAccount.ConfirmedAgreement) />
                                 <FluentSpacer />

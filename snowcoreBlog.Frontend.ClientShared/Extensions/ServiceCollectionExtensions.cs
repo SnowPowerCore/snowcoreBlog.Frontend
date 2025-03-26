@@ -32,7 +32,7 @@ public static class ServiceCollectionExtensions
         });
         serviceCollection.AddWebAuthn();
         serviceCollection.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options =>
-            options.WithBaseAddress("https://localhost:5050"));
+            options.WithBaseAddress("https://localhost/api/readers"));
         serviceCollection.AddFluentUIComponents();
         serviceCollection.AddFormValidation(static config =>
             config.AddFluentValidation(typeof(ApiResponse).Assembly));
