@@ -1,6 +1,6 @@
 using Microsoft.FluentUI.AspNetCore.Components;
 
-namespace snowcoreBlog.Frontend.ReadersManagement.Resources;
+namespace snowcoreBlog.Frontend.ReadersManagement.Resources.Icons;
 
 public class AppleLogoIcon : Icon
 {

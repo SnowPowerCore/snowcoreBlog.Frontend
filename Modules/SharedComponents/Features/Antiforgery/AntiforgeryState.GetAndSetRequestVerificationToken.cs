@@ -1,5 +1,4 @@
 using Apizr;
-using Microsoft.AspNetCore.Antiforgery;
 using snowcoreBlog.PublicApi.Api;
 using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using snowcoreBlog.PublicApi.Extensions;
