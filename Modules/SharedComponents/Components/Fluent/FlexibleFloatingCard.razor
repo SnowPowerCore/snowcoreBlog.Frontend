@@ -1,0 +1,60 @@
+﻿@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Microsoft.AspNetCore.Components.Forms
+@using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.PublicApi.Api
+@using snowcoreBlog.PublicApi.BusinessObjects.Dto
+@using snowcoreBlog.PublicApi.Extensions
+@using snowcoreBlog.PublicApi.Utilities.Dictionary
+@using snowcoreBlog.PublicApi.Validation.Dto
+
+@attribute [StreamRendering]
+@inherits TimeWarpStateComponent
+
+@inject NavigationManager Navigation
+
+<div class="h-100 d-flex justify-content-center align-items-center">
+    <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
+        <FluentGridItem HiddenWhen="GridItemHidden.SmAndUp">
+            <FluentCard Class="w-100">
+                @(MobileSizeContent ?? RegularSizeContent)
+            </FluentCard>
+        </FluentGridItem>
+        <FluentGridItem HiddenWhen="GridItemHidden.XsAndDown">
+            <div class="d-grid my-5">
+                <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
+                    @RegularSizeContent
+                </FluentCard>
+                <div class="bg-icon-container position-relative">
+                    <FluentIcon Value="@FloatingIcon" Width="256px" />
+                </div>
+            </div>
+        </FluentGridItem>
+        <FluentGridItem HiddenWhen="GridItemHidden.LgAndDown">
+            <div class="d-grid my-5">
+                <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
+                    @(WideSizeContent ?? RegularSizeContent)
+                </FluentCard>
+                <div class="bg-icon-container position-relative">
+                    <FluentIcon Value="@FloatingIcon" Width="256px" />
+                </div>
+            </div>
+        </FluentGridItem>
+    </FluentGrid>
+</div>
+
+@code
+{
+    [Parameter]
+    public RenderFragment MobileSizeContent { get; set; } = default!;
+
+    [Parameter]
+    public RenderFragment RegularSizeContent { get; set; } = __builder => { };
+
+    [Parameter]
+    public RenderFragment WideSizeContent { get; set; } = default!;
+
+    [Parameter]
+    public Icon FloatingIcon { get; set; } = new Icon(string.Empty, IconVariant.Regular, IconSize.Custom, string.Empty);
+
+    private void OnBreakpointEnterHandler(GridItemSize size) { }
+}

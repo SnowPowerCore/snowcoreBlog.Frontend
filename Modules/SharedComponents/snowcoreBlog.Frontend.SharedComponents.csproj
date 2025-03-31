@@ -20,11 +20,16 @@
     <PackageReference Include="TimeWarp.State" Version="11.0.0" />
     <PackageReference Include="TimeWarp.State.Plus" Version="11.0.0" />
     <PackageReference Include="TimeWarp.State.Policies" Version="11.0.0" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\snowcoreBlog.Universal\PublicApi\snowcoreBlog.PublicApi.csproj" />
     <ProjectReference Include="..\..\snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Utilities\" />
   </ItemGroup>
 
 </Project>
