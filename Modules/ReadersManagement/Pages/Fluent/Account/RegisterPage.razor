@@ -2,9 +2,6 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
 @using Microsoft.AspNetCore.Components.Forms
-@using Morris.Blazor.FluentValidation
-@using Morris.Blazor.Validation
-@using Morris.Blazor.Validation.Extensions
 @using snowcoreBlog.Frontend.Infrastructure.Events
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Register;
 @using snowcoreBlog.Frontend.ReadersManagement.Resources
@@ -12,6 +9,8 @@
 @using snowcoreBlog.Frontend.SharedComponents.Components.Altcha
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
 @using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery
+@using snowcoreBlog.Frontend.SharedComponents.Providers
+@using snowcoreBlog.Frontend.SharedComponents.Validation
 @using snowcoreBlog.PublicApi.Api
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
 @using snowcoreBlog.PublicApi.Extensions
@@ -24,92 +23,85 @@
 @inject NavigationManager Navigation
 @inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi;
 
-<div class="h-100 d-flex justify-content-center align-items-center">
-    <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
-        <FluentGridItem HiddenWhen="GridItemHidden.SmAndDown">
-            <div class="d-grid my-5">
-                <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
-                    <FluentStack Class="px-3" Orientation="Orientation.Vertical">
-                        <EditForm class="w-100" EditContext="@_registerContext" OnSubmit=SubmitForm >
-                            <Validate ValidationProperties=@(ValidationProperties.Set.FluentValidator<RequestCreateReaderAccountValidation>()) />
-                            <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
-                                <FluentSpacer />
-                                <FluentSpacer />
-                                <FluentTextField InputMode="InputMode.Email" Name="email" Label="Email" @bind-Value=@CreateNewAccount.Email Required />
-                                <FluentValidationMessage For=@(() => CreateNewAccount.Email) />
-                                <FluentSpacer />
-                                <FluentTextField Name="firstName" Label="First Name" @bind-Value=@CreateNewAccount.FirstName Required />
-                                <FluentValidationMessage For=@(() => CreateNewAccount.FirstName) />
-                                <FluentSpacer />
-                                <FluentTextField Name="lastName" Label="Last Name" @bind-Value=@CreateNewAccount.LastName />
-                                <FluentValidationMessage For=@(() => CreateNewAccount.LastName) />
-                                <FluentSpacer />
-                                <FluentTextField Name="nickName" Label="Nick Name" @bind-Value=@CreateNewAccount.NickName Required />
-                                <FluentValidationMessage For=@(() => CreateNewAccount.NickName) />
-                                <FluentSpacer />
-                                <FluentTextField InputMode="InputMode.Telephone" Name="phoneNumber" Label="Phone Number" @bind-Value=@CreateNewAccount.PhoneNumber />
-                                <FluentValidationMessage For=@(() => CreateNewAccount.PhoneNumber) />
-                                <FluentSpacer />
-                                <FluentCheckbox @bind-Value="@CreateNewAccount.InitialEmailConsent" Required>
-                                    I allow necessary emails to be delivered to my email<br/>(you will later have an option to change email preferences).
-                                </FluentCheckbox>
-                                <FluentValidationMessage For=@(() => CreateNewAccount.InitialEmailConsent) />
-                                <FluentCheckbox @bind-Value="@CreateNewAccount.ConfirmedAgreement" Required>
-                                    I agree with the <FluentAnchor
-                                        Id="termsAndConditionsInfo" Appearance="Appearance.Hypertext"
-                                        Href="javascript: void(0);">Terms &
-                                        Conditions</FluentAnchor> document.
-                                </FluentCheckbox>
-                                <FluentValidationMessage For=@(() => CreateNewAccount.ConfirmedAgreement) />
-                                <FluentSpacer />
-                                <AltchaWidget
-                                    ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
-                                    OnVerified="HandleOnVerified"/>
-                                <FluentSpacer />
-                                <FluentButton Class="align-self-end" Type="ButtonType.Submit"
-                                    Appearance="Appearance.Accent">Register
-                                </FluentButton>
-                            </FluentStack>
-                        </EditForm>
-                        <FluentSpacer />
-                        <FluentSpacer />
-                        <FluentDivider Class="w-100" Orientation="Orientation.Horizontal"
-                            Role="DividerRole.Presentation" />
-                        <FluentSpacer />
-                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
-                            VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
-                            <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
-                            <FluentSpacer Width="5" />
-                            <FluentLabel>If you already have an account, you can login.</FluentLabel>
-                        </FluentStack>
-                        <FluentSpacer />
-                        <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Class="align-self-end" Appearance="Appearance.Neutral">
-                            Login
-                        </FluentButton>
-                        <FluentSpacer />
-                        <FluentSpacer />
-                    </FluentStack>
-                </FluentCard>
-                <div class="bg-icon-container position-relative">
-                    <FluentIcon Value="@(new Icons.Color.Size24.BuildingPeople())" Width="256px" />
-                </div>
-            </div>
-        </FluentGridItem>
-        <FluentGridItem HiddenWhen="GridItemHidden.MdAndUp" Style="max-width: none;">
-        </FluentGridItem>
-    </FluentGrid>
-</div>
+<FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())">
+    <RegularSizeContent>
+        <FluentStack Class="px-3" Orientation="Orientation.Vertical">
+            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitForm">
+                <FluentValidationValidator @ref="_fluentValidationValidator" DisableAssemblyScanning="@true" />
+                <TrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChanged"/>
+                <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
+                    <FluentSpacer />
+                    <FluentSpacer />
+                    <FluentTextField InputMode="InputMode.Email" Name="email" Label="Email" @bind-Value=@CreateNewAccount.Email Required />
+                    <FluentValidationMessage For=@(() => CreateNewAccount.Email) />
+                    <FluentSpacer />
+                    <FluentTextField Name="firstName" Label="First Name" @bind-Value=@CreateNewAccount.FirstName Required />
+                    <FluentValidationMessage For=@(() => CreateNewAccount.FirstName) />
+                    <FluentSpacer />
+                    <FluentTextField Name="lastName" Label="Last Name" @bind-Value=@CreateNewAccount.LastName />
+                    <FluentValidationMessage For=@(() => CreateNewAccount.LastName) />
+                    <FluentSpacer />
+                    <FluentTextField Name="nickName" Label="Nick Name" @bind-Value=@CreateNewAccount.NickName Required />
+                    <FluentValidationMessage For=@(() => CreateNewAccount.NickName) />
+                    <FluentSpacer />
+                    <FluentTextField InputMode="InputMode.Telephone" Name="phoneNumber" Label="Phone Number" @bind-Value=@CreateNewAccount.PhoneNumber />
+                    <FluentValidationMessage For=@(() => CreateNewAccount.PhoneNumber) />
+                    <FluentSpacer />
+                    <FluentCheckbox @bind-Value="@CreateNewAccount.InitialEmailConsent" Required>
+                        I allow necessary emails to be delivered to my email<br/>(you will later have an option to change email preferences).
+                    </FluentCheckbox>
+                    <FluentValidationMessage For=@(() => CreateNewAccount.InitialEmailConsent) />
+                    <FluentCheckbox @bind-Value="@CreateNewAccount.ConfirmedAgreement" Required>
+                        I agree with the <FluentAnchor
+                            Id="termsAndConditionsInfo" Appearance="Appearance.Hypertext"
+                            Href="javascript: void(0);">Terms &
+                            Conditions</FluentAnchor> document.
+                    </FluentCheckbox>
+                    <FluentValidationMessage For=@(() => CreateNewAccount.ConfirmedAgreement) />
+                    <FluentSpacer />
+                    <AltchaWidget
+                        ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
+                        OnVerified="HandleOnVerified"/>
+                    <FluentSpacer />
+                    <FluentButton Class="align-self-end" Type="ButtonType.Submit"
+                        Appearance="Appearance.Accent">Register
+                    </FluentButton>
+                </FluentStack>
+            </EditForm>
+            <FluentSpacer />
+            <FluentSpacer />
+            <FluentDivider Class="w-100" Orientation="Orientation.Horizontal"
+                Role="DividerRole.Presentation" />
+            <FluentSpacer />
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
+                VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
+                <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
+                <FluentSpacer Width="5" />
+                <FluentLabel>If you already have an account, you can login.</FluentLabel>
+            </FluentStack>
+            <FluentSpacer />
+            <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Class="align-self-end" Appearance="Appearance.Neutral">
+                Login
+            </FluentButton>
+            <FluentSpacer />
+            <FluentSpacer />
+        </FluentStack>
+    </RegularSizeContent>
+</FlexibleFloatingCard>
 
 @code
 {
-    private EditContext? _registerContext = new(new object());
+    public const string ReaderAccountRegisterFormName = "ReaderAccountRegisterForm";
+
+    private FluentValidationValidator? _fluentValidationValidator;
     private readonly RequestCreateReaderAccountDto _emptyState = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
 
     private string? Captcha { get; set; } = string.Empty;
 
+    [SupplyParameterFromForm(FormName = ReaderAccountRegisterFormName)]
     private RequestCreateReaderAccountDto? CreateNewAccount { get; set; }
 
-    protected override void OnParametersSet()
+    public RegisterPage()
     {
         CreateNewAccount = _emptyState;
     }
@@ -121,16 +113,14 @@
         if (firstRender)
         {
             CreateNewAccount = GetState<RegisterState>().CurrentModel;
-
-            _registerContext = new EditContext(CreateNewAccount);
-            _registerContext.OnFieldChanged += RegisterContext_OnFieldChanged;
         }
     }
 
-    private void RegisterContext_OnFieldChanged(object? sender, FieldChangedEventArgs? e)
+    private Task OnRegisterFormFieldChanged(FieldChangedEventArgs? e)
     {
         var createNewAccountState = GetState<RegisterState>();
         _ = createNewAccountState.SetCurrentInput(CreateNewAccount);
+        return Task.CompletedTask;
     }
 
     private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
@@ -140,7 +130,10 @@
 
     private async Task SubmitForm(EditContext editContext)
 	{
-		var success = editContext.ValidateObjectTree();
+        if (_fluentValidationValidator is default(FluentValidationValidator))
+            return;
+
+		var success = await _fluentValidationValidator.ValidateAsync();
         if (!success)
             return;
 
@@ -161,6 +154,4 @@
             Navigation.NavigateTo("/register/info/confirm");
         }
 	}
-
-    private void OnBreakpointEnterHandler(GridItemSize size) { }
 }
