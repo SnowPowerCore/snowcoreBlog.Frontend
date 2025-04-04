@@ -19,10 +19,10 @@
 @attribute [StreamRendering]
 @inherits TimeWarpStateComponent
 
+@inject NavigationManager Navigation
 @inject WebAuthn WebAuthn
 @inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi;
-
-@inject NavigationManager Navigation
+@inject IValidator<RequestAssertionOptionsDto> RequestAssertionOptionsValidator;
 
 <div class="h-100">
     <FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.Person())">
@@ -30,21 +30,21 @@
             <FluentStack Class="px-3 py-2" Orientation="Orientation.Vertical">
                 <FluentSpacer />
                 <FluentTabs Style="justify-items: center;" Class="px-0 py-0">
-                    <FluentTab Label="Passkey" Class="px-0 py-0">
+                    <FluentTab Label="@TranslationResources.PasskeyTabLabel" Class="px-0 py-0">
                         <Header>
                             <div class="d-flex flex-column align-items-center">
                                 <FluentIcon Value="@(new Icons.Color.Size24.Vault())" />
                                 <FluentSpacer Width="5" />
-                                Passkey
+                                @TranslationResources.PasskeyHeaderLabel
                             </div>
                         </Header>
                         <Content>
-                            <EditForm class="w-100" FormName="ReaderAccountLoginForm" Model="@PasswordlessLogin" OnSubmit="SubmitForm">
-                                <FluentValidationValidator @ref="_fluentValidationValidator" DisableAssemblyScanning="@true" />
+                            <EditForm class="w-100" FormName="@ReaderAccountPasswordlessLoginFormName" Model="@PasswordlessLogin" OnSubmit="SubmitPasswordlessLoginForm">
+                                <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestAssertionOptionsValidator" />
                                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                     <FluentSpacer />
                                     <FluentSpacer />
-                                    <FluentTextField InputMode="InputMode.Email" Name="login" Label="Email" @bind-Value=@PasswordlessLogin.Email Required Size="40" />
+                                    <FluentTextField InputMode="InputMode.Email" Name="login" Label="@TranslationResources.EmailFieldLabel" @bind-Value=@PasswordlessLogin.Email Required Size="40" />
                                     <FluentValidationMessage For=@(() => PasswordlessLogin.Email) />
                                     <FluentSpacer />
                                     <FluentLabel>
@@ -53,7 +53,7 @@
                                                 VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
                                                 <FluentRandomIdIcon Width="24px" Value="@(new QuestionIcon())" />
                                                 <FluentSpacer Width="5" />
-                                                Why is password field missing?
+                                                @TranslationResources.PasswordlessDialogHyperlinkLabel
                                             </FluentStack>
                                         </FluentAnchor>
                                     </FluentLabel>
@@ -62,47 +62,51 @@
                                         ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
                                         OnVerified="HandleOnVerified"/>
                                     <FluentSpacer />
-                                    <FluentButton Class="align-self-end" Type="ButtonType.Submit"
-                                        Appearance="Appearance.Accent">Log in
+                                    <FluentButton Class="align-self-end" Type="ButtonType.Submit" Appearance="Appearance.Accent">
+                                        @TranslationResources.LoginButtonLabel
                                     </FluentButton>
                                 </FluentStack>
                             </EditForm>
                         </Content>
                     </FluentTab>
-                    <FluentTab Label="Authenticator app" Class="px-0 py-0">
+                    <FluentTab Label="@TranslationResources.AuthenticatorTabLabel" Class="px-0 py-0">
                         <Header>
                             <div class="d-flex flex-column align-items-center">
                                 <FluentEmoji Width="24px"
                                     Value="@(new Emojis.Objects.Color.Default.MobilePhoneWithArrow())" />
                                 <FluentSpacer Width="5" />
-                                Authenticator app
+                                @TranslationResources.AuthenticatorHeaderLabel
                             </div>
                         </Header>
                         <Content>
-                            <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
-                                <FluentSpacer />
-                                <FluentSpacer />
-                                <FluentTextField Name="login" Label="Email" InputMode="InputMode.Email" Required Size="40" />
-                                <FluentSpacer />
-                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
-                                    VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
-                                    <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
-                                    <FluentSpacer Width="5" />
-                                    On the next step, you will be asked to provide<br/>one-time code.
+                            <EditForm class="w-100" FormName="@ReaderAccountOneTimeCodeLoginFormName" Model="@PasswordlessLogin" OnSubmit="SubmitOneTimeCodeLoginForm">
+                                <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestAssertionOptionsValidator" />
+                                <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
+                                    <FluentSpacer />
+                                    <FluentSpacer />
+                                    <FluentTextField Name="login" Label="@TranslationResources.EmailFieldLabel" InputMode="InputMode.Email" Required Size="40" />
+                                    <FluentSpacer />
+                                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
+                                        VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
+                                        <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
+                                        <FluentSpacer Width="5" />
+                                        @TranslationResources.OTCNextPageInfoLabel1<br/>
+                                        @TranslationResources.OTCNextPageInfoLabel2
+                                    </FluentStack>
+                                    <FluentSpacer />
+                                    <FluentButton Class="align-self-end" Type="ButtonType.Submit" Appearance="Appearance.Accent">
+                                        @TranslationResources.AuthenticatorButtonLabel
+                                    </FluentButton>
                                 </FluentStack>
-                                <FluentSpacer />
-                                <FluentButton Class="align-self-end" Type="ButtonType.Submit"
-                                    Appearance="Appearance.Accent">Verify
-                                </FluentButton>
-                            </FluentStack>
+                            </EditForm>
                         </Content>
                     </FluentTab>
-                    <FluentTab Label="Other" Class="px-0 py-0">
+                    <FluentTab Label="@TranslationResources.OtherTabLabel" Class="px-0 py-0">
                         <Header>
                             <div class="d-flex flex-column align-items-center">
                                 <FluentIcon Value="@(new Icons.Color.Size24.PeopleTeam())" />
                                 <FluentSpacer Width="5" />
-                                Other
+                                @TranslationResources.OtherHeaderLabel
                             </div>
                         </Header>
                         <Content>
@@ -110,16 +114,15 @@
                                 <FluentSpacer />
                                 <FluentSpacer />
                                 <FluentLabel Alignment="HorizontalAlignment.Center">
-                                    You can log in using any provider available here.<br />
-                                    If there is no account associated, a new account will be created.<br />
-                                    By clicking any button below you agree with <FluentAnchor
+                                    @TranslationResources.OtherLoginMethodsInfoLabel1<br />
+                                    @TranslationResources.OtherLoginMethodsInfoLabel2<br />
+                                    @TranslationResources.OtherLoginMethodsInfoLabel3<FluentAnchor
                                         Id="termsAndConditionsInfo" Appearance="Appearance.Hypertext"
-                                        Href="javascript: void(0);">terms &
-                                        conditions.</FluentAnchor>
+                                        Href="javascript: void(0);">@TranslationResources.TermsConditionsHyperlinkLabelAllSmall.</FluentAnchor>
                                     <FluentTooltip Anchor="termsAndConditionsInfo" Delay="10" MaxWidth="150px"
                                         Position="TooltipPosition.Right">
-                                        Please, click here to navigate to the terms & conditions document.<br />
-                                        We suggest you read it carefully and thoroughly.
+                                        @TranslationResources.TermsConditionsTooltipLabel1<br />
+                                        @TranslationResources.TermsConditionsTooltipLabel2
                                     </FluentTooltip>
                                 </FluentLabel>
                                 <FluentSpacer />
@@ -153,11 +156,11 @@
                     VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
                     <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
                     <FluentSpacer Width="5" />
-                    <FluentLabel>If you don't have an account, you can register.</FluentLabel>
+                    <FluentLabel>@TranslationResources.RegisterPromptLabel</FluentLabel>
                 </FluentStack>
                 <FluentSpacer />
                 <FluentButton OnClick="@(() => Navigation.NavigateTo("/register"))" Class="align-self-end" Appearance="Appearance.Neutral">
-                    Register
+                    @TranslationResources.RegisterButtonLabel
                 </FluentButton>
             </FluentStack>
         </RegularSizeContent>
@@ -166,13 +169,14 @@
 
 @code
 {
-    public const string ReaderAccountLoginFormName = "ReaderAccountLoginForm";
-    private FluentValidationValidator? _fluentValidationValidator;
+    public const string ReaderAccountPasswordlessLoginFormName = "ReaderAccountPasswordlessLoginForm";
+    public const string ReaderAccountOneTimeCodeLoginFormName = "ReaderAccountOneTimeCodeLoginForm";
+    private FormFluentValidationValidator? _fluentValidationValidator;
     private RequestAssertionOptionsDto _emptyState = new() { Email = string.Empty, UserVerification = new() };
     
     private string? Captcha { get; set; } = string.Empty;
 
-    [SupplyParameterFromForm(FormName = ReaderAccountLoginFormName)]
+    [SupplyParameterFromForm(FormName = ReaderAccountPasswordlessLoginFormName)]
     private RequestAssertionOptionsDto? PasswordlessLogin { get; set; }
 
     public LoginPage()
@@ -180,24 +184,14 @@
         PasswordlessLogin = _emptyState;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (firstRender)
-        {
-            await WebAuthn.Init();
-        }
-    }
-
     private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
     {
         Captcha = verifyArgs.Payload;
     }
 
-    private async Task SubmitForm(EditContext editContext)
+    private async Task SubmitPasswordlessLoginForm(EditContext editContext)
     {
-        if (_fluentValidationValidator is default(FluentValidationValidator))
+        if (_fluentValidationValidator is default(FormFluentValidationValidator))
             return;
 
         var success = await _fluentValidationValidator.ValidateAsync();
@@ -206,6 +200,8 @@
 
         if (string.IsNullOrEmpty(Captcha))
             return;
+
+        await WebAuthn.Init();
 
         var requestData = (RequestAssertionOptionsDto)editContext.Model;
         var antiforgery = GetState<AntiforgeryState>();
@@ -216,8 +212,30 @@
         var data = response.ToData<AssertionOptions>(out var errors);
         if (data is not default(AssertionOptions) && errors.Count == 0)
         {
-            var assertion = await WebAuthn.VerifyAsync(data);
-            
+            try
+            {
+                // Present options to user and get response (usernameless users will be asked by their authenticator, which credential they want to use to sign the challenge)
+                var assertion = await WebAuthn.VerifyAsync(data);
+
+                // Send response to server
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
+    }
+
+    private async Task SubmitOneTimeCodeLoginForm(EditContext editContext)
+    {
+        if (_fluentValidationValidator is default(FormFluentValidationValidator))
+            return;
+
+        var success = await _fluentValidationValidator.ValidateAsync();
+        if (!success)
+            return;
+
+        if (string.IsNullOrEmpty(Captcha))
+            return;
     }
 }

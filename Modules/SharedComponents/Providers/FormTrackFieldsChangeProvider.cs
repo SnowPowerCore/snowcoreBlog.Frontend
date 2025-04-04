@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace snowcoreBlog.Frontend.SharedComponents.Providers;
 
-public class TrackFieldsChangeProvider : ComponentBase, IDisposable
+public class FormTrackFieldsChangeProvider : ComponentBase, IDisposable
 {
     [CascadingParameter] private EditContext? CurrentEditContext { get; set; }
 
@@ -13,8 +13,8 @@ public class TrackFieldsChangeProvider : ComponentBase, IDisposable
     {
         if (CurrentEditContext == null)
         {
-            throw new InvalidOperationException($"{nameof(TrackFieldsChangeProvider)} requires a cascading " +
-                                                $"parameter of type {nameof(EditContext)}. For example, you can use {nameof(TrackFieldsChangeProvider)} " +
+            throw new InvalidOperationException($"{nameof(FormTrackFieldsChangeProvider)} requires a cascading " +
+                                                $"parameter of type {nameof(EditContext)}. For example, you can use {nameof(FormTrackFieldsChangeProvider)} " +
                                                 $"inside an {nameof(EditForm)}.");
         }
 
