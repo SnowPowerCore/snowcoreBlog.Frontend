@@ -6,4 +6,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="snowcoreBlog.ResourceLoading" Version="0.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles
+      Include="Resources\TranslationResources_*.json"
+      NamespaceName="snowcoreBlog.Frontend.Core.Resources"
+      ClassName="TranslationResources"
+      NeutralCulture="en" />
+  </ItemGroup>
+
 </Project>

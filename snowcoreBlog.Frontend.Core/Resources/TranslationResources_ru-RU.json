@@ -1,0 +1,23 @@
+{
+    "PasskeyTabLabel": "Ключ доступа",
+    "PasskeyHeaderLabel": "Ключ доступа",
+    "AuthenticatorTabLabel": "Приложение аутентификатор",
+    "AuthenticatorHeaderLabel": "Приложение аутентификатор",
+    "OtherTabLabel": "Другие",
+    "OtherHeaderLabel": "Другие",
+    "EmailFieldLabel": "Электронная почта",
+    "PasswordlessDialogHyperlinkLabel": "Почему поле пароля отсутствует?",
+    "LoginButtonLabel": "Войти",
+    "OTPNextPageInfoLabel1": "На следующей странице мы попросим у Вас",
+    "OTPNextPageInfoLabel2": "единоразовый проверочный код.",
+    "AuthenticatorButtonLabel": "Перейти",
+    "OtherLoginMethodsInfoLabel1": "Вы можете выполнить вход, используя любой сервис ниже.",
+    "OtherLoginMethodsInfoLabel2": "Если Вы входите впервые, будет создан новый аккаунт.",
+    "OtherLoginMethodsInfoLabel3": "Переходя по любой кнопке ниже Вы соглашаетесь с ",
+    "TermsConditionsHyperlinkLabel": "Правилами и Условиями Использования",
+    "TermsConditionsHyperlinkLabelAllSmall": "правилами и условиями использования",
+    "TermsConditionsTooltipLabel1": "Нажмите здесь чтобы перейти к документу 'Правила и Условия Использования'.",
+    "TermsConditionsTooltipLabel2": "Мы предлагаем Вам ознакомиться с ним детально и вдумчиво.",
+    "RegisterPromptLabel": "Если у Вас нет аккаунта, Вы можете зарегистрироваться.",
+    "RegisterButtonLabel": "Регистрация"
+}

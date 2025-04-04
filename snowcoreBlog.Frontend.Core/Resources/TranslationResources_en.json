@@ -1,0 +1,23 @@
+{
+    "PasskeyTabLabel": "Passkey",
+    "PasskeyHeaderLabel": "Passkey",
+    "AuthenticatorTabLabel": "Authenticator app",
+    "AuthenticatorHeaderLabel": "Authenticator app",
+    "OtherTabLabel": "Other",
+    "OtherHeaderLabel": "Other",
+    "EmailFieldLabel": "Email",
+    "PasswordlessDialogHyperlinkLabel": "Why is password field missing?",
+    "LoginButtonLabel": "Log in",
+    "OTCNextPageInfoLabel1": "On the next step, you will be asked to provide",
+    "OTCNextPageInfoLabel2": "one-time code.",
+    "AuthenticatorButtonLabel": "Verify",
+    "OtherLoginMethodsInfoLabel1": "You can log in using any provider available here.",
+    "OtherLoginMethodsInfoLabel2": "If there is no account associated, a new account will be created.",
+    "OtherLoginMethodsInfoLabel3": "By clicking any button below you agree with ",
+    "TermsConditionsHyperlinkLabel": "Terms & Conditions",
+    "TermsConditionsHyperlinkLabelAllSmall": "terms & conditions",
+    "TermsConditionsTooltipLabel1": "Please, click here to navigate to the terms & conditions document.",
+    "TermsConditionsTooltipLabel2": "We suggest you read it carefully and thoroughly.",
+    "RegisterPromptLabel": "If you don't have an account, you can register.",
+    "RegisterButtonLabel": "Register"
+}

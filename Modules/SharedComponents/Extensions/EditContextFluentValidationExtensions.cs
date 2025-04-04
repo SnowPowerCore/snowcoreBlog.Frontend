@@ -1,85 +1,69 @@
 ﻿using FluentValidation;
 using FluentValidation.Internal;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.DependencyInjection;
 using snowcoreBlog.Frontend.SharedComponents.Utilities;
 using snowcoreBlog.Frontend.SharedComponents.Validation;
-
-using static FluentValidation.AssemblyScanner;
 
 namespace snowcoreBlog.Frontend.SharedComponents.Extensions;
 
 public static class EditContextFluentValidationExtensions
 {
     private static readonly char[] Separators = ['.', '['];
-    private static readonly List<string> ScannedAssembly = [];
-    private static readonly List<AssemblyScanResult> AssemblyScanResults = [];
     public const string PendingAsyncValidation = "AsyncValidationTask";
 
     public static void AddFluentValidation(
         this EditContext editContext,
-        IServiceProvider serviceProvider,
-        bool disableAssemblyScanning,
-        IValidator? validator,
-        FluentValidationValidator fluentValidationValidator)
+        IValidator validator,
+        FormFluentValidationValidator fluentValidationValidator)
     {
         ArgumentNullException.ThrowIfNull(editContext, nameof(editContext));
 
         var messages = new ValidationMessageStore(editContext);
 
         editContext.OnValidationRequested +=
-            async (sender, _) => await ValidateModel((EditContext)sender!, messages, serviceProvider, disableAssemblyScanning, fluentValidationValidator, validator);
+            async (sender, _) => await ValidateModel((EditContext)sender!, messages, fluentValidationValidator, validator);
         
         editContext.OnFieldChanged +=
-            async (_, eventArgs) => await ValidateField(editContext, messages, eventArgs.FieldIdentifier, serviceProvider, disableAssemblyScanning, fluentValidationValidator, validator);
+            async (_, eventArgs) => await ValidateField(editContext, messages, eventArgs.FieldIdentifier, fluentValidationValidator, validator);
     }
 
     private static async Task ValidateModel(EditContext editContext,
         ValidationMessageStore messages,
-        IServiceProvider serviceProvider,
-        bool disableAssemblyScanning,
-        FluentValidationValidator fluentValidationValidator,
-        IValidator? validator = null)
+        FormFluentValidationValidator fluentValidationValidator,
+        IValidator validator)
     {
-        validator ??= GetValidatorForModel(serviceProvider, editContext.Model, disableAssemblyScanning);
+        var context = ConstructValidationContext(editContext, fluentValidationValidator);
 
-        if (validator is not null)
+        var asyncValidationTask = validator.ValidateAsync(context);
+        editContext.Properties[PendingAsyncValidation] = asyncValidationTask;
+        var validationResults = await asyncValidationTask;
+
+        messages.Clear();
+        fluentValidationValidator.LastValidationResult = [];
+
+        foreach (var validationResult in validationResults.Errors)
         {
-            var context = ConstructValidationContext(editContext, fluentValidationValidator);
+            var fieldIdentifier = ToFieldIdentifier(editContext, validationResult.PropertyName);
+            messages.Add(fieldIdentifier, validationResult.ErrorMessage);
 
-            var asyncValidationTask = validator.ValidateAsync(context);
-            editContext.Properties[PendingAsyncValidation] = asyncValidationTask;
-            var validationResults = await asyncValidationTask;
-
-            messages.Clear();
-            fluentValidationValidator.LastValidationResult = [];
-
-            foreach (var validationResult in validationResults.Errors)
+            if (fluentValidationValidator.LastValidationResult.TryGetValue(fieldIdentifier, out var failures))
             {
-                var fieldIdentifier = ToFieldIdentifier(editContext, validationResult.PropertyName);
-                messages.Add(fieldIdentifier, validationResult.ErrorMessage);
-
-                if (fluentValidationValidator.LastValidationResult.TryGetValue(fieldIdentifier, out var failures))
-                {
-                    failures.Add(validationResult);
-                }
-                else
-                {
-                    fluentValidationValidator.LastValidationResult.Add(fieldIdentifier, [validationResult]);
-                }
+                failures.Add(validationResult);
             }
-
-            editContext.NotifyValidationStateChanged();
+            else
+            {
+                fluentValidationValidator.LastValidationResult.Add(fieldIdentifier, [validationResult]);
+            }
         }
+
+        editContext.NotifyValidationStateChanged();
     }
 
     private static async Task ValidateField(EditContext editContext,
         ValidationMessageStore messages,
         FieldIdentifier fieldIdentifier,
-        IServiceProvider serviceProvider,
-        bool disableAssemblyScanning,
-        FluentValidationValidator fluentValidationValidator,
-        IValidator? validator = null)
+        FormFluentValidationValidator fluentValidationValidator,
+        IValidator validator)
     {
         var propertyPath = PropertyPathHelper.ToFluentPropertyPath(editContext, fieldIdentifier);
 
@@ -99,25 +83,20 @@ public static class EditContextFluentValidationExtensions
         var compositeSelector =
             new IntersectingCompositeValidatorSelector([fluentValidationValidatorSelector, changedPropertySelector]);
 
-        validator ??= GetValidatorForModel(serviceProvider, editContext.Model, disableAssemblyScanning);
-        
-        if (validator is not null)
-        {
-            var validationResults = await validator.ValidateAsync(new ValidationContext<object>(editContext.Model, new PropertyChain(), compositeSelector));
-            var errorMessages = validationResults.Errors
-                .Where(validationFailure => validationFailure.PropertyName == propertyPath)
-                .Select(validationFailure => validationFailure.ErrorMessage)
-                .Distinct();
+        var validationResults = await validator.ValidateAsync(new ValidationContext<object>(editContext.Model, new PropertyChain(), compositeSelector));
+        var errorMessages = validationResults.Errors
+            .Where(validationFailure => validationFailure.PropertyName == propertyPath)
+            .Select(validationFailure => validationFailure.ErrorMessage)
+            .Distinct();
 
-            messages.Clear(fieldIdentifier);
-            messages.Add(fieldIdentifier, errorMessages);
+        messages.Clear(fieldIdentifier);
+        messages.Add(fieldIdentifier, errorMessages);
 
-            editContext.NotifyValidationStateChanged();
-        }
+        editContext.NotifyValidationStateChanged();
     }
 
     private static ValidationContext<object> ConstructValidationContext(EditContext editContext,
-        FluentValidationValidator fluentValidationValidator)
+        FormFluentValidationValidator fluentValidationValidator)
     {
         ValidationContext<object> context;
 
@@ -135,49 +114,6 @@ public static class EditContextFluentValidationExtensions
         }
 
         return context;
-    }
-
-    private static IValidator? GetValidatorForModel(IServiceProvider serviceProvider, object model, bool disableAssemblyScanning)
-    {
-        var validatorType = typeof(IValidator<>).MakeGenericType(model.GetType());
-        try
-        {
-            if (serviceProvider.GetService(validatorType) is IValidator validator)
-            {
-                return validator;
-            }
-        }
-        catch (Exception) { }
-
-        if (disableAssemblyScanning)
-        {
-            return default;
-        }
-
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Where(i => i.FullName is not null && !ScannedAssembly.Contains(i.FullName)))
-        {
-            try
-            {
-                AssemblyScanResults.AddRange(FindValidatorsInAssembly(assembly));
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-
-            ScannedAssembly.Add(assembly.FullName!);
-        }
-
-
-        var interfaceValidatorType = typeof(IValidator<>).MakeGenericType(model.GetType());
-        var modelValidatorType = AssemblyScanResults.FirstOrDefault(i => interfaceValidatorType.IsAssignableFrom(i.InterfaceType))?.ValidatorType;
-
-        if (modelValidatorType is null)
-        {
-            return null;
-        }
-
-        return (IValidator)ActivatorUtilities.CreateInstance(serviceProvider, modelValidatorType);
     }
 
     private static FieldIdentifier ToFieldIdentifier(in EditContext editContext, in string propertyPath)

@@ -22,13 +22,14 @@
 
 @inject NavigationManager Navigation
 @inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi;
+@inject IValidator<RequestCreateReaderAccountDto> RequestCreateReaderAccountValidator;
 
 <FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())">
     <RegularSizeContent>
         <FluentStack Class="px-3" Orientation="Orientation.Vertical">
             <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitForm">
-                <FluentValidationValidator @ref="_fluentValidationValidator" DisableAssemblyScanning="@true" />
-                <TrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChanged"/>
+                <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestCreateReaderAccountValidator" />
+                <FormTrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChanged"/>
                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                     <FluentSpacer />
                     <FluentSpacer />
@@ -93,7 +94,7 @@
 {
     public const string ReaderAccountRegisterFormName = "ReaderAccountRegisterForm";
 
-    private FluentValidationValidator? _fluentValidationValidator;
+    private FormFluentValidationValidator? _fluentValidationValidator;
     private readonly RequestCreateReaderAccountDto _emptyState = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
 
     private string? Captcha { get; set; } = string.Empty;
@@ -130,7 +131,7 @@
 
     private async Task SubmitForm(EditContext editContext)
 	{
-        if (_fluentValidationValidator is default(FluentValidationValidator))
+        if (_fluentValidationValidator is default(FormFluentValidationValidator))
             return;
 
 		var success = await _fluentValidationValidator.ValidateAsync();

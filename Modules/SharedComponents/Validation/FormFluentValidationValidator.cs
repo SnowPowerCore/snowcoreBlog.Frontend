@@ -7,15 +7,12 @@ using snowcoreBlog.Frontend.SharedComponents.Extensions;
 
 namespace snowcoreBlog.Frontend.SharedComponents.Validation;
 
-public class FluentValidationValidator : ComponentBase
+public class FormFluentValidationValidator : ComponentBase
 {
-    [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
-
     [CascadingParameter] private EditContext? CurrentEditContext { get; set; }
 
-    [Parameter] public IValidator? Validator { get; set; }
-    [Parameter] public bool DisableAssemblyScanning { get; set; }
     [Parameter] public Action<ValidationStrategy<object>>? Options { get; set; }
+    [Parameter] public required IValidator Validator { get; set; }
     internal Action<ValidationStrategy<object>>? ValidateOptions { get; set; }
     internal Dictionary<FieldIdentifier, List<ValidationFailure>>? LastValidationResult { get; set; }
 
@@ -75,12 +72,12 @@ public class FluentValidationValidator : ComponentBase
     {
         if (CurrentEditContext == null)
         {
-            throw new InvalidOperationException($"{nameof(FluentValidationValidator)} requires a cascading " +
-                                                $"parameter of type {nameof(EditContext)}. For example, you can use {nameof(FluentValidationValidator)} " +
+            throw new InvalidOperationException($"{nameof(FormFluentValidationValidator)} requires a cascading " +
+                                                $"parameter of type {nameof(EditContext)}. For example, you can use {nameof(FormFluentValidationValidator)} " +
                                                 $"inside an {nameof(EditForm)}.");
         }
 
-        CurrentEditContext.AddFluentValidation(ServiceProvider, DisableAssemblyScanning, Validator, this);
+        CurrentEditContext.AddFluentValidation(Validator, this);
     }
 
     /// <summary>
