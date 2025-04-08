@@ -2,6 +2,7 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
 @using Microsoft.AspNetCore.Components.Forms
+@using System.Web
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Register;
 @using snowcoreBlog.Frontend.ReadersManagement.Resources
 @using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
@@ -40,4 +41,22 @@
 
 @code
 {
+    private DateTimeOffset VerificationTokenExpirationDate { get; set; } = DateTimeOffset.MinValue;
+
+    [SupplyParameterFromQuery]
+    private string Email { get; set; } = string.Empty;
+
+    [SupplyParameterFromQuery]
+    private string VerificationToken { get; set; } = string.Empty;
+
+    [SupplyParameterFromQuery(Name = nameof(VerificationTokenExpirationDate))]
+    private string VerificationTokenExpirationDateString
+    {
+        get => VerificationTokenExpirationDate.ToString();
+        set
+        {
+            var parsed = DateTimeOffset.TryParse(HttpUtility.UrlDecode(value), out var dtOffset);
+            VerificationTokenExpirationDate = parsed ? dtOffset : DateTimeOffset.MinValue;
+        }
+    }
 }
