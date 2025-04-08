@@ -40,8 +40,8 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddCascadingAuthenticationState();
         serviceCollection.AddScoped<AuthenticationStateProvider, BlogAuthStateProvider>();
         
-        serviceCollection.AddSingleton<IValidator<RequestCreateReaderAccountDto>, RequestCreateReaderAccountValidation>();
-        serviceCollection.AddSingleton<IValidator<RequestAssertionOptionsDto>, RequestAssertionOptionsValidation>();
+        serviceCollection.AddSingleton<IValidator<RequestCreateReaderAccountDto>, RequestCreateReaderAccountValidator>();
+        serviceCollection.AddSingleton<IValidator<RequestAssertionOptionsDto>, RequestAssertionOptionsValidator>();
         
         return serviceCollection;
     }
