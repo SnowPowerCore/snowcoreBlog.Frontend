@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using snowcoreBlog.Frontend.ClientShared.Extensions;
+using snowcoreBlog.Frontend.ClientShared.Handlers;
 
 namespace snowcoreBlog.Frontend.Client;
 
@@ -13,10 +14,9 @@ public class Program
             ValidateScopes = true,
             ValidateOnBuild = true
         }));
-        builder.Services.AddScoped(sp => new HttpClient
-        {
-            BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
-        });
+        builder.Services
+            .AddHttpClient(string.Empty, sp => sp.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+            .AddHttpMessageHandler<IncludeCookiesHandler>();
         builder.Services.AddClient();
 
         return builder.Build().RunAsync();

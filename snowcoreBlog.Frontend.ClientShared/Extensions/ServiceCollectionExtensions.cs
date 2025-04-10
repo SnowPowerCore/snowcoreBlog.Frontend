@@ -4,6 +4,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
+using snowcoreBlog.Frontend.ClientShared.Handlers;
 using snowcoreBlog.Frontend.Infrastructure.Extensions;
 using snowcoreBlog.Frontend.Infrastructure.Providers;
 using snowcoreBlog.Frontend.ReadersManagement.Extensions;
@@ -32,12 +33,14 @@ public static class ServiceCollectionExtensions
             ];
         });
         serviceCollection.AddWebAuthn();
-        serviceCollection.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options =>
-            options.WithBaseAddress("https://localhost/api/readers"));
+        serviceCollection.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options => options
+            .WithBaseAddress("https://localhost/api/readers")
+            .WithHttpMessageHandler<IncludeCookiesHandler>());
         serviceCollection.AddFluentUIComponents();
 
         serviceCollection.AddAuthorizationCore();
         serviceCollection.AddCascadingAuthenticationState();
+        serviceCollection.AddScoped<IncludeCookiesHandler>();
         serviceCollection.AddScoped<AuthenticationStateProvider, BlogAuthStateProvider>();
         
         serviceCollection.AddSingleton<IValidator<RequestCreateReaderAccountDto>, RequestCreateReaderAccountValidator>();
