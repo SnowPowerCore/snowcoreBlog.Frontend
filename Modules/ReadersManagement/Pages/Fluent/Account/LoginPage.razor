@@ -1,4 +1,5 @@
 ﻿@using Apizr
+@using BitzArt.Blazor.Auth
 @using Fido2NetLib
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
@@ -19,10 +20,11 @@
 @attribute [StreamRendering]
 @inherits TimeWarpStateComponent
 
-@inject NavigationManager Navigation
 @inject WebAuthn WebAuthn
-@inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi;
-@inject IValidator<RequestAssertionOptionsDto> RequestAssertionOptionsValidator;
+@inject NavigationManager Navigation
+@inject IUserService<LoginByAssertionDto> User
+@inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi
+@inject IValidator<RequestAssertionOptionsDto> RequestAssertionOptionsValidator
 
 <div class="h-100">
     <FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.Person())">
@@ -39,7 +41,7 @@
                             </div>
                         </Header>
                         <Content>
-                            <EditForm class="w-100" FormName="@ReaderAccountPasswordlessLoginFormName" Model="@PasswordlessLogin" OnSubmit="SubmitPasswordlessLoginForm">
+                            <EditForm class="w-100" FormName="@ReaderAccountPasswordlessLoginFormName" Model="@PasswordlessLogin" OnSubmit="SubmitPasswordlessLoginFormAsync">
                                 <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestAssertionOptionsValidator" />
                                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                     <FluentSpacer />
@@ -79,7 +81,7 @@
                             </div>
                         </Header>
                         <Content>
-                            <EditForm class="w-100" FormName="@ReaderAccountOneTimeCodeLoginFormName" Model="@PasswordlessLogin" OnSubmit="SubmitOneTimeCodeLoginForm">
+                            <EditForm class="w-100" FormName="@ReaderAccountOneTimeCodeLoginFormName" Model="@PasswordlessLogin" OnSubmit="SubmitOneTimeCodeLoginFormAsync">
                                 <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestAssertionOptionsValidator" />
                                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                     <FluentSpacer />
@@ -189,7 +191,7 @@
         Captcha = verifyArgs.Payload;
     }
 
-    private async Task SubmitPasswordlessLoginForm(EditContext editContext)
+    private async Task SubmitPasswordlessLoginFormAsync(EditContext editContext)
     {
         if (_fluentValidationValidator is default(FormFluentValidationValidator))
             return;
@@ -201,6 +203,7 @@
         if (string.IsNullOrEmpty(Captcha))
             return;
 
+        var tokenSource = new CancellationTokenSource();
         await WebAuthn.Init();
 
         var requestData = (RequestAssertionOptionsDto)editContext.Model;
@@ -210,23 +213,34 @@
             api.RequestAssertionOptions(requestData, antiforgery.RequestVerificationToken, opt));
 
         var data = response.ToData<AssertionOptions>(out var errors);
-        if (data is not default(AssertionOptions) && errors.Count == 0)
+        if (data is default(AssertionOptions) && errors.Count > 0)
+            return;
+            
+        var assertion = default(AuthenticatorAssertionRawResponse);
+        try
         {
-            try
-            {
-                // Present options to user and get response (usernameless users will be asked by their authenticator, which credential they want to use to sign the challenge)
-                var assertion = await WebAuthn.VerifyAsync(data);
+            // Present options to user and get response (usernameless users will be asked by their authenticator, which credential they want to use to sign the challenge)
+            assertion = await WebAuthn.VerifyAsync(data!);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        if (assertion is default(AuthenticatorAssertionRawResponse))
+            return;
 
-                // Send response to server
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+        var loginResult = await User.SignInAsync(new()
+        {
+            Email = requestData.Email,
+            AuthenticatorAssertion = assertion
+        }, tokenSource.Token);
+        if (loginResult.IsSuccess)
+        {
+            Navigation.NavigateTo("/", forceLoad: true);
         }
     }
 
-    private async Task SubmitOneTimeCodeLoginForm(EditContext editContext)
+    private async Task SubmitOneTimeCodeLoginFormAsync(EditContext editContext)
     {
         if (_fluentValidationValidator is default(FormFluentValidationValidator))
             return;

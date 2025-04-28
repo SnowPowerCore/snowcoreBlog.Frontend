@@ -31,10 +31,10 @@ partial class AntiforgeryState
                 var response = await _tokensApi.ExecuteAsync(static (opt, api) =>
                     api.GetAntiforgeryToken(opt));
                 var data = response.ToData<AntiforgeryResultDto>(out var errors);
-                if (data is not default(AntiforgeryResultDto) && errors.Count == 0)
-                {
-                    AntiforgeryState.RequestVerificationToken = data!.RequestToken!;
-                }
+                if (data is default(AntiforgeryResultDto) && errors.Count > 0)
+                    return;
+
+                AntiforgeryState.RequestVerificationToken = data!.RequestToken!;
             }
         }
     }

@@ -21,15 +21,15 @@
 @inherits TimeWarpStateComponent
 
 @inject NavigationManager Navigation
-@inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi;
-@inject IValidator<RequestCreateReaderAccountDto> RequestCreateReaderAccountValidator;
+@inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi
+@inject IValidator<RequestCreateReaderAccountDto> RequestCreateReaderAccountValidator
 
 <FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())">
     <RegularSizeContent>
         <FluentStack Class="px-3" Orientation="Orientation.Vertical">
-            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitForm">
+            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitFormAsync">
                 <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestCreateReaderAccountValidator" />
-                <FormTrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChanged"/>
+                <FormTrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChangedAsync"/>
                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                     <FluentSpacer />
                     <FluentSpacer />
@@ -117,7 +117,7 @@
         }
     }
 
-    private Task OnRegisterFormFieldChanged(FieldChangedEventArgs? e)
+    private Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
     {
         var createNewAccountState = GetState<RegisterState>();
         _ = createNewAccountState.SetCurrentInput(CreateNewAccount);
@@ -129,7 +129,7 @@
         Captcha = verifyArgs.Payload;
     }
 
-    private async Task SubmitForm(EditContext editContext)
+    private async Task SubmitFormAsync(EditContext editContext)
 	{
         if (_fluentValidationValidator is default(FormFluentValidationValidator))
             return;
