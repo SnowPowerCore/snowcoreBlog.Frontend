@@ -1,8 +1,10 @@
 ﻿@using Apizr
+@using Fido2NetLib
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Web
+@using snowcoreBlog.Frontend.Infrastructure.Protocol
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Register;
 @using snowcoreBlog.Frontend.ReadersManagement.Resources
 @using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
@@ -18,19 +20,23 @@
 @inherits TimeWarpStateComponent
 
 @inject NavigationManager Navigation
+@inject WebAuthn WebAuthn
+@inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi
+@inject IValidator<RequestAttestationOptionsDto> RequestAttestationOptionsValidator
+@inject IValidator<ConfirmCreateReaderAccountDto> ConfirmCreateReaderAccountValidator
 
-<FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.CheckboxPerson())">
+<FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.LockClosed())">
     <RegularSizeContent>
         <FluentStack Class="px-3" Orientation="Orientation.Vertical">
             <FluentSpacer />
             <FluentSpacer />
             <FluentStack Orientation="Orientation.Vertical"
                 HorizontalAlignment="HorizontalAlignment.Center">
-                <FluentRandomIdIcon Width="48px" Value="@(new CheckmarkIcon())" />
+                <FluentRandomIdIcon Width="48px" Value="@(new InformationIcon())" />
                 <FluentSpacer />
                 <FluentLabel Alignment="HorizontalAlignment.Center">To finish the registration you need to set a passkey on your device.</FluentLabel>
                 <FluentSpacer />
-                <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Class="align-self-center" Appearance="Appearance.Neutral">
+                <FluentButton OnClick="@CreatePasskeyAsync" Class="align-self-center" Appearance="Appearance.Neutral">
                     Continue
                 </FluentButton>
             </FluentStack>
@@ -43,11 +49,25 @@
 {
     private DateTimeOffset VerificationTokenExpirationDate { get; set; } = DateTimeOffset.MinValue;
 
-    [SupplyParameterFromQuery]
-    private string Email { get; set; } = string.Empty;
+    private RequestAttestationOptionsDto PasswordlessRegistration { get; set; } = new()
+    {
+        Email = string.Empty,
+        VerificationToken = string.Empty
+    };
 
     [SupplyParameterFromQuery]
-    private string VerificationToken { get; set; } = string.Empty;
+    private string Email
+    {
+        get => PasswordlessRegistration.Email;
+        set => PasswordlessRegistration.Email = value;
+    }
+
+    [SupplyParameterFromQuery]
+    private string VerificationToken
+    {
+        get => PasswordlessRegistration.VerificationToken;
+        set => PasswordlessRegistration.VerificationToken = value;
+    }
 
     [SupplyParameterFromQuery(Name = nameof(VerificationTokenExpirationDate))]
     private string VerificationTokenExpirationDateString
@@ -58,5 +78,45 @@
             var parsed = DateTimeOffset.TryParse(HttpUtility.UrlDecode(value), out var dtOffset);
             VerificationTokenExpirationDate = parsed ? dtOffset : DateTimeOffset.MinValue;
         }
+    }
+
+    private async Task CreatePasskeyAsync()
+    {
+        var tokenSource = new CancellationTokenSource();
+
+        if (VerificationTokenExpirationDate > DateTimeOffset.UtcNow)
+            return;
+
+        var attestationOptionsSuccess = await RequestAttestationOptionsValidator.ValidateAsync(PasswordlessRegistration, tokenSource.Token);
+        if (!attestationOptionsSuccess.IsValid)
+            return;
+        await WebAuthn.Init();
+
+        var antiforgery = GetState<AntiforgeryState>();
+
+        var attestationResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
+            api.RequestAttestationOptions(PasswordlessRegistration, antiforgery.RequestVerificationToken, opt));
+        var attestationData = attestationResponse.ToData<CredentialCreateOptions>(out var attestationErrors);
+        if (attestationData is default(CredentialCreateOptions) && attestationErrors.Count > 0)
+            return;
+
+        var confirmAccountCreation = new ConfirmCreateReaderAccountDto
+        {
+            Email = PasswordlessRegistration.Email,
+            VerificationToken = PasswordlessRegistration.VerificationToken,
+            AuthenticatorAttestation = await WebAuthn.CreateCredsAsync(attestationData!)
+        };
+    
+        var confirmAccountCreationSuccess = await ConfirmCreateReaderAccountValidator.ValidateAsync(confirmAccountCreation, tokenSource.Token);
+        if (!confirmAccountCreationSuccess.IsValid)
+            return;
+
+        var createAccountResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
+            api.ConfirmCreateByEmail(confirmAccountCreation, antiforgery.RequestVerificationToken, opt));
+        var createAccountData = createAccountResponse.ToData<ReaderAccountCreatedDto>(out var createAccountErrors);
+        if (createAccountData is default(ReaderAccountCreatedDto) && createAccountErrors.Count > 0)
+            return;
+
+        Navigation.NavigateTo("/login");
     }
 }
