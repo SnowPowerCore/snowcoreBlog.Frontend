@@ -59,14 +59,14 @@
     private string Email
     {
         get => PasswordlessRegistration.Email;
-        set => PasswordlessRegistration.Email = value;
+        set => PasswordlessRegistration.Email = HttpUtility.UrlDecode(value);
     }
 
     [SupplyParameterFromQuery]
     private string VerificationToken
     {
         get => PasswordlessRegistration.VerificationToken;
-        set => PasswordlessRegistration.VerificationToken = value;
+        set => PasswordlessRegistration.VerificationToken = HttpUtility.UrlDecode(value);
     }
 
     [SupplyParameterFromQuery(Name = nameof(VerificationTokenExpirationDate))]
@@ -84,7 +84,7 @@
     {
         var tokenSource = new CancellationTokenSource();
 
-        if (VerificationTokenExpirationDate > DateTimeOffset.UtcNow)
+        if (VerificationTokenExpirationDate <= DateTimeOffset.UtcNow)
             return;
 
         var attestationOptionsSuccess = await RequestAttestationOptionsValidator.ValidateAsync(PasswordlessRegistration, tokenSource.Token);
