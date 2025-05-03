@@ -1,12 +1,10 @@
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using FluentValidation;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
 using snowcoreBlog.Frontend.ClientShared.Handlers;
 using snowcoreBlog.Frontend.Infrastructure.Extensions;
-using snowcoreBlog.Frontend.Infrastructure.Providers;
 using snowcoreBlog.Frontend.ReadersManagement.Extensions;
 using snowcoreBlog.Frontend.SharedComponents.Extensions;
 using snowcoreBlog.PublicApi.Api;
@@ -41,10 +39,11 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddAuthorizationCore();
         serviceCollection.AddCascadingAuthenticationState();
         serviceCollection.AddScoped<IncludeCookiesHandler>();
-        serviceCollection.AddScoped<AuthenticationStateProvider, BlogAuthStateProvider>();
         
         serviceCollection.AddSingleton<IValidator<RequestCreateReaderAccountDto>, RequestCreateReaderAccountValidator>();
         serviceCollection.AddSingleton<IValidator<RequestAssertionOptionsDto>, RequestAssertionOptionsValidator>();
+        serviceCollection.AddSingleton<IValidator<RequestAttestationOptionsDto>, RequestAttestationOptionsValidator>();
+        serviceCollection.AddSingleton<IValidator<ConfirmCreateReaderAccountDto>, ConfirmCreateReaderAccountValidator>();
         
         return serviceCollection;
     }

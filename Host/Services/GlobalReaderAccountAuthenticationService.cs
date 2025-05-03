@@ -38,19 +38,17 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
         if (antiforgeryState is default(AntiforgeryState))
             return AuthenticationResult.Failure("No antiforgery token");
 
-        var captchaResponse = await _tokensApi.ExecuteAsync(static (opt, api) =>
-            api.GetAltchaChallenge(opt));
-        var captchaData = captchaResponse.ToData<AltchaChallenge>(out var captchaErrors);
-        if (captchaData is default(AltchaChallenge) || captchaErrors.Count > 0)
-            return AuthenticationResult.Failure(captchaErrors.FirstOrDefault());
+        var captchaResponse = await _tokensApi.ExecuteAsync(static (opt, api) => api.GetAltchaChallenge(opt));
+        if (!captchaResponse.IsSuccess)
+            return AuthenticationResult.Failure(captchaResponse.Exception?.Message);
 
-        var solverResult = _altchaSolver.Solve(captchaData);
+        var solverResult = _altchaSolver.Solve(captchaResponse.Result);
         if (!solverResult.Success)
             return AuthenticationResult.Failure(solverResult.Error.Message);
 
         var loginResponse = await _readerAccountApi.ExecuteAsync((opt, api) =>
             api.LoginByAssertion(signInPayload, antiforgeryState.RequestVerificationToken, solverResult.Altcha, opt));
-        var loginData = captchaResponse.ToData<LoginByAssertionResultDto>(out var loginErrors);
+        var loginData = loginResponse.ToData<LoginByAssertionResultDto>(out var loginErrors);
         if (loginData is default(LoginByAssertionResultDto) || loginErrors.Count > 0)
             return AuthenticationResult.Failure(loginErrors.FirstOrDefault());
 
