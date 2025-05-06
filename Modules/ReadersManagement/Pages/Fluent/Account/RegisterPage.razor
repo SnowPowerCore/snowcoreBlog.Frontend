@@ -117,11 +117,11 @@
         }
     }
 
-    private Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
+    private async Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
     {
-        var createNewAccountState = GetState<RegisterState>();
-        _ = createNewAccountState.SetCurrentInput(CreateNewAccount);
-        return Task.CompletedTask;
+        using var tokenSource = new CancellationTokenSource();
+        using var createNewAccountState = GetState<RegisterState>();
+        await createNewAccountState.SetCurrentInput(CreateNewAccount, tokenSource.Token);
     }
 
     private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
@@ -142,16 +142,18 @@
             return;
 
         var requestData = (RequestCreateReaderAccountDto)editContext.Model;
-        var antiforgery = GetState<AntiforgeryState>();
+        using var antiforgery = GetState<AntiforgeryState>();
+            
+        using var tokenSource = new CancellationTokenSource();
 
-        var response = await ReaderAccountApi.ExecuteAsync((opt, api) =>
-            api.RequestCreateByEmail(requestData, antiforgery.RequestVerificationToken, Captcha, opt));
+        using var response = await ReaderAccountApi.ExecuteAsync((opt, api) =>
+            api.RequestCreateByEmail(requestData, antiforgery.RequestVerificationToken, Captcha, opt), o => o.WithCancellation(tokenSource.Token));
         var data = response.ToData<RequestReaderAccountCreationResultDto>(out var errors);
         if (data is not default(RequestReaderAccountCreationResultDto)
             && data.Id != Guid.Empty
             && errors.Count == 0)
         {
-            await GetState<RegisterState>().SetCurrentInput(_emptyState);
+            await GetState<RegisterState>().SetCurrentInput(_emptyState, tokenSource.Token);
             Navigation.NavigateTo("/register/info/confirm");
         }
 	}

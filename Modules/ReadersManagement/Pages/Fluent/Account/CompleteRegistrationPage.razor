@@ -4,6 +4,8 @@
 @using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Web
+@using System.Text.Json
+@using snowcoreBlog.Frontend.Infrastructure.Context
 @using snowcoreBlog.Frontend.Infrastructure.Protocol
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Register;
 @using snowcoreBlog.Frontend.ReadersManagement.Resources
@@ -47,6 +49,8 @@
 
 @code
 {
+    private readonly JsonSerializerOptions _jsonOptions = new FidoBlazorSerializerContext().Options;
+
     private DateTimeOffset VerificationTokenExpirationDate { get; set; } = DateTimeOffset.MinValue;
 
     private RequestAttestationOptionsDto PasswordlessRegistration { get; set; } = new()
@@ -82,38 +86,58 @@
 
     private async Task CreatePasskeyAsync()
     {
-        var tokenSource = new CancellationTokenSource();
-
         if (VerificationTokenExpirationDate <= DateTimeOffset.UtcNow)
             return;
+
+        using var tokenSource = new CancellationTokenSource();
 
         var attestationOptionsSuccess = await RequestAttestationOptionsValidator.ValidateAsync(PasswordlessRegistration, tokenSource.Token);
         if (!attestationOptionsSuccess.IsValid)
             return;
+
         await WebAuthn.Init();
 
-        var antiforgery = GetState<AntiforgeryState>();
+        using var antiforgery = GetState<AntiforgeryState>();
 
-        var attestationResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
-            api.RequestAttestationOptions(PasswordlessRegistration, antiforgery.RequestVerificationToken, opt));
-        var attestationData = attestationResponse.ToData<CredentialCreateOptions>(out var attestationErrors);
+        using var attestationResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
+            api.RequestAttestationOptions(PasswordlessRegistration, antiforgery.RequestVerificationToken, opt), o => o.WithCancellation(tokenSource.Token));
+        var attestationData = attestationResponse.ToData<CredentialCreateOptions>(out var attestationErrors, _jsonOptions);
         if (attestationData is default(CredentialCreateOptions) && attestationErrors.Count > 0)
             return;
 
-        var confirmAccountCreation = new ConfirmCreateReaderAccountDto
+        var confirmAccountCreation = default(ConfirmCreateReaderAccountDto);
+
+        try
         {
-            Email = PasswordlessRegistration.Email,
-            VerificationToken = PasswordlessRegistration.VerificationToken,
-            AuthenticatorAttestation = await WebAuthn.CreateCredsAsync(attestationData!)
-        };
+            // Present options to user and get response, then initialize variable
+            confirmAccountCreation = new ConfirmCreateReaderAccountDto
+            {
+                Email = PasswordlessRegistration.Email,
+                VerificationToken = PasswordlessRegistration.VerificationToken,
+                AuthenticatorAttestation = await WebAuthn.CreateCredsAsync(attestationData!)
+            };
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            var errorMessage = e.Message;
+            if (attestationData?.ExcludeCredentials?.Count > 0)
+            {
+                errorMessage += " (You may have already registered this device)";
+            }
+            return;
+        }
+
+        if (confirmAccountCreation is default(ConfirmCreateReaderAccountDto))
+            return;
     
         var confirmAccountCreationSuccess = await ConfirmCreateReaderAccountValidator.ValidateAsync(confirmAccountCreation, tokenSource.Token);
         if (!confirmAccountCreationSuccess.IsValid)
             return;
-
-        var createAccountResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
-            api.ConfirmCreateByEmail(confirmAccountCreation, antiforgery.RequestVerificationToken, opt));
-        var createAccountData = createAccountResponse.ToData<ReaderAccountCreatedDto>(out var createAccountErrors);
+            
+        using var createAccountResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
+            api.ConfirmCreateByEmail(confirmAccountCreation, antiforgery.RequestVerificationToken, opt), o => o.WithCancellation(tokenSource.Token));
+        var createAccountData = createAccountResponse.ToData<ReaderAccountCreatedDto>(out var createAccountErrors, _jsonOptions);
         if (createAccountData is default(ReaderAccountCreatedDto) && createAccountErrors.Count > 0)
             return;
 

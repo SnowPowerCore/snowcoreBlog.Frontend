@@ -34,7 +34,7 @@
 
         if (firstRender)
         {
-            var antiforgery = GetState<AntiforgeryState>();
+            using var antiforgery = GetState<AntiforgeryState>();
             await antiforgery.GetAndSetRequestVerificationToken();
         }
     }

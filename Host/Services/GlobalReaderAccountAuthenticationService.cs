@@ -34,11 +34,11 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
 
     public override async Task<AuthenticationResult> SignInAsync(LoginByAssertionDto signInPayload, CancellationToken cancellationToken = default)
     {
-        var antiforgeryState = _store.GetState<AntiforgeryState>();
+        using var antiforgeryState = _store.GetState<AntiforgeryState>();
         if (antiforgeryState is default(AntiforgeryState))
             return AuthenticationResult.Failure("No antiforgery token");
 
-        var captchaResponse = await _tokensApi.ExecuteAsync(static (opt, api) => api.GetAltchaChallenge(opt));
+        using var captchaResponse = await _tokensApi.ExecuteAsync(static (opt, api) => api.GetAltchaChallenge(opt), o => o.WithCancellation(cancellationToken));
         if (!captchaResponse.IsSuccess)
             return AuthenticationResult.Failure(captchaResponse.Exception?.Message);
 
@@ -46,8 +46,8 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
         if (!solverResult.Success)
             return AuthenticationResult.Failure(solverResult.Error.Message);
 
-        var loginResponse = await _readerAccountApi.ExecuteAsync((opt, api) =>
-            api.LoginByAssertion(signInPayload, antiforgeryState.RequestVerificationToken, solverResult.Altcha, opt));
+        using var loginResponse = await _readerAccountApi.ExecuteAsync((opt, api) =>
+            api.LoginByAssertion(signInPayload, antiforgeryState.RequestVerificationToken, solverResult.Altcha, opt), o => o.WithCancellation(cancellationToken));
         var loginData = loginResponse.ToData<LoginByAssertionResultDto>(out var loginErrors);
         if (loginData is default(LoginByAssertionResultDto) || loginErrors.Count > 0)
             return AuthenticationResult.Failure(loginErrors.FirstOrDefault());
