@@ -3,7 +3,9 @@ using Blazored.SessionStorage;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Refit;
 using snowcoreBlog.Frontend.ClientShared.Handlers;
+using snowcoreBlog.Frontend.Infrastructure.Context;
 using snowcoreBlog.Frontend.Infrastructure.Extensions;
 using snowcoreBlog.Frontend.ReadersManagement.Extensions;
 using snowcoreBlog.Frontend.SharedComponents.Extensions;
@@ -18,6 +20,12 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddClient(this IServiceCollection serviceCollection)
     {
+        var serializerOptions = SystemTextJsonContentSerializer.GetDefaultJsonSerializerOptions();
+        foreach (var converter in FidoBlazorSerializerContext.Default.Options.Converters)
+        {
+            serializerOptions.Converters.Insert(0, converter);
+        }
+        
         serviceCollection.AddReadersManagement();
         serviceCollection.AddSharedComponents();
         serviceCollection.AddBlazoredLocalStorage();
@@ -33,6 +41,10 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddWebAuthn();
         serviceCollection.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/readers")
+            .WithRefitSettings(new RefitSettings
+            {
+                ContentSerializer = new SystemTextJsonContentSerializer(serializerOptions)
+            })
             .WithHttpMessageHandler<IncludeCookiesHandler>());
         serviceCollection.AddFluentUIComponents();
 

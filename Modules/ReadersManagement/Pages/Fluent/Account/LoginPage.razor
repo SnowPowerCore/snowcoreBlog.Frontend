@@ -203,14 +203,15 @@
         if (string.IsNullOrEmpty(Captcha))
             return;
 
-        var tokenSource = new CancellationTokenSource();
         await WebAuthn.Init();
 
         var requestData = (RequestAssertionOptionsDto)editContext.Model;
-        var antiforgery = GetState<AntiforgeryState>();
+        using var antiforgery = GetState<AntiforgeryState>();
+
+        using var tokenSource = new CancellationTokenSource();
         
-        var response = await ReaderAccountApi.ExecuteAsync((opt, api) =>
-            api.RequestAssertionOptions(requestData, antiforgery.RequestVerificationToken, opt));
+        using var response = await ReaderAccountApi.ExecuteAsync((opt, api) =>
+            api.RequestAssertionOptions(requestData, antiforgery.RequestVerificationToken, opt), o => o.WithCancellation(tokenSource.Token));
 
         var data = response.ToData<AssertionOptions>(out var errors);
         if (data is default(AssertionOptions) && errors.Count > 0)
