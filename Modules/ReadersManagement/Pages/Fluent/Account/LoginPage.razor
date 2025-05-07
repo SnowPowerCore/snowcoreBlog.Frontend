@@ -218,6 +218,7 @@
             return;
             
         var assertion = default(AuthenticatorAssertionRawResponse);
+        
         try
         {
             // Present options to user and get response (usernameless users will be asked by their authenticator, which credential they want to use to sign the challenge)
@@ -227,6 +228,7 @@
         {
             Console.WriteLine(e);
         }
+
         if (assertion is default(AuthenticatorAssertionRawResponse))
             return;
 
