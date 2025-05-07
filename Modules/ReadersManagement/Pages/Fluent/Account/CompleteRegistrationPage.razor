@@ -109,7 +109,7 @@
 
         try
         {
-            // Present options to user and get response, then initialize variable
+            // WebAutnn will present a native OS dialog here
             confirmAccountCreation = new ConfirmCreateReaderAccountDto
             {
                 Email = PasswordlessRegistration.Email,
@@ -137,7 +137,7 @@
             
         using var createAccountResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
             api.ConfirmCreateByEmail(confirmAccountCreation, antiforgery.RequestVerificationToken, opt), o => o.WithCancellation(tokenSource.Token));
-        var createAccountData = createAccountResponse.ToData<ReaderAccountCreatedDto>(out var createAccountErrors, _jsonOptions);
+        var createAccountData = createAccountResponse.ToData<ReaderAccountCreatedDto>(out var createAccountErrors);
         if (createAccountData is default(ReaderAccountCreatedDto) && createAccountErrors.Count > 0)
             return;
 
