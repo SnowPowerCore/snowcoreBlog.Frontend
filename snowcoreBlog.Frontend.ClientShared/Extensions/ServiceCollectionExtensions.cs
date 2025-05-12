@@ -45,6 +45,8 @@ public static class ServiceCollectionExtensions
             {
                 ContentSerializer = new SystemTextJsonContentSerializer(serializerOptions)
             })
+            .WithRequestTimeout(TimeSpan.FromMinutes(1))
+            .WithOperationTimeout(TimeSpan.FromMinutes(3))
             .WithHttpMessageHandler<IncludeCookiesHandler>());
         serviceCollection.AddFluentUIComponents();
 
