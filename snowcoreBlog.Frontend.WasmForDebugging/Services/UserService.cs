@@ -20,7 +20,7 @@ public class UserService(IApizrManager<IReaderAccountManagementApi> readerAccoun
         var data = response.ToData<AuthenticationStateDto>(out var errors);
         if (data is default(AuthenticationStateDto) && errors.Count > 0)
             return new AuthenticationState(new ClaimsPrincipal());
-        return new AuthenticationState(data!.User);
+        return new AuthenticationState(new(new ClaimsIdentity(data!.Claims.Select(x => new Claim(x.Key, x.Value)))));
     }
 
     public Task SignOutAsync(CancellationToken cancellationToken = default)
