@@ -107,6 +107,11 @@
         CreateNewAccount = _emptyState;
     }
 
+    protected override void OnParametersSet()
+    {
+        CreateNewAccount ??= _emptyState;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
