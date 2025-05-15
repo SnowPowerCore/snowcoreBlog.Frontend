@@ -186,6 +186,11 @@
         PasswordlessLogin = _emptyState;
     }
 
+    protected override void OnParametersSet()
+    {
+        PasswordlessLogin ??= _emptyState;
+    }
+
     private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
     {
         Captcha = verifyArgs.Payload;
