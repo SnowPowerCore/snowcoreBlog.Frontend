@@ -1,6 +1,7 @@
 html,
 body {
-    font-family: 'Cascadia Mono', Arial, sans-serif;
+    height: 100%;
+    font-family: 'Source Sans 3', 'Aptos', 'SF Pro', 'Ubuntu Sans', sans-serif;
 }
 
 h1:focus {

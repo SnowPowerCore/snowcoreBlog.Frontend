@@ -4,6 +4,8 @@
 
 @inherits LayoutComponentBase
 
+@inject BodyFont BodyFont
+
 <FluentDesignTheme Mode="DesignThemeModes.Dark" StorageName="theme" />
 <FluentToastProvider />
 <FluentDialogProvider />
@@ -12,7 +14,7 @@
 <FluentMenuProvider />
 
 <div class="root-layout-item">
-    <FluentLayout>
+    <FluentLayout @ref="_root">
         <AuthorizeView>
             <Authorized>
                 <main>
@@ -59,3 +61,18 @@
         </AuthorizeView>
     </FluentLayout>
 </div>
+
+@code
+{
+    private FluentLayout _root = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        
+        if (firstRender)
+        {
+            await BodyFont.SetValueFor(_root.Element, "Source Sans 3");
+        }
+    }
+}
