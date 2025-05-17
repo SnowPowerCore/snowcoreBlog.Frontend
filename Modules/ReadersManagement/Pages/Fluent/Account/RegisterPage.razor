@@ -33,30 +33,29 @@
                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                     <FluentSpacer />
                     <FluentSpacer />
-                    <FluentTextField InputMode="InputMode.Email" Name="email" Label="Email" @bind-Value=@CreateNewAccount.Email Required />
+                    <FluentTextField InputMode="InputMode.Email" Name="email" Label="@TranslationResources.EmailFieldLabel" @bind-Value=@CreateNewAccount.Email Required />
                     <FluentValidationMessage For=@(() => CreateNewAccount.Email) />
                     <FluentSpacer />
-                    <FluentTextField Name="firstName" Label="First Name" @bind-Value=@CreateNewAccount.FirstName Required />
+                    <FluentTextField Name="firstName" Label="@TranslationResources.FirstNameFieldLabel" @bind-Value=@CreateNewAccount.FirstName Required />
                     <FluentValidationMessage For=@(() => CreateNewAccount.FirstName) />
                     <FluentSpacer />
-                    <FluentTextField Name="lastName" Label="Last Name" @bind-Value=@CreateNewAccount.LastName />
+                    <FluentTextField Name="lastName" Label="@TranslationResources.LastNameFieldLabel" @bind-Value=@CreateNewAccount.LastName />
                     <FluentValidationMessage For=@(() => CreateNewAccount.LastName) />
                     <FluentSpacer />
-                    <FluentTextField Name="nickName" Label="Nick Name" @bind-Value=@CreateNewAccount.NickName Required />
+                    <FluentTextField Name="nickName" Label="@TranslationResources.NickNameFieldLabel" @bind-Value=@CreateNewAccount.NickName Required />
                     <FluentValidationMessage For=@(() => CreateNewAccount.NickName) />
                     <FluentSpacer />
-                    <FluentTextField InputMode="InputMode.Telephone" Name="phoneNumber" Label="Phone Number" @bind-Value=@CreateNewAccount.PhoneNumber />
+                    <FluentTextField InputMode="InputMode.Telephone" Name="phoneNumber" Label="@TranslationResources.PhoneNumberFieldLabel" @bind-Value=@CreateNewAccount.PhoneNumber />
                     <FluentValidationMessage For=@(() => CreateNewAccount.PhoneNumber) />
                     <FluentSpacer />
                     <FluentCheckbox @bind-Value="@CreateNewAccount.InitialEmailConsent" Required>
-                        I allow necessary emails to be delivered to my email<br/>(you will later have an option to change email preferences).
+                        @TranslationResources.InitialEmailConsentInfoLabel1<br/>@TranslationResources.InitialEmailConsentInfoLabel2
                     </FluentCheckbox>
                     <FluentValidationMessage For=@(() => CreateNewAccount.InitialEmailConsent) />
                     <FluentCheckbox @bind-Value="@CreateNewAccount.ConfirmedAgreement" Required>
-                        I agree with the <FluentAnchor
+                        @TranslationResources.ConfirmedAgreementInfoLabel1<FluentAnchor
                             Id="termsAndConditionsInfo" Appearance="Appearance.Hypertext"
-                            Href="javascript: void(0);">Terms &
-                            Conditions</FluentAnchor> document.
+                            Href="javascript: void(0);">@TranslationResources.ConfirmedAgreementInfoLabel2</FluentAnchor>@TranslationResources.ConfirmedAgreementInfoLabel3
                     </FluentCheckbox>
                     <FluentValidationMessage For=@(() => CreateNewAccount.ConfirmedAgreement) />
                     <FluentSpacer />
@@ -65,7 +64,7 @@
                         OnVerified="HandleOnVerified"/>
                     <FluentSpacer />
                     <FluentButton Class="align-self-end" Type="ButtonType.Submit"
-                        Appearance="Appearance.Accent">Register
+                        Appearance="Appearance.Accent">@TranslationResources.RegisterButtonLabel
                     </FluentButton>
                 </FluentStack>
             </EditForm>
@@ -78,11 +77,11 @@
                 VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
                 <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
                 <FluentSpacer Width="5" />
-                <FluentLabel>If you already have an account, you can login.</FluentLabel>
+                <FluentLabel>@TranslationResources.LoginPromptLabel</FluentLabel>
             </FluentStack>
             <FluentSpacer />
             <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Class="align-self-end" Appearance="Appearance.Neutral">
-                Login
+                @TranslationResources.LoginButtonLabel
             </FluentButton>
             <FluentSpacer />
             <FluentSpacer />
