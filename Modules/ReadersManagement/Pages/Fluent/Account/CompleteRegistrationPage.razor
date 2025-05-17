@@ -36,10 +36,10 @@
                 HorizontalAlignment="HorizontalAlignment.Center">
                 <FluentRandomIdIcon Width="48px" Value="@(new InformationIcon())" />
                 <FluentSpacer />
-                <FluentLabel Alignment="HorizontalAlignment.Center">To finish the registration you need to set a passkey on your device.</FluentLabel>
+                <FluentLabel Alignment="HorizontalAlignment.Center">@TranslationResources.CompleteRegistrationInfoLabel</FluentLabel>
                 <FluentSpacer />
                 <FluentButton OnClick="@CreatePasskeyAsync" Class="align-self-center" Appearance="Appearance.Neutral">
-                    Continue
+                    @TranslationResources.ContinueButtonLabel
                 </FluentButton>
             </FluentStack>
             <FluentSpacer />

@@ -27,10 +27,10 @@
                 HorizontalAlignment="HorizontalAlignment.Center">
                 <FluentRandomIdIcon Width="48px" Value="@(new CheckmarkIcon())" />
                 <FluentSpacer />
-                <FluentLabel Alignment="HorizontalAlignment.Center">Your account has been registered. <br/>To continue, check your inbox and click the link in the email.</FluentLabel>
+                <FluentLabel Alignment="HorizontalAlignment.Center">@TranslationResources.RegisterStepOneCompleteLabel1<br/>@TranslationResources.RegisterStepOneCompleteLabel2</FluentLabel>
                 <FluentSpacer />
                 <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Class="align-self-center" Appearance="Appearance.Neutral">
-                    Login
+                    @TranslationResources.LoginButtonLabel
                 </FluentButton>
             </FluentStack>
             <FluentSpacer />
