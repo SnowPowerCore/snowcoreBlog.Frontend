@@ -53,8 +53,8 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
             return AuthenticationResult.Failure(loginErrors.FirstOrDefault());
 
         var responseCookies = _managedCookieContainer.GetAllCookies()?.Where(x => x.HttpOnly);
-        var accessTokenCookie = responseCookies.FirstOrDefault(x => string.Equals(x.Name, ".DotNet.Application.User.SystemKey", StringComparison.OrdinalIgnoreCase));
-        var refreshTokenCookie = responseCookies.FirstOrDefault(x => string.Equals(x.Name, ".DotNet.Application.User.SystemUpdateKey", StringComparison.OrdinalIgnoreCase));
+        var accessTokenCookie = responseCookies?.FirstOrDefault(x => string.Equals(x.Name, ".DotNet.Application.User.SystemKey", StringComparison.OrdinalIgnoreCase));
+        var refreshTokenCookie = responseCookies?.FirstOrDefault(x => string.Equals(x.Name, ".DotNet.Application.User.SystemUpdateKey", StringComparison.OrdinalIgnoreCase));
 
         if (accessTokenCookie is default(Cookie) || refreshTokenCookie is default(Cookie))
             return AuthenticationResult.Failure("No cookie");

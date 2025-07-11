@@ -28,12 +28,10 @@ public class RandomIdIcon : IconInfo
     /// <param name="formattableSvg">Svg string with {0} in each node id of defs and references. A random string will be attached to the id using this class.</param>
     public RandomIdIcon(string name, IconVariant variant, IconSize size, string formattableSvg)
     {
-        var randId = GetHashCode().ToString();
-
         Name = name;
         Variant = variant;
         Size = size;
-        Content = string.Format(formattableSvg, randId);
+        Content = string.Format(formattableSvg, GetHashCode().ToString());
     }
 
     /// <summary>
