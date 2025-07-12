@@ -29,7 +29,7 @@
                 <main>
                     <FluentStack Class="h-100" VerticalGap="0" Orientation="Orientation.Vertical"
                         HorizontalAlignment="HorizontalAlignment.Stretch">
-                        <GeneralNonAuthHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="/Login" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty)
+                        <GeneralNonAuthHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="/Login" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
                             {
                                 ["Home"] = "home",
                                 ["Blog"] = "blog",
@@ -45,7 +45,7 @@
             <Authorizing>
                 <main>
                     <FluentStack Orientation="Orientation.Vertical">
-                        <GeneralNonAuthHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="/Login" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty)
+                        <GeneralNonAuthHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="/Login" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
                             {
                                 ["Home"] = "home",
                                 ["Blog"] = "blog",

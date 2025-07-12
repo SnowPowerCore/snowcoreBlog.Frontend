@@ -42,7 +42,7 @@
     public string Title { get; set; } = string.Empty;
 
     [Parameter]
-    public DictionaryWithDefault<string, string> NavLinks { get; set; } = new(defaultValue: string.Empty);
+    public DictionaryWithDefault<string, string> NavLinks { get; set; } = new(defaultValue: string.Empty, 0);
 
     [Parameter]
     public required string AccountLink { get; set; }
