@@ -96,6 +96,8 @@
     private FormFluentValidationValidator? _fluentValidationValidator;
     private readonly RequestCreateReaderAccountDto _emptyState = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
 
+    private RegisterState RegisterState => GetState<RegisterState>();
+
     private string? Captcha { get; set; } = string.Empty;
 
     [SupplyParameterFromForm(FormName = ReaderAccountRegisterFormName)]
@@ -117,16 +119,12 @@
 
         if (firstRender)
         {
-            CreateNewAccount = GetState<RegisterState>().CurrentModel;
+            CreateNewAccount = RegisterState.CurrentModel;
         }
     }
 
-    private async Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
-    {
-        using var tokenSource = new CancellationTokenSource();
-        using var createNewAccountState = GetState<RegisterState>();
-        await createNewAccountState.SetCurrentInput(CreateNewAccount, tokenSource.Token);
-    }
+    private Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e) =>
+        RegisterState.SetCurrentInput(CreateNewAccount);
 
     private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
     {
@@ -134,11 +132,11 @@
     }
 
     private async Task SubmitFormAsync(EditContext editContext)
-	{
+    {
         if (_fluentValidationValidator is default(FormFluentValidationValidator))
             return;
 
-		var success = await _fluentValidationValidator.ValidateAsync();
+        var success = await _fluentValidationValidator.ValidateAsync();
         if (!success)
             return;
 
@@ -147,7 +145,7 @@
 
         var requestData = (RequestCreateReaderAccountDto)editContext.Model;
         using var antiforgery = GetState<AntiforgeryState>();
-            
+
         using var tokenSource = new CancellationTokenSource();
 
         using var response = await ReaderAccountApi.ExecuteAsync((opt, api) =>
@@ -157,8 +155,8 @@
             && data.Id != Guid.Empty
             && errors.Count == 0)
         {
-            await GetState<RegisterState>().SetCurrentInput(_emptyState, tokenSource.Token);
+            await RegisterState.SetCurrentInput(_emptyState);
             Navigation.NavigateTo("/register/info/confirm");
         }
-	}
+    }
 }
