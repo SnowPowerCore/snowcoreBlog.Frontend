@@ -41,7 +41,7 @@
                             </div>
                         </Header>
                         <Content>
-                            <EditForm class="w-100" FormName="@ReaderAccountPasswordlessLoginFormName" Model="@PasswordlessLogin" OnSubmit="SubmitPasswordlessLoginFormAsync">
+                            <EditForm class="w-100" FormName="@ReaderAccountPasswordlessLoginFormName" Model="@PasswordlessLogin" OnSubmit="SubmitPasswordlessLoginFormWithLoadingAsync">
                                 <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestAssertionOptionsValidator" />
                                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                     <FluentSpacer />
@@ -67,6 +67,11 @@
                                     <FluentButton Class="align-self-end" Type="ButtonType.Submit" Appearance="Appearance.Accent">
                                         @TranslationResources.LoginButtonLabel
                                     </FluentButton>
+                                    @foreach(var error in _loginPasskeyErrors)
+                                    {
+                                        <FluentSpacer />
+                                        <FluentDirectValidationMessage Message="@error" />
+                                    }
                                 </FluentStack>
                             </EditForm>
                         </Content>
@@ -99,6 +104,11 @@
                                     <FluentButton Class="align-self-end" Type="ButtonType.Submit" Appearance="Appearance.Accent">
                                         @TranslationResources.AuthenticatorButtonLabel
                                     </FluentButton>
+                                    @foreach(var error in _loginOTCErrors)
+                                    {
+                                        <FluentSpacer />
+                                        <FluentDirectValidationMessage Message="@error" />
+                                    }
                                 </FluentStack>
                             </EditForm>
                         </Content>
@@ -145,6 +155,11 @@
                                         <FluentIcon Value="@(new MicrosoftLogoIcon())" Width="24px" />
                                     </FluentButton>
                                 </div>
+                                @foreach(var error in _loginOtherErrors)
+                                {
+                                    <FluentSpacer />
+                                    <FluentDirectValidationMessage Message="@error" />
+                                }
                             </FluentStack>
                         </Content>
                     </FluentTab>
@@ -164,6 +179,13 @@
                 <FluentButton OnClick="@(() => Navigation.NavigateTo("/register"))" Class="align-self-end" Appearance="Appearance.Neutral">
                     @TranslationResources.RegisterButtonLabel
                 </FluentButton>
+                <FluentOverlay @bind-Visible=@_overlayVisible
+                    Dismissable="false"
+                    Transparent="false"
+                    Alignment="Align.Center"
+                    Justification="JustifyContent.Center">
+                    <FluentProgressRing />
+                </FluentOverlay>
             </FluentStack>
         </RegularSizeContent>
     </FlexibleFloatingCard>
@@ -173,6 +195,10 @@
 {
     public const string ReaderAccountPasswordlessLoginFormName = "ReaderAccountPasswordlessLoginForm";
     public const string ReaderAccountOneTimeCodeLoginFormName = "ReaderAccountOneTimeCodeLoginForm";
+    private bool _overlayVisible = false;
+    private List<string> _loginPasskeyErrors = [];
+    private List<string> _loginOTCErrors = [];
+    private List<string> _loginOtherErrors = [];
     private FormFluentValidationValidator? _fluentValidationValidator;
     private RequestAssertionOptionsDto _emptyState = new() { Email = string.Empty, UserVerification = new() };
     
@@ -196,8 +222,14 @@
         Captcha = verifyArgs.Payload;
     }
 
+    private Task SubmitPasswordlessLoginFormWithLoadingAsync(EditContext editContext) =>
+        SubmitPasswordlessLoginFormAsync(editContext).ContinueWith(
+            _ => InvokeAsync(() => _overlayVisible = false));
+
     private async Task SubmitPasswordlessLoginFormAsync(EditContext editContext)
     {
+        _loginPasskeyErrors.Clear();
+
         if (_fluentValidationValidator is default(FormFluentValidationValidator))
             return;
 
@@ -209,6 +241,7 @@
             return;
 
         await WebAuthn.Init();
+        _overlayVisible = true;
 
         var requestData = (RequestAssertionOptionsDto)editContext.Model;
         using var antiforgery = GetState<AntiforgeryState>();
@@ -220,7 +253,10 @@
 
         var data = response.ToData<AssertionOptions>(out var errors);
         if (data is default(AssertionOptions) && errors.Count > 0)
+        {
+            _loginPasskeyErrors.AddRange(errors);
             return;
+        }
             
         var assertion = default(AuthenticatorAssertionRawResponse);
         
@@ -248,8 +284,14 @@
         }
     }
 
+    private Task SubmitOneTimeCodeLoginFormWithLoadingAsync(EditContext editContext) =>
+        SubmitOneTimeCodeLoginFormAsync(editContext).ContinueWith(
+            _ => InvokeAsync(() => _overlayVisible = false));
+
     private async Task SubmitOneTimeCodeLoginFormAsync(EditContext editContext)
     {
+        _loginOTCErrors.Clear();
+
         if (_fluentValidationValidator is default(FormFluentValidationValidator))
             return;
 
@@ -259,5 +301,7 @@
 
         if (string.IsNullOrEmpty(Captcha))
             return;
+            
+        _overlayVisible = true;
     }
 }

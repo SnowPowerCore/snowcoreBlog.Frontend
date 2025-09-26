@@ -1,0 +1,26 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components.Utilities
+@using static Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size12
+
+@inherits FluentComponentBase
+
+<div class="@ClassValue" style="@StyleValue" @attributes=@AdditionalAttributes>
+    <FluentIcon Value="@(new ErrorCircle())" Color="@Color.Error" />
+    <span>@Message</span>
+</div>
+
+@code {
+    /// <summary>
+    /// Message to display.
+    /// </summary>
+    [Parameter]
+    public string? Message { get; set; }
+
+    /// <summary />
+    protected string? ClassValue => new CssBuilder(Class)
+        .AddClass("validation-message")
+        .Build();
+
+    /// <summary />
+    protected string? StyleValue => new StyleBuilder(Style)
+        .Build();
+}

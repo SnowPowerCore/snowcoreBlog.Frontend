@@ -27,7 +27,7 @@
 <FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())">
     <RegularSizeContent>
         <FluentStack Class="px-3" Orientation="Orientation.Vertical">
-            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitFormAsync">
+            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitFormWithLoadingAsync">
                 <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestCreateReaderAccountValidator" />
                 <FormTrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChangedAsync"/>
                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
@@ -66,6 +66,11 @@
                     <FluentButton Class="align-self-end" Type="ButtonType.Submit"
                         Appearance="Appearance.Accent">@TranslationResources.RegisterButtonLabel
                     </FluentButton>
+                    @foreach(var error in _registrationErrors)
+                    {
+                        <FluentSpacer />
+                        <FluentDirectValidationMessage Message="@error" />
+                    }
                 </FluentStack>
             </EditForm>
             <FluentSpacer />
@@ -85,6 +90,13 @@
             </FluentButton>
             <FluentSpacer />
             <FluentSpacer />
+            <FluentOverlay @bind-Visible=@_overlayVisible
+                Dismissable="false"
+                Transparent="false"
+                Alignment="Align.Center"
+                Justification="JustifyContent.Center">
+                <FluentProgressRing />
+            </FluentOverlay>
         </FluentStack>
     </RegularSizeContent>
 </FlexibleFloatingCard>
@@ -92,6 +104,8 @@
 @code
 {
     public const string ReaderAccountRegisterFormName = "ReaderAccountRegisterForm";
+    private bool _overlayVisible = false;
+    private List<string> _registrationErrors = [];
 
     private FormFluentValidationValidator? _fluentValidationValidator;
     private readonly RequestCreateReaderAccountDto _emptyState = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
@@ -123,16 +137,25 @@
         }
     }
 
-    private Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e) =>
-        RegisterState.SetCurrentInput(CreateNewAccount);
+    private Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
+    {
+        _registrationErrors.Clear();
+        return RegisterState.SetCurrentInput(CreateNewAccount);
+    }
 
     private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
     {
         Captcha = verifyArgs.Payload;
     }
 
+    private Task SubmitFormWithLoadingAsync(EditContext editContext) =>
+        SubmitFormAsync(editContext).ContinueWith(
+            _ => InvokeAsync(() => _overlayVisible = false));
+
     private async Task SubmitFormAsync(EditContext editContext)
     {
+        _registrationErrors.Clear();
+
         if (_fluentValidationValidator is default(FormFluentValidationValidator))
             return;
 
@@ -142,6 +165,8 @@
 
         if (string.IsNullOrEmpty(Captcha))
             return;
+
+        _overlayVisible = true;
 
         var requestData = (RequestCreateReaderAccountDto)editContext.Model;
         using var antiforgery = GetState<AntiforgeryState>();
@@ -157,6 +182,10 @@
         {
             await RegisterState.SetCurrentInput(_emptyState);
             Navigation.NavigateTo("/register/info/confirm");
+        }
+        else
+        {
+            _registrationErrors.AddRange(errors);
         }
     }
 }
