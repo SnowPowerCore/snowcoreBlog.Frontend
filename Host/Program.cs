@@ -52,6 +52,7 @@ app.MapRazorComponents<App>()
 	.AddInteractiveWebAssemblyRenderMode()
 	.AddAdditionalAssemblies(
 		typeof(snowcoreBlog.Frontend.Client.Program).Assembly,
+		typeof(snowcoreBlog.Frontend.Articles.Extensions.ServiceCollectionExtensions).Assembly,
 		typeof(snowcoreBlog.Frontend.ReadersManagement.Extensions.ServiceCollectionExtensions).Assembly,
 		typeof(snowcoreBlog.Frontend.SharedComponents.Extensions.ServiceCollectionExtensions).Assembly);
 

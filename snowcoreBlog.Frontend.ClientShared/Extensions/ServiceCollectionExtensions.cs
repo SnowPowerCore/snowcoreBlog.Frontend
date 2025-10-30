@@ -2,9 +2,13 @@ using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Refit;
+using snowcoreBlog.ApplicationLaunch.Implementations.BackgroundServices;
+using snowcoreBlog.ApplicationLaunch.Interfaces;
 using snowcoreBlog.Frontend.ClientShared.Handlers;
+using snowcoreBlog.Frontend.ClientShared.Services;
 using snowcoreBlog.Frontend.Infrastructure.Context;
 using snowcoreBlog.Frontend.Infrastructure.Extensions;
 using snowcoreBlog.Frontend.ReadersManagement.Extensions;
@@ -33,6 +37,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddTimeWarpState(static options =>
         {
             options.Assemblies = [
+                typeof(Articles.Extensions.ServiceCollectionExtensions).Assembly,
                 typeof(ReadersManagement.Extensions.ServiceCollectionExtensions).Assembly,
                 typeof(SharedComponents.Extensions.ServiceCollectionExtensions).Assembly,
                 typeof(TimeWarp.State.Plus.AssemblyMarker).Assembly
@@ -58,6 +63,12 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IValidator<RequestAssertionOptionsDto>, RequestAssertionOptionsValidator>();
         serviceCollection.AddSingleton<IValidator<RequestAttestationOptionsDto>, RequestAttestationOptionsValidator>();
         serviceCollection.AddSingleton<IValidator<ConfirmCreateReaderAccountDto>, ConfirmCreateReaderAccountValidator>();
+
+        serviceCollection.AddSingleton<IApplicationLaunchService>(static sp =>
+            new ClientSharedApplicationLaunchService(sp));
+        serviceCollection.AddHostedService(static sp =>
+            new ApplicationLaunchWorker(sp.GetRequiredService<IHostApplicationLifetime>(),
+                sp.GetRequiredService<IApplicationLaunchService>()));
         
         return serviceCollection;
     }

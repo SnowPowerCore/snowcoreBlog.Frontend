@@ -3,6 +3,7 @@ using Ixnas.AltchaNet;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using snowcoreBlog.ApplicationLaunch.Interfaces;
 using snowcoreBlog.Frontend.ClientShared.Extensions;
 using snowcoreBlog.Frontend.ClientShared.Handlers;
 using snowcoreBlog.Frontend.WasmForDebugging;
@@ -29,4 +30,6 @@ builder.Services.AddScoped<AuthenticationStateProvider, WasmCookiesAuthenticatio
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserService<LoginByAssertionDto>, UserService<LoginByAssertionDto>>();
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+await app.Services.GetRequiredService<IApplicationLaunchService>().InitAsync();
+await app.RunAsync();
