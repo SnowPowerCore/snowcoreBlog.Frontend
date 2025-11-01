@@ -5,7 +5,7 @@ function toBase64Url(arrayBuffer) {
     return btoa(String.fromCharCode(...new Uint8Array(arrayBuffer))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");
 }
 function fromBase64Url(value) {
-    return Uint8Array.from(atob(value.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
+    return Uint8Array.from(atob(value.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)).buffer;
 }
 function base64StringToUrl(base64String) {
     return base64String.replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");
@@ -17,11 +17,9 @@ export async function createCreds(options) {
         options.user.id = fromBase64Url(options.user.id);
     if (options.rp.id === null)
         options.rp.id = undefined;
-    if (options.excludeCredentials !== undefined) {
-        for (let cred of options.excludeCredentials) {
-            if (typeof cred.id === 'string')
-                cred.id = fromBase64Url(cred.id);
-        }
+    for (let cred of options.excludeCredentials) {
+        if (typeof cred.id === 'string')
+            cred.id = fromBase64Url(cred.id);
     }
     var newCreds = await navigator.credentials.create({ publicKey: options });
     const response = newCreds.response;

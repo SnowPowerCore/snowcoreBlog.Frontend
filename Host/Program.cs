@@ -23,7 +23,7 @@ builder.Services.AddSingleton(container);
 
 builder.Services.AddSingleton(static sp => Altcha.CreateSolverBuilder().Build());
 builder.Services.AddClient();
-builder.Services.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options =>
+builder.Services.ConfigureSnowcoreBlogBackendApizrManagers(options =>
 	options.WithHttpClientHandler(sp => new()
 	{
 		CookieContainer = container,

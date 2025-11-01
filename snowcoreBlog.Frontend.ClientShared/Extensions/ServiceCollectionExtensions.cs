@@ -44,7 +44,7 @@ public static class ServiceCollectionExtensions
             ];
         });
         serviceCollection.AddWebAuthn();
-        serviceCollection.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options => options
+        serviceCollection.ConfigureSnowcoreBlogBackendApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/readers")
             .WithRefitSettings(new RefitSettings
             {
