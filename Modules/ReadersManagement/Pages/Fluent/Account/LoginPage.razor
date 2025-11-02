@@ -48,7 +48,7 @@
                                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                     <FluentSpacer />
                                     <FluentSpacer />
-                                    <FluentTextField InputMode="InputMode.Email" Name="login" Label="@TranslationResources.EmailFieldLabel" @bind-Value=@PasswordlessLogin.Email Required Size="40" />
+                                    <FluentTextField Name="login" Label="@TranslationResources.EmailFieldLabel" InputMode="InputMode.Email" @bind-Value=@PasswordlessLogin.Email Required Size="40" />
                                     <FluentValidationMessage For=@(() => PasswordlessLogin.Email) />
                                     <FluentSpacer />
                                     <FluentLabel>
