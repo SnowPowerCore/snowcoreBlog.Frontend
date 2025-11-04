@@ -1,0 +1,43 @@
+﻿@using Apizr
+@using snowcoreBlog.PublicApi.Api
+@using snowcoreBlog.PublicApi.BusinessObjects.Dto
+@using snowcoreBlog.PublicApi.Extensions
+@using snowcoreBlog.Frontend.Articles.Components.Fluent
+
+@page "/"
+@attribute [StreamRendering]
+
+@inject IApizrManager<IArticlesApi> ArticlesApi
+@inject NavigationManager Navigation
+
+<HighlightArticlesSection Articles="_articles" />
+<FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Appearance="@Appearance.Accent">Go to Login</FluentButton>
+
+@code
+{
+	private List<ArticleDto>? _articles;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await base.OnAfterRenderAsync(firstRender);
+
+		if (firstRender)
+        {
+            await LoadArticlesAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+	}
+
+    private async Task LoadArticlesAsync()
+    {
+        using var tokenSource = new CancellationTokenSource();
+
+        using var response = await ArticlesApi.ExecuteAsync((opt, api) =>
+            api.GetArticlesCached(opt), o => o.WithCancellation(tokenSource.Token));
+        var data = response.ToData<List<ArticleDto>>(out var errors);
+        if (data is not default(List<ArticleDto>))
+        {
+            _articles = data;
+        }
+    }
+}

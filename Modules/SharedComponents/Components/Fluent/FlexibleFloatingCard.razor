@@ -12,18 +12,18 @@
 
 @inject NavigationManager Navigation
 
-<div class="h-100 d-flex justify-content-center align-items-center">
+<div class="h-100 d-flex justify-content-center align-items-center @Class">
     <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
         <FluentGridItem HiddenWhen="GridItemHidden.SmAndUp">
-            <FluentCard Class="w-100">
+            <FloatingCard Class="w-100">
                 @(MobileSizeContent ?? RegularSizeContent)
-            </FluentCard>
+            </FloatingCard>
         </FluentGridItem>
         <FluentGridItem HiddenWhen="GridItemHidden.XsAndDown">
             <div class="d-grid my-5">
-                <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
+                <FloatingCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
                     @RegularSizeContent
-                </FluentCard>
+                </FloatingCard>
                 <div class="bg-icon-container position-relative">
                     <FluentIcon Value="@FloatingIcon" Width="256px" />
                 </div>
@@ -31,9 +31,9 @@
         </FluentGridItem>
         <FluentGridItem HiddenWhen="GridItemHidden.LgAndDown">
             <div class="d-grid my-5">
-                <FluentCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
+                <FloatingCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
                     @(WideSizeContent ?? RegularSizeContent)
-                </FluentCard>
+                </FloatingCard>
                 <div class="bg-icon-container position-relative">
                     <FluentIcon Value="@FloatingIcon" Width="256px" />
                 </div>
@@ -44,6 +44,9 @@
 
 @code
 {
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+
     [Parameter]
     public RenderFragment MobileSizeContent { get; set; } = default!;
 

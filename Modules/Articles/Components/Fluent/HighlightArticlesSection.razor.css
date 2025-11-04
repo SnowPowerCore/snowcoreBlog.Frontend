@@ -1,0 +1,39 @@
+.no-articles
+{
+    padding: 1rem;
+    color: var(--neutral-foreground, #666);
+}
+
+.highlight-main-image
+{
+    background-size: cover;
+    background-position: center;
+    height: 50%;
+}
+
+.side-thumb
+{
+    width: 96px;
+    height: 64px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 4px;
+}
+
+.title
+{
+    margin: 0;
+}
+
+.meta
+{
+    margin: 0;
+    font-size: 0.85rem;
+    color:var(--neutral-foreground, #666);
+}
+
+@media (max-width: 767px)
+{
+    .highlight-main-image { height: 220px; }
+    .side-item { height:120px; }
+}

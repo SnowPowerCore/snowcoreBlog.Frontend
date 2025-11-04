@@ -1,9 +1,0 @@
-﻿@page "/"
-@attribute [StreamRendering]
-
-@inject NavigationManager Navigation
-
-<FluentCard>
-    <h2>Placeholder page for now</h2>
-    <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Appearance="@Appearance.Accent">Go to Login</FluentButton>
-</FluentCard>
