@@ -10,8 +10,19 @@
 @inject IApizrManager<IArticlesApi> ArticlesApi
 @inject NavigationManager Navigation
 
-<HighlightArticlesSection Articles="_articles" />
-<FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Appearance="@Appearance.Accent">Go to Login</FluentButton>
+<FluentStack Orientation="Orientation.Vertical">
+    <HighlightArticlesSection Articles="_articles" />
+    <ArticlesListSection Articles="_articles" />
+    <FluentStack Orientation="Orientation.Horizontal">
+        <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Appearance="@Appearance.Accent">Go to Login</FluentButton>
+        <FluentButton OnClick="@(() => Navigation.NavigateTo("/"))" Appearance="@Appearance.Neutral">To the top</FluentButton>
+    </FluentStack>
+    <FluentSpacer />
+    <FluentSpacer />
+	<FluentSpacer />
+	<FluentSpacer />
+    <FluentSpacer />
+</FluentStack>
 
 @code
 {

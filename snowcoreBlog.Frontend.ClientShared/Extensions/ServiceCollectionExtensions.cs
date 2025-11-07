@@ -7,6 +7,7 @@ using Microsoft.FluentUI.AspNetCore.Components;
 using Refit;
 using snowcoreBlog.ApplicationLaunch.Implementations.BackgroundServices;
 using snowcoreBlog.ApplicationLaunch.Interfaces;
+using snowcoreBlog.Frontend.Articles.Extensions;
 using snowcoreBlog.Frontend.ClientShared.Handlers;
 using snowcoreBlog.Frontend.ClientShared.Services;
 using snowcoreBlog.Frontend.Infrastructure.Context;
@@ -30,6 +31,7 @@ public static class ServiceCollectionExtensions
             serializerOptions.Converters.Insert(0, converter);
         }
         
+        serviceCollection.AddArticles();
         serviceCollection.AddReadersManagement();
         serviceCollection.AddSharedComponents();
         serviceCollection.AddBlazoredLocalStorage();

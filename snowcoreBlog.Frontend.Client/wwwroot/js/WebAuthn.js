@@ -5,7 +5,7 @@ function toBase64Url(arrayBuffer) {
     return btoa(String.fromCharCode(...new Uint8Array(arrayBuffer))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");
 }
 function fromBase64Url(value) {
-    return Uint8Array.from(atob(value.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
+    return Uint8Array.from(atob(value.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)).buffer;
 }
 function base64StringToUrl(base64String) {
     return base64String.replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");

@@ -1,0 +1,56 @@
+.articles-list-section
+{
+    width: 100%;
+}
+
+.no-more
+{
+    padding: 1rem;
+    color: var(--neutral-foreground, #666);
+}
+
+/* Masonry (Soenneker) + Bootstrap grid classes used for responsive columns */
+.masonry
+{
+    width: 100%;
+}
+
+.title
+{
+    margin: 0;
+}
+
+.meta
+{
+    margin: 0;
+    font-size: 0.85rem;
+    color:var(--neutral-foreground, #666);
+}
+
+.masonry-item-link
+{
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+}
+
+.masonry-card
+{
+    display: block;
+    width: 100%;
+}
+
+.masonry-thumb
+{
+    width: 100%;
+    height: 160px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 6px 6px 0 0;
+}
+
+.masonry-body
+{
+    padding: 0.75rem;
+}
