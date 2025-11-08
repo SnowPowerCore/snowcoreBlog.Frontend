@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Features\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

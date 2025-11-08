@@ -14,13 +14,13 @@ namespace snowcoreBlog.Frontend.Host.Services;
 public class GlobalReaderAccountAuthenticationService : AuthenticationService<LoginByAssertionDto>
 {
     private readonly IApizrManager<IReaderAccountManagementApi> _readerAccountApi;
-    private readonly IApizrManager<ITokensApi> _tokensApi;
+    private readonly IApizrManager<IReaderAccountTokensApi> _tokensApi;
     private readonly AltchaSolver _altchaSolver;
     private readonly CookieContainer _managedCookieContainer;
     private readonly IStore _store;
 
     public GlobalReaderAccountAuthenticationService(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
-                                                    IApizrManager<ITokensApi> tokensApi,
+                                                    IApizrManager<IReaderAccountTokensApi> tokensApi,
                                                     AltchaSolver altchaSolver,
                                                     CookieContainer managedCookieContainer,
                                                     IStore store)

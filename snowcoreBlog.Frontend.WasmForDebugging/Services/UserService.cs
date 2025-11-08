@@ -35,7 +35,7 @@ public class UserService(IApizrManager<IReaderAccountManagementApi> readerAccoun
 }
 
 public class UserService<TSignInPayload>(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
-                                         IApizrManager<ITokensApi> tokensApi,
+                                         IApizrManager<IReaderAccountTokensApi> tokensApi,
                                          AltchaSolver altchaSolver,
                                          IStore store)
     : UserService(readerAccountApi), IUserService<LoginByAssertionDto>

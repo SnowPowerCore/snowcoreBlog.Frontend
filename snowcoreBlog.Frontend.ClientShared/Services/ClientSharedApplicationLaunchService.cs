@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using snowcoreBlog.ApplicationLaunch.Interfaces;
-using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery;
 using TimeWarp.State;
 
 namespace snowcoreBlog.Frontend.ClientShared.Services;
@@ -17,7 +16,9 @@ public class ClientSharedApplicationLaunchService : IApplicationLaunchService
     public async Task InitAsync()
     {
         using var scope = _serviceProvider.CreateScope();
-        using var antiforgery = scope.ServiceProvider.GetRequiredService<IStore>().GetState<AntiforgeryState>();
-        await antiforgery.GetAndSetRequestVerificationToken(CancellationToken.None);
+        using var articlesAntiforgery = scope.ServiceProvider.GetRequiredService<IStore>().GetState<Articles.Features.Antiforgery.AntiforgeryState>();
+        using var readersManagementAntiforgery = scope.ServiceProvider.GetRequiredService<IStore>().GetState<ReadersManagement.Features.Antiforgery.AntiforgeryState>();
+        await articlesAntiforgery.GetAndSetRequestVerificationToken(CancellationToken.None);
+        await readersManagementAntiforgery.GetAndSetRequestVerificationToken(CancellationToken.None);
     }
 }
