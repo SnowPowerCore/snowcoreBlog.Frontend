@@ -3,7 +3,7 @@ using Apizr;
 using BitzArt.Blazor.Auth;
 using Ixnas.AltchaNet;
 using Microsoft.AspNetCore.Components.Authorization;
-using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery;
+using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery;
 using snowcoreBlog.PublicApi.Api;
 using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using snowcoreBlog.PublicApi.Extensions;
@@ -42,8 +42,8 @@ public class UserService<TSignInPayload>(IApizrManager<IReaderAccountManagementA
 {
     public async Task<AuthenticationOperationInfo> SignInAsync(LoginByAssertionDto signInPayload, CancellationToken cancellationToken = default)
     {
-        using var antiforgeryState = store.GetState<AntiforgeryState>();
-        if (antiforgeryState is default(AntiforgeryState))
+        using var antiforgeryState = store.GetState<ReaderAccountAntiforgeryState>();
+        if (antiforgeryState is default(ReaderAccountAntiforgeryState))
             return new AuthenticationOperationInfo(errorMessage: "No antiforgery token");
 
         using var captchaResponse = await tokensApi.ExecuteAsync(static (opt, api) => api.GetAltchaChallenge(opt), o => o.WithCancellation(cancellationToken));

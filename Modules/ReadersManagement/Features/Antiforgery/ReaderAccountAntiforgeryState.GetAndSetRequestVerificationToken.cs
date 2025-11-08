@@ -6,7 +6,7 @@ using TimeWarp.State;
 
 namespace snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery;
 
-partial class AntiforgeryState
+partial class ReaderAccountAntiforgeryState
 {
     public static class GetAndSetRequestVerificationTokenActionSet
     {
@@ -24,7 +24,7 @@ partial class AntiforgeryState
                 _tokensApi = tokensApi;
             }
 
-            private AntiforgeryState AntiforgeryState => Store.GetState<AntiforgeryState>();
+            private ReaderAccountAntiforgeryState AntiforgeryState => Store.GetState<ReaderAccountAntiforgeryState>();
 
             public override async Task Handle(Action action, CancellationToken cancellationToken)
             {

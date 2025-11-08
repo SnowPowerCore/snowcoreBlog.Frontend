@@ -16,8 +16,8 @@ public class ClientSharedApplicationLaunchService : IApplicationLaunchService
     public async Task InitAsync()
     {
         using var scope = _serviceProvider.CreateScope();
-        using var articlesAntiforgery = scope.ServiceProvider.GetRequiredService<IStore>().GetState<Articles.Features.Antiforgery.AntiforgeryState>();
-        using var readersManagementAntiforgery = scope.ServiceProvider.GetRequiredService<IStore>().GetState<ReadersManagement.Features.Antiforgery.AntiforgeryState>();
+        using var articlesAntiforgery = scope.ServiceProvider.GetRequiredService<IStore>().GetState<Articles.Features.Antiforgery.ArticlesAntiforgeryState>();
+        using var readersManagementAntiforgery = scope.ServiceProvider.GetRequiredService<IStore>().GetState<ReadersManagement.Features.Antiforgery.ReaderAccountAntiforgeryState>();
         await articlesAntiforgery.GetAndSetRequestVerificationToken(CancellationToken.None);
         await readersManagementAntiforgery.GetAndSetRequestVerificationToken(CancellationToken.None);
     }
