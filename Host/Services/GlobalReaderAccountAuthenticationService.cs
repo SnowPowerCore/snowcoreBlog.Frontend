@@ -3,7 +3,7 @@ using Apizr;
 using BitzArt.Blazor.Auth;
 using BitzArt.Blazor.Auth.Server;
 using Ixnas.AltchaNet;
-using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery;
+using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery;
 using snowcoreBlog.PublicApi.Api;
 using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using snowcoreBlog.PublicApi.Extensions;
@@ -14,13 +14,13 @@ namespace snowcoreBlog.Frontend.Host.Services;
 public class GlobalReaderAccountAuthenticationService : AuthenticationService<LoginByAssertionDto>
 {
     private readonly IApizrManager<IReaderAccountManagementApi> _readerAccountApi;
-    private readonly IApizrManager<IReaderAccountTokensApi> _tokensApi;
+    private readonly IApizrManager<ITokensApi> _tokensApi;
     private readonly AltchaSolver _altchaSolver;
     private readonly CookieContainer _managedCookieContainer;
     private readonly IStore _store;
 
     public GlobalReaderAccountAuthenticationService(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
-                                                    IApizrManager<IReaderAccountTokensApi> tokensApi,
+                                                    IApizrManager<ITokensApi> tokensApi,
                                                     AltchaSolver altchaSolver,
                                                     CookieContainer managedCookieContainer,
                                                     IStore store)
@@ -34,8 +34,8 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
 
     public override async Task<AuthenticationResult> SignInAsync(LoginByAssertionDto signInPayload, CancellationToken cancellationToken = default)
     {
-        using var antiforgeryState = _store.GetState<ReaderAccountAntiforgeryState>();
-        if (antiforgeryState is default(ReaderAccountAntiforgeryState))
+        using var antiforgeryState = _store.GetState<AntiforgeryState>();
+        if (antiforgeryState is default(AntiforgeryState))
             return AuthenticationResult.Failure("No antiforgery token");
 
         using var captchaResponse = await _tokensApi.ExecuteAsync(static (opt, api) => api.GetAltchaChallenge(opt), o => o.WithCancellation(cancellationToken));

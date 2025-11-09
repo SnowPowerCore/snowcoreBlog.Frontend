@@ -4,9 +4,9 @@ using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using snowcoreBlog.PublicApi.Extensions;
 using TimeWarp.State;
 
-namespace snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery;
+namespace snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery;
 
-partial class ReaderAccountAntiforgeryState
+partial class AntiforgeryState
 {
     public static class GetAndSetRequestVerificationTokenActionSet
     {
@@ -17,14 +17,14 @@ partial class ReaderAccountAntiforgeryState
 
         public sealed class Handler : ActionHandler<Action>
         {
-            private readonly IApizrManager<IReaderAccountTokensApi> _tokensApi;
+            private readonly IApizrManager<ITokensApi> _tokensApi;
 
-            public Handler(IStore store, IApizrManager<IReaderAccountTokensApi> tokensApi) : base(store)
+            public Handler(IStore store, IApizrManager<ITokensApi> tokensApi) : base(store)
             {
                 _tokensApi = tokensApi;
             }
 
-            private ReaderAccountAntiforgeryState AntiforgeryState => Store.GetState<ReaderAccountAntiforgeryState>();
+            private AntiforgeryState AntiforgeryState => Store.GetState<AntiforgeryState>();
 
             public override async Task Handle(Action action, CancellationToken cancellationToken)
             {

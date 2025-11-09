@@ -7,11 +7,11 @@
 @using System.Text.Json
 @using snowcoreBlog.Frontend.Infrastructure.Context
 @using snowcoreBlog.Frontend.Infrastructure.Protocol
-@using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Register;
 @using snowcoreBlog.Frontend.ReadersManagement.Resources
 @using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery
 @using snowcoreBlog.PublicApi.Api
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
 @using snowcoreBlog.PublicApi.Extensions
@@ -118,7 +118,7 @@
         await WebAuthn.Init();
         _overlayVisible = true;
 
-        using var antiforgery = GetState<ReaderAccountAntiforgeryState>();
+        using var antiforgery = GetState<AntiforgeryState>();
 
         using var attestationResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
             api.RequestAttestationOptions(PasswordlessRegistration, antiforgery.RequestVerificationToken, opt), o => o.WithCancellation(tokenSource.Token));
