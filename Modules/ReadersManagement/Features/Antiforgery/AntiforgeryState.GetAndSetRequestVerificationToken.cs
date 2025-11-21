@@ -4,7 +4,7 @@ using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using snowcoreBlog.PublicApi.Extensions;
 using TimeWarp.State;
 
-namespace snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery;
+namespace snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery;
 
 partial class AntiforgeryState
 {
@@ -17,9 +17,9 @@ partial class AntiforgeryState
 
         public sealed class Handler : ActionHandler<Action>
         {
-            private readonly IApizrManager<ITokensApi> _tokensApi;
+            private readonly IApizrManager<IReaderAccountTokensApi> _tokensApi;
 
-            public Handler(IStore store, IApizrManager<ITokensApi> tokensApi) : base(store)
+            public Handler(IStore store, IApizrManager<IReaderAccountTokensApi> tokensApi) : base(store)
             {
                 _tokensApi = tokensApi;
             }

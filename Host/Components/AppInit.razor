@@ -1,0 +1,17 @@
+﻿@using snowcoreBlog.ApplicationLaunch.Interfaces
+
+@attribute [StreamRendering]
+
+@inject IApplicationLaunchService ApplicationLaunch
+
+@code
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ApplicationLaunch.InitAsync();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}

@@ -3,11 +3,7 @@
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
 @using snowcoreBlog.PublicApi.Extensions
 
-<FluentStack Orientation="Orientation.Vertical">
-	<FluentSpacer />
-	<FluentSpacer />
-	<FluentSpacer />
-
+<div class="w-100">
 	@if (Articles is null || !Articles.Any())
 	{
 		<div class="no-articles">No articles yet.</div>
@@ -61,9 +57,7 @@
 			</div>
 		</div>
 	}
-
-	<FluentSpacer />
-</FluentStack>
+</div>
 
 @code
 {

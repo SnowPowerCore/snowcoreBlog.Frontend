@@ -3,7 +3,6 @@ using Ixnas.AltchaNet;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using snowcoreBlog.ApplicationLaunch.Interfaces;
 using snowcoreBlog.Frontend.ClientShared.Extensions;
 using snowcoreBlog.Frontend.ClientShared.Handlers;
 using snowcoreBlog.Frontend.WasmForDebugging;
@@ -23,13 +22,13 @@ builder.Services
     .AddHttpClient(string.Empty, sp => sp.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
     .AddHttpMessageHandler<IncludeCookiesHandler>();
 builder.Services.AddSingleton(static sp => Altcha.CreateSolverBuilder().Build());
+
 builder.Services.AddClient();
+builder.Services.AddClientSideApizrManagers();
 
 builder.Services.AddScoped<AuthenticationStateProvider, WasmCookiesAuthenticationStateProvider>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserService<LoginByAssertionDto>, UserService<LoginByAssertionDto>>();
 
-var app = builder.Build();
-await app.Services.GetRequiredService<IApplicationLaunchService>().InitAsync();
-await app.RunAsync();
+await builder.Build().RunAsync();

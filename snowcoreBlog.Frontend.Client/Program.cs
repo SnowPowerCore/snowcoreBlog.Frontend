@@ -1,6 +1,5 @@
 using BitzArt.Blazor.Auth.Client;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using snowcoreBlog.ApplicationLaunch.Interfaces;
 using snowcoreBlog.Frontend.ClientShared.Extensions;
 using snowcoreBlog.Frontend.ClientShared.Handlers;
 
@@ -20,10 +19,9 @@ public class Program
             .AddHttpClient(string.Empty, sp => sp.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
             .AddHttpMessageHandler<IncludeCookiesHandler>();
         builder.Services.AddClient();
+        builder.Services.AddClientSideApizrManagers();
         builder.AddBlazorAuth();
 
-        var app = builder.Build();
-        await app.Services.GetRequiredService<IApplicationLaunchService>().InitAsync();
-        await app.RunAsync();
+        await builder.Build().RunAsync();
     }
 }

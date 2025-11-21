@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using snowcoreBlog.Frontend.Core.Constants
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -24,6 +25,10 @@
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/js/loading-theme.js" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js" type="module" async defer></script>
     <loading-theme storage-name="theme"></loading-theme>
+    @if (IsNonClient)
+    {
+        <AppInit @rendermode="new InteractiveServerRenderMode(prerender: false)"/>
+    }
     <Routes @rendermode="PageRenderMode" />
 </body>
 
@@ -33,6 +38,8 @@
 {
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
+
+    private bool IsNonClient => RendererInfo.Name != RendererNameConstants.WebAssembly;
 
     private IComponentRenderMode? PageRenderMode =>
         HttpContext.AcceptsInteractiveRouting() ? InteractiveAuto : default;

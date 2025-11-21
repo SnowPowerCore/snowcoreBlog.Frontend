@@ -8,14 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="snowcoreBlog.ResourceLoading" Version="0.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles
-      Include="Resources\TranslationResources_*.json"
-      NamespaceName="snowcoreBlog.Frontend.Core.Resources"
-      ClassName="TranslationResources"
-      NeutralCulture="en" />
+    <AdditionalFiles Include="Resources\TranslationResources_*.json" NamespaceName="snowcoreBlog.Frontend.Core.Resources" ClassName="TranslationResources" NeutralCulture="en" />
   </ItemGroup>
 
 </Project>

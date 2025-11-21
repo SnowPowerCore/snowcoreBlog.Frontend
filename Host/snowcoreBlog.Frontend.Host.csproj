@@ -15,4 +15,8 @@
     <ProjectReference Include="..\snowcoreBlog.Frontend.Client\snowcoreBlog.Frontend.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
 </Project>

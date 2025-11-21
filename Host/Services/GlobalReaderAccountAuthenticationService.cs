@@ -1,9 +1,8 @@
-using System.Net;
 using Apizr;
 using BitzArt.Blazor.Auth;
 using BitzArt.Blazor.Auth.Server;
 using Ixnas.AltchaNet;
-using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery;
+using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery;
 using snowcoreBlog.PublicApi.Api;
 using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using snowcoreBlog.PublicApi.Extensions;
@@ -14,21 +13,21 @@ namespace snowcoreBlog.Frontend.Host.Services;
 public class GlobalReaderAccountAuthenticationService : AuthenticationService<LoginByAssertionDto>
 {
     private readonly IApizrManager<IReaderAccountManagementApi> _readerAccountApi;
-    private readonly IApizrManager<ITokensApi> _tokensApi;
+    private readonly IApizrManager<IReaderAccountTokensApi> _tokensApi;
     private readonly AltchaSolver _altchaSolver;
-    private readonly CookieContainer _managedCookieContainer;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IStore _store;
 
     public GlobalReaderAccountAuthenticationService(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
-                                                    IApizrManager<ITokensApi> tokensApi,
+                                                    IApizrManager<IReaderAccountTokensApi> tokensApi,
                                                     AltchaSolver altchaSolver,
-                                                    CookieContainer managedCookieContainer,
+                                                    IHttpContextAccessor httpContextAccessor,
                                                     IStore store)
     {
         _readerAccountApi = readerAccountApi;
         _tokensApi = tokensApi;
         _altchaSolver = altchaSolver;
-        _managedCookieContainer = managedCookieContainer;
+        _httpContextAccessor = httpContextAccessor;
         _store = store;
     }
 
@@ -52,15 +51,22 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
         if (loginData is default(LoginByAssertionResultDto) || loginErrors.Count > 0)
             return AuthenticationResult.Failure(loginErrors.FirstOrDefault());
 
-        var responseCookies = _managedCookieContainer.GetAllCookies()?.Where(x => x.HttpOnly);
-        var accessTokenCookie = responseCookies?.FirstOrDefault(x => string.Equals(x.Name, ".DotNet.Application.User.SystemKey", StringComparison.OrdinalIgnoreCase));
-        var refreshTokenCookie = responseCookies?.FirstOrDefault(x => string.Equals(x.Name, ".DotNet.Application.User.SystemUpdateKey", StringComparison.OrdinalIgnoreCase));
+        // Get cookies from the HttpContext that were set by the API response
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext == null)
+            return AuthenticationResult.Failure("No HTTP context");
 
-        if (accessTokenCookie is default(Cookie) || refreshTokenCookie is default(Cookie))
-            return AuthenticationResult.Failure("No cookie");
+        var accessTokenCookie = httpContext.Request.Cookies[".DotNet.Application.User.SystemKey"];
+        var refreshTokenCookie = httpContext.Request.Cookies[".DotNet.Application.User.SystemUpdateKey"];
+
+        if (string.IsNullOrEmpty(accessTokenCookie) || string.IsNullOrEmpty(refreshTokenCookie))
+            return AuthenticationResult.Failure("No authentication cookies");
+
+        // For expiration, use a default or extract from loginData if available
+        var expiration = DateTimeOffset.UtcNow.AddHours(1); // Default expiration
 
         return AuthenticationResult.Success(
-            new(accessTokenCookie.Value, new(accessTokenCookie.Expires), refreshTokenCookie.Value, new(refreshTokenCookie.Expires)));
+            new(accessTokenCookie, expiration, refreshTokenCookie, expiration));
     }
 
     public override Task<AuthenticationResult> RefreshJwtPairAsync(string refreshToken, CancellationToken cancellationToken = default)

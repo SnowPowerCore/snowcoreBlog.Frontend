@@ -3,7 +3,7 @@ using Apizr;
 using BitzArt.Blazor.Auth;
 using Ixnas.AltchaNet;
 using Microsoft.AspNetCore.Components.Authorization;
-using snowcoreBlog.Frontend.SharedComponents.Features.Antiforgery;
+using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery;
 using snowcoreBlog.PublicApi.Api;
 using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using snowcoreBlog.PublicApi.Extensions;
@@ -35,7 +35,7 @@ public class UserService(IApizrManager<IReaderAccountManagementApi> readerAccoun
 }
 
 public class UserService<TSignInPayload>(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
-                                         IApizrManager<ITokensApi> tokensApi,
+                                         IApizrManager<IReaderAccountTokensApi> tokensApi,
                                          AltchaSolver altchaSolver,
                                          IStore store)
     : UserService(readerAccountApi), IUserService<LoginByAssertionDto>

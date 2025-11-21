@@ -1,10 +1,10 @@
-using System.Net;
 using BitzArt.Blazor.Auth.Server;
 using Ixnas.AltchaNet;
 using snowcoreBlog.Frontend.ClientShared.Extensions;
 using snowcoreBlog.Frontend.Host.Components;
+using snowcoreBlog.Frontend.Host.Extensions;
+using snowcoreBlog.Frontend.Host.Middleware;
 using snowcoreBlog.Frontend.Host.Services;
-using snowcoreBlog.PublicApi.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseDefaultServiceProvider(static (c, opts) =>
@@ -18,18 +18,10 @@ builder.Services.AddRazorComponents()
 	.AddInteractiveServerComponents()
 	.AddInteractiveWebAssemblyComponents();
 
-var container = new CookieContainer();
-builder.Services.AddSingleton(container);
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton(static sp => Altcha.CreateSolverBuilder().Build());
 builder.Services.AddClient();
-builder.Services.ConfigureSnowcoreBlogBackendArticlesApizrManagers(static options => { });
-builder.Services.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options =>
-	options.WithHttpClientHandler(sp => new()
-	{
-		CookieContainer = container,
-        UseCookies = true
-	}));
+builder.Services.AddServerSideApizrManagers();
 builder.AddBlazorAuth<GlobalReaderAccountAuthenticationService>();
 
 var app = builder.Build();
@@ -45,6 +37,8 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ArticlesAntiforgeryInitMiddleware>();
+app.UseMiddleware<ReadersManagementAntiforgeryInitMiddleware>();
 app.MapStaticAssets();
 app.UseAntiforgery();
 

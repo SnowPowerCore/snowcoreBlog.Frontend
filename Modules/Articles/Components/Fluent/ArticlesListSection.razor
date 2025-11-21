@@ -2,36 +2,32 @@
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
 
-<FluentStack Orientation="Orientation.Vertical">
-    <FluentSpacer />
-    <div class="articles-list-section">
-        @if (Articles is null || !Articles.Skip(3).Any())
-        {
-            <div class="no-more">No more articles.</div>
-        }
-        else
-        {
-            <Masonry AutoRender="true" SizerClass="col-sm-1" @ref="_masonry" class="row masonry">
-                @foreach (var a in Articles.Skip(3))
-                {
-                    <MasonryItem class="col-lg-4 col-md-6 mb-4">
-                        <a class="masonry-item-link" href="@GetArticleUrl(a)" aria-label="@a.Title">
-                            <FloatingCard Class="masonry-card">
-                                <div class="masonry-thumb" style="background-image: url('@(a.CoverImageUrl ?? "")')"></div>
-                                <div class="masonry-body d-flex flex-column gap-2 flex-grow-1">
-                                    <h4 class="title">@a.Title</h4>
-                                    <p class="meta">@FormatDate(a.PublishedAt)</p>
-                                    <p class="excerpt">@Excerpt(a.Markdown)</p>
-                                </div>
-                            </FloatingCard>
-                        </a>
-                    </MasonryItem>
-                }
-            </Masonry>
-        }
-    </div>
-    <FluentSpacer />
-</FluentStack>
+<div class="articles-list-section">
+    @if (Articles is null || !Articles.Skip(3).Any())
+    {
+        <div class="no-more">No more articles.</div>
+    }
+    else
+    {
+        <Masonry AutoRender="true" SizerClass="col-sm-1" @ref="_masonry" class="row masonry">
+            @foreach (var a in Articles.Skip(3))
+            {
+                <MasonryItem class="col-lg-4 col-md-6 mb-4">
+                    <a class="masonry-item-link" href="@GetArticleUrl(a)" aria-label="@a.Title">
+                        <FloatingCard Class="masonry-card">
+                            <div class="masonry-thumb" style="background-image: url('@(a.CoverImageUrl ?? "")')"></div>
+                            <div class="masonry-body d-flex flex-column gap-2 flex-grow-1">
+                                <h4 class="title">@a.Title</h4>
+                                <p class="meta">@FormatDate(a.PublishedAt)</p>
+                                <p class="excerpt">@Excerpt(a.Markdown)</p>
+                            </div>
+                        </FloatingCard>
+                    </a>
+                </MasonryItem>
+            }
+        </Masonry>
+    }
+</div>
 
 @code
 {
