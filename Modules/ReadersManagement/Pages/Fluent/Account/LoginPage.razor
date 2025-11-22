@@ -178,7 +178,7 @@
                     <FluentLabel>@TranslationResources.RegisterPromptLabel</FluentLabel>
                 </FluentStack>
                 <FluentSpacer />
-                <FluentButton OnClick="@(() => Navigation.NavigateTo("/register"))" Class="align-self-end" Appearance="Appearance.Neutral">
+                <FluentButton OnClick="@(() => Navigation.NavigateTo("register"))" Class="align-self-end" Appearance="Appearance.Neutral">
                     @TranslationResources.RegisterButtonLabel
                 </FluentButton>
                 <FluentOverlay @bind-Visible=@_overlayVisible
@@ -282,7 +282,7 @@
         }, tokenSource.Token);
         if (loginResult.IsSuccess)
         {
-            Navigation.NavigateTo("/", forceLoad: true);
+            Navigation.NavigateTo(string.Empty, forceLoad: true);
         }
     }
 

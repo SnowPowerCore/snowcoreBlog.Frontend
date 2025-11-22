@@ -45,7 +45,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IValidator<ConfirmCreateReaderAccountDto>, ConfirmCreateReaderAccountValidator>();
 
         serviceCollection.AddScoped<IApplicationLaunchService>(static sp =>
-            new ApplicationLaunchService(sp.GetRequiredService<IStore>()));
+            new FrontendApplicationLaunchService(sp.GetRequiredService<IStore>()));
 
         return serviceCollection;
     }

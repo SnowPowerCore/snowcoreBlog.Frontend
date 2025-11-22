@@ -1,4 +1,5 @@
 using BitzArt.Blazor.Auth;
+using BitzArt.Blazor.Auth.Client;
 using Ixnas.AltchaNet;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -25,6 +26,7 @@ builder.Services.AddSingleton(static sp => Altcha.CreateSolverBuilder().Build())
 
 builder.Services.AddClient();
 builder.Services.AddClientSideApizrManagers();
+builder.AddBlazorAuth();
 
 builder.Services.AddScoped<AuthenticationStateProvider, WasmCookiesAuthenticationStateProvider>();
 

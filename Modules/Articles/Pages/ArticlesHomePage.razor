@@ -25,8 +25,8 @@
     <ArticlesListSection Articles="_articles" />
     <FluentSpacer />
     <FluentStack Orientation="Orientation.Horizontal">
-        <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Appearance="@Appearance.Accent">Go to Login</FluentButton>
-        <FluentButton OnClick="@(() => Navigation.NavigateTo("/"))" Appearance="@Appearance.Neutral">To the top</FluentButton>
+        <FluentButton OnClick="@(() => Navigation.NavigateTo("login"))" Appearance="@Appearance.Accent">Go to Login</FluentButton>
+        <FluentButton OnClick="@(() => Navigation.NavigateTo(string.Empty))" Appearance="@Appearance.Neutral">To the top</FluentButton>
     </FluentStack>
     <FluentSpacer />
     <FluentSpacer />

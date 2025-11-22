@@ -26,6 +26,17 @@ builder.AddBlazorAuth<GlobalReaderAccountAuthenticationService>();
 
 var app = builder.Build();
 
+// Read base path from YARP-forwarded header
+app.Use(async (context, next) =>
+{
+	var basePath = context.Request.Headers["X-Forwarded-BasePath"].ToString();
+	if (!string.IsNullOrEmpty(basePath))
+	{
+		context.Request.PathBase = basePath;
+	}
+	await next();
+});
+
 if (app.Environment.IsDevelopment())
 {
 	app.UseWebAssemblyDebugging();

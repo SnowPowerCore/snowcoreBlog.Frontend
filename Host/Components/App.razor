@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, height=device-height initial-scale=1.0" />
     <title>snowcore's Blog</title>
-    <base href="/" />
+    <base href="@(HttpContext.Request.PathBase.Value + "/")" />
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
     <link rel="stylesheet" href="@Assets["css/source-sans-3/source-sans-3.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />

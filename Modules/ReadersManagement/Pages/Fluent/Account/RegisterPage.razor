@@ -85,7 +85,7 @@
                 <FluentLabel>@TranslationResources.LoginPromptLabel</FluentLabel>
             </FluentStack>
             <FluentSpacer />
-            <FluentButton OnClick="@(() => Navigation.NavigateTo("/login"))" Class="align-self-end" Appearance="Appearance.Neutral">
+            <FluentButton OnClick="@(() => Navigation.NavigateTo("login"))" Class="align-self-end" Appearance="Appearance.Neutral">
                 @TranslationResources.LoginButtonLabel
             </FluentButton>
             <FluentSpacer />
@@ -181,7 +181,7 @@
             && errors.Count == 0)
         {
             await RegisterState.SetCurrentInput(_emptyState);
-            Navigation.NavigateTo("/register/info/confirm");
+            Navigation.NavigateTo("register/info/confirm");
         }
         else
         {
