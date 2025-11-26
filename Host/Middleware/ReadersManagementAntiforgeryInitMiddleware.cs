@@ -5,6 +5,7 @@ namespace snowcoreBlog.Frontend.Host.Middleware;
 
 public class ReadersManagementAntiforgeryInitMiddleware
 {
+    private const string HttpClientName = "ReadersManagementAntiforgeryClient";
     private readonly RequestDelegate _next;
     private readonly IHttpClientFactory _httpClientFactory;
 
@@ -30,8 +31,9 @@ public class ReadersManagementAntiforgeryInitMiddleware
         // This ensures each new user session gets a fresh token
         try
         {
-            // Create a plain HttpClient to fetch the antiforgery token from the backend API
-            var httpClient = _httpClientFactory.CreateClient();
+            // Create an HttpClient with the named client that includes cookie propagation
+            // This allows the antiforgery token endpoint to receive the user's authentication state
+            var httpClient = _httpClientFactory.CreateClient(HttpClientName);
             var response = await httpClient.GetAsync("https://localhost/api/readers/antiforgerytoken/v1");
             
             if (response.IsSuccessStatusCode)

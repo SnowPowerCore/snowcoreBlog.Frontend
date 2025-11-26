@@ -3,10 +3,12 @@ namespace snowcoreBlog.Frontend.Host.Handlers;
 public sealed class HttpContextCookiesPropagationHandler : DelegatingHandler
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly bool _excludeAuthCookies;
 
-    public HttpContextCookiesPropagationHandler(IHttpContextAccessor httpContextAccessor)
+    public HttpContextCookiesPropagationHandler(IHttpContextAccessor httpContextAccessor, bool excludeAuthCookies = false)
     {
         _httpContextAccessor = httpContextAccessor;
+        _excludeAuthCookies = excludeAuthCookies;
     }
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -22,6 +24,15 @@ public sealed class HttpContextCookiesPropagationHandler : DelegatingHandler
         // This includes the antiforgery cookie that was set by the middleware
         foreach (var cookie in ctx.Request.Cookies)
         {
+            // Skip authentication cookies if configured to exclude them
+            // Also skip antiforgery cookies to force fresh token generation
+            if (_excludeAuthCookies &&
+                (cookie.Key == ".DotNet.Application.User.SystemKey" ||
+                 cookie.Key == ".DotNet.Application.User.SystemUpdateKey"))
+            {
+                continue;
+            }
+
             request.Headers.Add("Cookie", $"{cookie.Key}={cookie.Value}");
         }
 

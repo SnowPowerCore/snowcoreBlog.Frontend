@@ -13,7 +13,6 @@ builder.Host.UseDefaultServiceProvider(static (c, opts) =>
     opts.ValidateOnBuild = true;
 });
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
 	.AddInteractiveServerComponents()
 	.AddInteractiveWebAssemblyComponents();
@@ -26,31 +25,20 @@ builder.AddBlazorAuth<GlobalReaderAccountAuthenticationService>();
 
 var app = builder.Build();
 
-// Read base path from YARP-forwarded header
-app.Use(async (context, next) =>
-{
-	var basePath = context.Request.Headers["X-Forwarded-BasePath"].ToString();
-	if (!string.IsNullOrEmpty(basePath))
-	{
-		context.Request.PathBase = basePath;
-	}
-	await next();
-});
-
 if (app.Environment.IsDevelopment())
 {
 	app.UseWebAssemblyDebugging();
 }
 else
 {
-	app.UseExceptionHandler("/Error", createScopeForErrors: true);
+	app.UseExceptionHandler("/error", createScopeForErrors: true);
 	app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ApplyBasePathMiddleware>();
 app.UseMiddleware<ArticlesAntiforgeryInitMiddleware>();
 app.UseMiddleware<ReadersManagementAntiforgeryInitMiddleware>();
-app.MapStaticAssets();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
@@ -61,7 +49,7 @@ app.MapRazorComponents<App>()
 		typeof(snowcoreBlog.Frontend.Articles.Extensions.ServiceCollectionExtensions).Assembly,
 		typeof(snowcoreBlog.Frontend.ReadersManagement.Extensions.ServiceCollectionExtensions).Assembly,
 		typeof(snowcoreBlog.Frontend.SharedComponents.Extensions.ServiceCollectionExtensions).Assembly);
-
+app.MapStaticAssets();
 app.MapAuthEndpoints();
 
 await app.RunAsync();

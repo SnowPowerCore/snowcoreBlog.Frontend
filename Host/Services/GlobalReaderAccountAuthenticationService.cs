@@ -1,12 +1,16 @@
+using System.Net.Http.Headers;
+using System.Text.Json;
 using Apizr;
 using BitzArt.Blazor.Auth;
 using BitzArt.Blazor.Auth.Server;
 using Ixnas.AltchaNet;
-using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery;
+using Microsoft.Extensions.Options;
+using snowcoreBlog.Frontend.Core.Models.Cookie;
 using snowcoreBlog.PublicApi.Api;
 using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using snowcoreBlog.PublicApi.Extensions;
-using TimeWarp.State;
+using snowcoreBlog.PublicApi.Utilities.Api;
+using CookieExtensions = snowcoreBlog.Frontend.Infrastructure.Extensions.CookieExtensions;
 
 namespace snowcoreBlog.Frontend.Host.Services;
 
@@ -14,29 +18,42 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
 {
     private readonly IApizrManager<IReaderAccountManagementApi> _readerAccountApi;
     private readonly IApizrManager<IReaderAccountTokensApi> _tokensApi;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly AltchaSolver _altchaSolver;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IStore _store;
 
     public GlobalReaderAccountAuthenticationService(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
                                                     IApizrManager<IReaderAccountTokensApi> tokensApi,
-                                                    AltchaSolver altchaSolver,
-                                                    IHttpContextAccessor httpContextAccessor,
-                                                    IStore store)
+                                                    IHttpClientFactory httpClientFactory,
+                                                    AltchaSolver altchaSolver)
     {
         _readerAccountApi = readerAccountApi;
         _tokensApi = tokensApi;
+        _httpClientFactory = httpClientFactory;
         _altchaSolver = altchaSolver;
-        _httpContextAccessor = httpContextAccessor;
-        _store = store;
     }
 
     public override async Task<AuthenticationResult> SignInAsync(LoginByAssertionDto signInPayload, CancellationToken cancellationToken = default)
     {
-        using var antiforgeryState = _store.GetState<AntiforgeryState>();
-        if (antiforgeryState is default(AntiforgeryState))
-            return AuthenticationResult.Failure("No antiforgery token");
+        var antiforgeryData = default(AntiforgeryResultDto);
 
+        var readerAccountClient = _httpClientFactory.CreateClient("ReaderAccountApiClient");
+        var response = await readerAccountClient.GetAsync("https://localhost/api/readers/antiforgerytoken/v1", cancellationToken);
+        if (response.IsSuccessStatusCode)
+        {
+            var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse>(cancellationToken);
+            if (apiResponse is not default(ApiResponse) && apiResponse.Errors.Count <= 0)
+            {
+                antiforgeryData = apiResponse!.Data!.Deserialize<AntiforgeryResultDto>();
+            }
+        }
+        else
+        {
+            return AuthenticationResult.Failure(response.ReasonPhrase);
+        }
+
+        if (antiforgeryData is default(AntiforgeryResultDto))
+            return AuthenticationResult.Failure("Failed to retrieve antiforgery token");
+        
         using var captchaResponse = await _tokensApi.ExecuteAsync(static (opt, api) => api.GetAltchaChallenge(opt), o => o.WithCancellation(cancellationToken));
         if (!captchaResponse.IsSuccess)
             return AuthenticationResult.Failure(captchaResponse.Exception?.Message);
@@ -46,27 +63,49 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
             return AuthenticationResult.Failure(solverResult.Error.Message);
 
         using var loginResponse = await _readerAccountApi.ExecuteAsync((opt, api) =>
-            api.LoginByAssertion(signInPayload, antiforgeryState.RequestVerificationToken, solverResult.Altcha, opt), o => o.WithCancellation(cancellationToken));
+            api.LoginByAssertion(signInPayload, antiforgeryData!.RequestToken!, solverResult.Altcha, opt), o => o.WithCancellation(cancellationToken));
         var loginData = loginResponse.ToData<LoginByAssertionResultDto>(out var loginErrors);
         if (loginData is default(LoginByAssertionResultDto) || loginErrors.Count > 0)
             return AuthenticationResult.Failure(loginErrors.FirstOrDefault());
 
-        // Get cookies from the HttpContext that were set by the API response
-        var httpContext = _httpContextAccessor.HttpContext;
-        if (httpContext == null)
-            return AuthenticationResult.Failure("No HTTP context");
+        // Extract cookies from the response headers
+        if (loginResponse.ApiResponse?.Headers is default(HttpResponseHeaders) ||
+            !loginResponse.ApiResponse.Headers.TryGetValues("Set-Cookie", out var setCookieHeaders))
+            return AuthenticationResult.Failure("No authentication cookies in response");
 
-        var accessTokenCookie = httpContext.Request.Cookies[".DotNet.Application.User.SystemKey"];
-        var refreshTokenCookie = httpContext.Request.Cookies[".DotNet.Application.User.SystemUpdateKey"];
+        var cookie = default(CookieInfo);
+        var accessTokenCookie = string.Empty;
+        var refreshTokenCookie = string.Empty;
+        var accessTokenExpiration = DateTimeOffset.UtcNow.AddHours(1); // Default expiration
+        var refreshTokenExpiration = DateTimeOffset.UtcNow.AddHours(1); // Default expiration
+
+        foreach (var setCookieHeader in setCookieHeaders)
+        {
+            if (setCookieHeader.StartsWith(".DotNet.Application.User.SystemKey"))
+            {
+                cookie = CookieExtensions.ParseSetCookieHeader(setCookieHeader);
+                if (cookie is not default(CookieInfo))
+                {
+                    accessTokenCookie = cookie.Value;
+                    accessTokenExpiration = cookie.Expires ?? accessTokenExpiration;
+                }
+            }
+            else if (setCookieHeader.StartsWith(".DotNet.Application.User.SystemUpdateKey"))
+            {
+                cookie = CookieExtensions.ParseSetCookieHeader(setCookieHeader);
+                if (cookie is not default(CookieInfo))
+                {
+                    refreshTokenCookie = cookie.Value;
+                    refreshTokenExpiration = cookie.Expires ?? refreshTokenExpiration;
+                }
+            }
+        }
 
         if (string.IsNullOrEmpty(accessTokenCookie) || string.IsNullOrEmpty(refreshTokenCookie))
-            return AuthenticationResult.Failure("No authentication cookies");
-
-        // For expiration, use a default or extract from loginData if available
-        var expiration = DateTimeOffset.UtcNow.AddHours(1); // Default expiration
+            return AuthenticationResult.Failure("Missing required authentication cookies");
 
         return AuthenticationResult.Success(
-            new(accessTokenCookie, expiration, refreshTokenCookie, expiration));
+            new(accessTokenCookie, accessTokenExpiration, refreshTokenCookie, refreshTokenExpiration));
     }
 
     public override Task<AuthenticationResult> RefreshJwtPairAsync(string refreshToken, CancellationToken cancellationToken = default)

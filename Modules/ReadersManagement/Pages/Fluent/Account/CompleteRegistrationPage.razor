@@ -77,23 +77,23 @@
     private string Email
     {
         get => PasswordlessRegistration.Email;
-        set => PasswordlessRegistration.Email = HttpUtility.UrlDecode(value);
+        set => PasswordlessRegistration.Email = value;
     }
 
     [SupplyParameterFromQuery]
     private string VerificationToken
     {
         get => PasswordlessRegistration.VerificationToken;
-        set => PasswordlessRegistration.VerificationToken = HttpUtility.UrlDecode(value);
+        set => PasswordlessRegistration.VerificationToken = value;
     }
 
     [SupplyParameterFromQuery(Name = nameof(VerificationTokenExpirationDate))]
     private string VerificationTokenExpirationDateString
     {
-        get => VerificationTokenExpirationDate.ToString();
+        get => VerificationTokenExpirationDate.ToString("O");
         set
         {
-            var parsed = DateTimeOffset.TryParse(HttpUtility.UrlDecode(value), out var dtOffset);
+            var parsed = DateTimeOffset.TryParse(value, default, System.Globalization.DateTimeStyles.RoundtripKind, out var dtOffset);
             VerificationTokenExpirationDate = parsed ? dtOffset : DateTimeOffset.MinValue;
         }
     }

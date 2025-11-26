@@ -14,9 +14,24 @@ public static class ApizrConfigurationExtensions
         {
             serializerOptions.Converters.Insert(0, converter);
         }
-        
+
         serviceCollection.AddScoped<HttpContextCookiesPropagationHandler>();
-        
+
+        // Register named HttpClients for middleware that need to propagate authentication context
+        // For antiforgery token endpoints, we exclude auth cookies to ensure tokens are always
+        // generated for the current browser state (not cached server-side auth state)
+        serviceCollection.AddHttpClient("ReadersManagementAntiforgeryClient")
+            .AddHttpMessageHandler(sp =>
+                new HttpContextCookiesPropagationHandler(
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    excludeAuthCookies: true));
+
+        serviceCollection.AddHttpClient("ArticlesAntiforgeryClient")
+            .AddHttpMessageHandler(sp =>
+                new HttpContextCookiesPropagationHandler(
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    excludeAuthCookies: true));
+
         serviceCollection.ConfigureSnowcoreBlogBackendArticlesApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/articles")
             .WithRefitSettings(new RefitSettings
@@ -25,7 +40,10 @@ public static class ApizrConfigurationExtensions
             })
             .WithRequestTimeout(TimeSpan.FromMinutes(1))
             .WithOperationTimeout(TimeSpan.FromMinutes(3))
-            .ConfigureHttpClientBuilder(http => http.AddHttpMessageHandler<HttpContextCookiesPropagationHandler>()));
+            .ConfigureHttpClientBuilder(http => http
+                .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    excludeAuthCookies: false))));
         serviceCollection.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/readers")
             .WithRefitSettings(new RefitSettings
@@ -34,8 +52,11 @@ public static class ApizrConfigurationExtensions
             })
             .WithRequestTimeout(TimeSpan.FromMinutes(1))
             .WithOperationTimeout(TimeSpan.FromMinutes(3))
-            .ConfigureHttpClientBuilder(http => http.AddHttpMessageHandler<HttpContextCookiesPropagationHandler>()));
-            
+            .ConfigureHttpClientBuilder(http => http
+                .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    excludeAuthCookies: false))));
+
         return serviceCollection;
     }
 }
