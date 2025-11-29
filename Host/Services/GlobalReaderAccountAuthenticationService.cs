@@ -1,15 +1,12 @@
 using System.Net.Http.Headers;
-using System.Text.Json;
 using Apizr;
 using BitzArt.Blazor.Auth;
 using BitzArt.Blazor.Auth.Server;
 using Ixnas.AltchaNet;
-using Microsoft.Extensions.Options;
 using snowcoreBlog.Frontend.Core.Models.Cookie;
 using snowcoreBlog.PublicApi.Api;
 using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using snowcoreBlog.PublicApi.Extensions;
-using snowcoreBlog.PublicApi.Utilities.Api;
 using CookieExtensions = snowcoreBlog.Frontend.Infrastructure.Extensions.CookieExtensions;
 
 namespace snowcoreBlog.Frontend.Host.Services;
@@ -34,24 +31,9 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
 
     public override async Task<AuthenticationResult> SignInAsync(LoginByAssertionDto signInPayload, CancellationToken cancellationToken = default)
     {
-        var antiforgeryData = default(AntiforgeryResultDto);
-
-        var readerAccountClient = _httpClientFactory.CreateClient("ReaderAccountApiClient");
-        var response = await readerAccountClient.GetAsync("https://localhost/api/readers/antiforgerytoken/v1", cancellationToken);
-        if (response.IsSuccessStatusCode)
-        {
-            var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse>(cancellationToken);
-            if (apiResponse is not default(ApiResponse) && apiResponse.Errors.Count <= 0)
-            {
-                antiforgeryData = apiResponse!.Data!.Deserialize<AntiforgeryResultDto>();
-            }
-        }
-        else
-        {
-            return AuthenticationResult.Failure(response.ReasonPhrase);
-        }
-
-        if (antiforgeryData is default(AntiforgeryResultDto))
+        using var antiforgeryResponse = await _tokensApi.ExecuteAsync(static (opt, api) => api.GetAntiforgeryToken(opt), o => o.WithCancellation(cancellationToken));
+        var antiforgeryData = antiforgeryResponse.ToData<AntiforgeryResultDto>(out var antiforgeryErrors);
+        if (antiforgeryData is default(AntiforgeryResultDto) || antiforgeryErrors.Count > 0)
             return AuthenticationResult.Failure("Failed to retrieve antiforgery token");
         
         using var captchaResponse = await _tokensApi.ExecuteAsync(static (opt, api) => api.GetAltchaChallenge(opt), o => o.WithCancellation(cancellationToken));
@@ -63,7 +45,7 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
             return AuthenticationResult.Failure(solverResult.Error.Message);
 
         using var loginResponse = await _readerAccountApi.ExecuteAsync((opt, api) =>
-            api.LoginByAssertion(signInPayload, antiforgeryData!.RequestToken!, solverResult.Altcha, opt), o => o.WithCancellation(cancellationToken));
+            api.LoginByAssertion(signInPayload, antiforgeryData.RequestToken!, solverResult.Altcha, opt), o => o.WithCancellation(cancellationToken));
         var loginData = loginResponse.ToData<LoginByAssertionResultDto>(out var loginErrors);
         if (loginData is default(LoginByAssertionResultDto) || loginErrors.Count > 0)
             return AuthenticationResult.Failure(loginErrors.FirstOrDefault());

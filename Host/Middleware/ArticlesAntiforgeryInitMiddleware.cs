@@ -3,9 +3,14 @@ using CookieExtensions = snowcoreBlog.Frontend.Infrastructure.Extensions.CookieE
 
 namespace snowcoreBlog.Frontend.Host.Middleware;
 
+/// <summary>
+/// Middleware that ensures fresh antiforgery cookies are set for the Articles service.
+/// This runs early in the pipeline to establish cookies before any API calls are made.
+/// </summary>
 public class ArticlesAntiforgeryInitMiddleware
 {
     private const string HttpClientName = "ArticlesAntiforgeryClient";
+    private const string CookiePrefix = ".AspNetCore.Antiforgery";
     private readonly RequestDelegate _next;
     private readonly IHttpClientFactory _httpClientFactory;
 
@@ -27,41 +32,53 @@ public class ArticlesAntiforgeryInitMiddleware
             return;
         }
 
-        // Always fetch fresh antiforgery token for initial page loads
-        // This ensures each new user session gets a fresh token
-        try
+        var hasAntiforgeryGookie = context.Request.Cookies.Any(c =>
+            c.Key.StartsWith(CookiePrefix, StringComparison.OrdinalIgnoreCase));
+
+        if (!hasAntiforgeryGookie)
         {
-            // Create an HttpClient with the named client that includes cookie propagation
-            // This allows the antiforgery token endpoint to receive the user's authentication state
-            var httpClient = _httpClientFactory.CreateClient(HttpClientName);
-            var response = await httpClient.GetAsync("https://localhost/api/articles/antiforgerytoken/v1");
-            
-            if (response.IsSuccessStatusCode)
+            try
             {
-                // Extract Set-Cookie headers from the API response and forward them to the browser
-                if (response.Headers.TryGetValues("Set-Cookie", out var setCookieHeaders))
+                var httpClient = _httpClientFactory.CreateClient(HttpClientName);
+                httpClient.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
                 {
-                    foreach (var setCookieHeader in setCookieHeaders)
+                    NoCache = true,
+                    NoStore = true,
+                    MustRevalidate = true
+                };
+                httpClient.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("no-cache"));
+                
+                // Add a timestamp to force a unique request (cache-busting query param)
+                var cacheBuster = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                var response = await httpClient.GetAsync($"https://localhost/api/articles/antiforgerytoken/v1?_={cacheBuster}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    // Extract Set-Cookie headers from the API response and forward them to the browser
+                    if (response.Headers.TryGetValues("Set-Cookie", out var setCookieHeaders))
                     {
-                        // Parse the Set-Cookie header
-                        var cookie = CookieExtensions.ParseSetCookieHeader(setCookieHeader);
-                        if (cookie is not default(CookieInfo))
+                        foreach (var setCookieHeader in setCookieHeaders)
                         {
-                            context.Response.Cookies.Append(cookie.Name, cookie.Value, new CookieOptions
+                            // Parse the Set-Cookie header
+                            var cookie = CookieExtensions.ParseSetCookieHeader(setCookieHeader);
+                            if (cookie is not default(CookieInfo))
                             {
-                                Path = cookie.Path ?? "/",
-                                Domain = cookie.Domain,
-                                Secure = cookie.Secure,
-                                HttpOnly = cookie.HttpOnly,
-                                Expires = cookie.Expires,
-                                SameSite = cookie.SameSite
-                            });
+                                context.Response.Cookies.Append(cookie.Name, cookie.Value, new CookieOptions
+                                {
+                                    Path = cookie.Path ?? "/",
+                                    Domain = cookie.Domain,
+                                    Secure = cookie.Secure,
+                                    HttpOnly = cookie.HttpOnly,
+                                    Expires = cookie.Expires,
+                                    SameSite = cookie.SameSite
+                                });
+                            }
                         }
                     }
                 }
             }
+            catch { }
         }
-        catch { }
 
         await _next(context);
     }

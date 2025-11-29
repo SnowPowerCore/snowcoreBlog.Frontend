@@ -16,17 +16,22 @@ public static class ApizrConfigurationExtensions
         }
 
         serviceCollection.AddScoped<HttpContextCookiesPropagationHandler>();
-
-        // Register named HttpClients for middleware that need to propagate authentication context
-        // For antiforgery token endpoints, we exclude auth cookies to ensure tokens are always
-        // generated for the current browser state (not cached server-side auth state)
+        
         serviceCollection.AddHttpClient("ReadersManagementAntiforgeryClient")
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                UseCookies = false
+            })
             .AddHttpMessageHandler(sp =>
                 new HttpContextCookiesPropagationHandler(
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     excludeAuthCookies: true));
 
         serviceCollection.AddHttpClient("ArticlesAntiforgeryClient")
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                UseCookies = false
+            })
             .AddHttpMessageHandler(sp =>
                 new HttpContextCookiesPropagationHandler(
                     sp.GetRequiredService<IHttpContextAccessor>(),
@@ -44,6 +49,7 @@ public static class ApizrConfigurationExtensions
                 .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     excludeAuthCookies: false))));
+        
         serviceCollection.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/readers")
             .WithRefitSettings(new RefitSettings
