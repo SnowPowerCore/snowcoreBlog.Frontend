@@ -1,0 +1,214 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components.DesignTokens
+@using Microsoft.AspNetCore.Components.Authorization
+@using snowcoreBlog.PublicApi.Utilities.Dictionary
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@inject DesignUnit DesignUnit
+@inject AccentBaseColor AccentBaseColor
+@inject NavigationManager Navigation
+
+<div>
+    <FluentCard Class="rounded-0" @ref="_root">
+        <AuthorizeView>
+            <Authorized>
+                @* Authenticated User Header *@
+                <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
+                    @* Desktop/Tablet View - MD and up *@
+                    <FluentGridItem HiddenWhen="GridItemHidden.SmAndDown" Class="mw-100">
+                        <FluentStack Orientation="Orientation.Horizontal" Class="d-flex align-items-center w-100" HorizontalGap="10">
+                            <FluentIcon Value="@(new Icons.Color.Size28.CodeBlock())" Class="cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))" />
+                            <FluentLabel Class="mb-0 cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))">@Title</FluentLabel>
+                            <FluentSpacer />
+                            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="5">
+                                @foreach (var navLink in NavLinks)
+                                {
+                                    <FluentAnchor Href="@navLink.Value" Appearance="Appearance.Lightweight">@navLink.Key</FluentAnchor>
+                                }
+                            </FluentStack>
+                            <FluentDivider Class="ms-2" Style="height: 15px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
+                            <FluentButton Id="user-menu-button" IconEnd="@(new Icons.Regular.Size20.Person())" Appearance="Appearance.Lightweight" @onclick="ToggleUserMenu">
+                                @context.User.Identity?.Name
+                            </FluentButton>
+                            <FluentMenu @bind-Open="_userMenuOpen" Anchor="user-menu-button" VerticalInset="false">
+                                <FluentMenuItem @onclick="@(() => HeaderItemNavigateTo("profile"))">
+                                    <FluentIcon Value="@(new Icons.Regular.Size20.PersonCircle())" Slot="start" />
+                                    Profile
+                                </FluentMenuItem>
+                                <FluentMenuItem @onclick="@(() => HeaderItemNavigateTo("settings"))">
+                                    <FluentIcon Value="@(new Icons.Regular.Size20.Settings())" Slot="start" />
+                                    Settings
+                                </FluentMenuItem>
+                                <FluentDivider Class="w-100 my-1" Role="DividerRole.Presentation" />
+                                <FluentMenuItem @onclick="HandleSignOut">
+                                    <FluentIcon Value="@(new Icons.Regular.Size20.SignOut())" Slot="start" />
+                                    Sign Out
+                                </FluentMenuItem>
+                            </FluentMenu>
+                        </FluentStack>
+                    </FluentGridItem>
+                    
+                    @* Mobile View - SM and down *@
+                    <FluentGridItem HiddenWhen="GridItemHidden.MdAndUp" Class="mw-100">
+                        <FluentStack Orientation="Orientation.Horizontal" Class="d-flex align-items-center">
+                            <FluentIcon Value="@(new Icons.Color.Size28.CodeBlock())" Class="cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))" />
+                            <FluentLabel Class="mb-0 cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))">@Title</FluentLabel>
+                            <FluentSpacer />
+                            <FluentButton Id="mobile-menu-button" IconEnd="@(new Icons.Filled.Size28.Navigation())" Appearance="Appearance.Lightweight" @onclick="ToggleMobileMenu" />
+                            <FluentMenu @bind-Open="_mobileMenuOpen" Anchor="mobile-menu-button" VerticalInset="false">
+                                @foreach (var navLink in NavLinks)
+                                {
+                                    <FluentMenuItem @onclick="@(() => HeaderItemNavigateTo(navLink.Value))">
+                                        @navLink.Key
+                                    </FluentMenuItem>
+                                }
+                                <FluentDivider Class="w-100 my-1" Role="DividerRole.Presentation" />
+                                <FluentMenuItem @onclick="@(() => HeaderItemNavigateTo("profile"))">
+                                    <FluentIcon Value="@(new Icons.Regular.Size20.PersonCircle())" Slot="start" />
+                                    Profile
+                                </FluentMenuItem>
+                                <FluentMenuItem @onclick="@(() => HeaderItemNavigateTo("settings"))">
+                                    <FluentIcon Value="@(new Icons.Regular.Size20.Settings())" Slot="start" />
+                                    Settings
+                                </FluentMenuItem>
+                                <FluentDivider Class="w-100 my-1" Role="DividerRole.Presentation" />
+                                <FluentMenuItem @onclick="HandleSignOut">
+                                    <FluentIcon Value="@(new Icons.Regular.Size20.SignOut())" Slot="start" />
+                                    Sign Out
+                                </FluentMenuItem>
+                            </FluentMenu>
+                        </FluentStack>
+                    </FluentGridItem>
+                </FluentGrid>
+            </Authorized>
+            
+            <NotAuthorized>
+                @* Non-Authenticated User Header *@
+                <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
+                    @* Desktop/Tablet View - MD and up *@
+                    <FluentGridItem HiddenWhen="GridItemHidden.SmAndDown" Class="mw-100">
+                        <FluentStack Orientation="Orientation.Horizontal" Class="d-flex align-items-center w-100" HorizontalGap="10">
+                            <FluentIcon Value="@(new Icons.Color.Size28.CodeBlock())" Class="cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))" />
+                            <FluentLabel Class="mb-0" Style="cursor: pointer;" @onclick="@(() => HeaderItemNavigateTo(string.Empty))">@Title</FluentLabel>
+                            <FluentDivider Class="ms-2" Style="height: 15px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
+                            <FluentStack Class="ms-auto" Orientation="Orientation.Horizontal" HorizontalGap="5">
+                                <FluentSpacer />
+                                @foreach (var navLink in NavLinks)
+                                {
+                                    <FluentAnchor Href="@navLink.Value" Appearance="Appearance.Lightweight">@navLink.Key</FluentAnchor>
+                                }
+                                <FluentDivider Style="height: 15px; width: 15px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
+                                <FluentButton Appearance="Appearance.Accent" @onclick="@(() => HeaderItemNavigateTo(AccountLink))">
+                                    Sign In
+                                </FluentButton>
+                            </FluentStack>
+                        </FluentStack>
+                    </FluentGridItem>
+                    
+                    @* Mobile View - SM and down *@
+                    <FluentGridItem HiddenWhen="GridItemHidden.MdAndUp" Class="mw-100">
+                        <FluentStack Orientation="Orientation.Horizontal" Class="d-flex align-items-center">
+                            <FluentIcon Value="@(new Icons.Color.Size28.CodeBlock())" Class="cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))" />
+                            <FluentLabel Class="mb-0" Style="cursor: pointer;" @onclick="@(() => HeaderItemNavigateTo(string.Empty))">@Title</FluentLabel>
+                            <FluentSpacer />
+                            <FluentButton Class="ms-auto" Id="mobile-menu-button-nonauth" IconEnd="@(new Icons.Filled.Size28.Navigation())" Appearance="Appearance.Lightweight" @onclick="ToggleMobileMenu" />
+                            <FluentMenu @bind-Open="_mobileMenuOpen" Anchor="mobile-menu-button-nonauth" VerticalInset="false">
+                                @foreach (var navLink in NavLinks)
+                                {
+                                    <FluentMenuItem @onclick="@(() => HeaderItemNavigateTo(navLink.Value))">
+                                        @navLink.Key
+                                    </FluentMenuItem>
+                                }
+                                <FluentDivider Class="w-100 my-1" Role="DividerRole.Presentation" />
+                                <FluentMenuItem @onclick="@(() => HeaderItemNavigateTo(AccountLink))">
+                                    <FluentIcon Value="@(new Icons.Regular.Size20.PersonCircle())" Slot="start" />
+                                    Sign In
+                                </FluentMenuItem>
+                            </FluentMenu>
+                        </FluentStack>
+                    </FluentGridItem>
+                </FluentGrid>
+            </NotAuthorized>
+            
+            <Authorizing>
+                @* Loading State *@
+                <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
+                    <FluentGridItem>
+                        <FluentStack Orientation="Orientation.Horizontal" Class="d-flex align-items-center" HorizontalGap="10">
+                            <FluentIcon Value="@(new Icons.Color.Size28.CodeBlock())" />
+                            <FluentLabel Class="mb-0">@Title</FluentLabel>
+                            <FluentSpacer />
+                            <FluentProgressRing Class="d-inline-block" Style="width: 24px; height: 24px;" />
+                        </FluentStack>
+                    </FluentGridItem>
+                </FluentGrid>
+            </Authorizing>
+        </AuthorizeView>
+    </FluentCard>
+</div>
+
+@code
+{
+    private FluentCard _root = default!;
+    private bool _mobileMenuOpen = false;
+    private bool _userMenuOpen = false;
+
+    [Parameter]
+    public string LogoSvg { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public DictionaryWithDefault<string, string> NavLinks { get; set; } = new(defaultValue: string.Empty, 0);
+
+    [Parameter]
+    public required string AccountLink { get; set; }
+
+    [Parameter]
+    public EventCallback OnSignOut { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        
+        if (firstRender)
+        {
+            await DesignUnit.SetValueFor(_root.Element, 2);
+            await AccentBaseColor.SetValueFor(_root.Element, "#8853CA".ToSwatch());
+        }
+    }
+
+    private void HeaderItemNavigateTo(string url, bool forceLoad = false)
+    {
+        _mobileMenuOpen = false;
+        Navigation.NavigateTo(url, forceLoad: forceLoad);
+    }
+
+    private void OnBreakpointEnterHandler(GridItemSize size) { }
+
+    private void ToggleMobileMenu()
+    {
+        _mobileMenuOpen = !_mobileMenuOpen;
+    }
+
+    private void ToggleUserMenu()
+    {
+        _userMenuOpen = !_userMenuOpen;
+    }
+
+    private async Task HandleSignOut()
+    {
+        _userMenuOpen = false;
+        _mobileMenuOpen = false;
+        
+        if (OnSignOut.HasDelegate)
+        {
+            await OnSignOut.InvokeAsync();
+        }
+        else
+        {
+            // Default behavior - navigate to home
+            HeaderItemNavigateTo(string.Empty, forceLoad: true);
+        }
+    }
+}

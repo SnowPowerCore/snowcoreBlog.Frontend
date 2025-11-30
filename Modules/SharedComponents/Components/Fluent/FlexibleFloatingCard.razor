@@ -19,7 +19,7 @@
                 @(MobileSizeContent ?? RegularSizeContent)
             </FloatingCard>
         </FluentGridItem>
-        <FluentGridItem HiddenWhen="GridItemHidden.XsAndDown">
+        <FluentGridItem HiddenWhen="@(GridItemHidden.XsAndDown | GridItemHidden.XlAndUp)">
             <div class="d-grid my-5">
                 <FloatingCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
                     @RegularSizeContent

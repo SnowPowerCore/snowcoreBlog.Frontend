@@ -36,20 +36,20 @@ else
 }
 
 app.UseHttpsRedirection();
+app.MapStaticAssets();
 app.UseMiddleware<ApplyBasePathMiddleware>();
 app.UseMiddleware<ArticlesAntiforgeryInitMiddleware>();
 app.UseMiddleware<ReadersManagementAntiforgeryInitMiddleware>();
 app.UseAntiforgery();
-
 app.MapRazorComponents<App>()
 	.AddInteractiveServerRenderMode()
 	.AddInteractiveWebAssemblyRenderMode()
 	.AddAdditionalAssemblies(
 		typeof(snowcoreBlog.Frontend.Client.Program).Assembly,
+		typeof(snowcoreBlog.Frontend.ClientShared.Extensions.ServiceCollectionExtensions).Assembly,
 		typeof(snowcoreBlog.Frontend.Articles.Extensions.ServiceCollectionExtensions).Assembly,
 		typeof(snowcoreBlog.Frontend.ReadersManagement.Extensions.ServiceCollectionExtensions).Assembly,
 		typeof(snowcoreBlog.Frontend.SharedComponents.Extensions.ServiceCollectionExtensions).Assembly);
-app.MapStaticAssets();
 app.MapAuthEndpoints();
 
 await app.RunAsync();

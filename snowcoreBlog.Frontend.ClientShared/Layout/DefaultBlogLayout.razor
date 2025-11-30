@@ -18,8 +18,15 @@
         <AuthorizeView>
             <Authorized>
                 <main>
-                    <FluentStack Orientation="Orientation.Vertical">
-                        <article>
+                    <FluentStack Class="h-100" VerticalGap="0" Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
+                        <GeneralHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="@string.Empty" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
+                            {
+                                ["Home"] = "home",
+                                ["Blog"] = "blog",
+                                ["About"] = "about"
+                            })">
+                        </GeneralHeader>
+                        <article class="h-100">
                             @Body
                         </article>
                     </FluentStack>
@@ -27,15 +34,14 @@
             </Authorized>
             <NotAuthorized>
                 <main>
-                    <FluentStack Class="h-100" VerticalGap="0" Orientation="Orientation.Vertical"
-                        HorizontalAlignment="HorizontalAlignment.Stretch">
-                        <GeneralNonAuthHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="/Login" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
+                    <FluentStack Class="h-100" VerticalGap="0" Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
+                        <GeneralHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="login" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
                             {
                                 ["Home"] = "home",
                                 ["Blog"] = "blog",
                                 ["About"] = "about"
                             })">
-                        </GeneralNonAuthHeader>
+                        </GeneralHeader>
                         <article class="h-100">
                             @Body
                         </article>
@@ -45,13 +51,13 @@
             <Authorizing>
                 <main>
                     <FluentStack Orientation="Orientation.Vertical">
-                        <GeneralNonAuthHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="/Login" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
+                        <GeneralHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="login" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
                             {
                                 ["Home"] = "home",
                                 ["Blog"] = "blog",
                                 ["About"] = "about"
                             })">
-                        </GeneralNonAuthHeader>
+                        </GeneralHeader>
                         <article>
                             <FluentLabel>Please wait, we are authorizing the user.</FluentLabel>
                         </article>
