@@ -25,7 +25,6 @@ builder.AddBlazorAuth<GlobalReaderAccountAuthenticationService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
@@ -39,6 +38,7 @@ else
 
 app.UseHttpsRedirection();
 app.MapStaticAssets();
+app.MapAuthEndpoints();
 app.UseMiddleware<ApplyBasePathMiddleware>();
 app.UseMiddleware<ArticlesAntiforgeryInitMiddleware>();
 app.UseMiddleware<ReadersManagementAntiforgeryInitMiddleware>();
@@ -54,6 +54,5 @@ app.MapRazorComponents<App>()
 		typeof(snowcoreBlog.Frontend.Articles._Imports).Assembly,
 		typeof(snowcoreBlog.Frontend.ReadersManagement._Imports).Assembly,
 		typeof(snowcoreBlog.Frontend.SharedComponents._Imports).Assembly);
-app.MapAuthEndpoints();
 
 await app.RunAsync();

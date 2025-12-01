@@ -1,5 +1,7 @@
+using BitzArt.Blazor.Auth;
 using BitzArt.Blazor.Auth.Client;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using snowcoreBlog.Frontend.Client.Services;
 using snowcoreBlog.Frontend.ClientShared.Extensions;
 using snowcoreBlog.Frontend.ClientShared.Handlers;
 
@@ -15,5 +17,7 @@ builder.Services
 builder.Services.AddClient();
 builder.Services.AddClientSideApizrManagers();
 builder.AddBlazorAuth();
+builder.Services.AddScoped<IUserService, BlazorHostBackedClientUserService>();
+builder.Services.AddScoped(typeof(IUserService<>), typeof(BlazorHostBackedClientUserService<>));
 
 await builder.Build().RunAsync();

@@ -15,17 +15,14 @@ public class GlobalReaderAccountAuthenticationService : AuthenticationService<Lo
 {
     private readonly IApizrManager<IReaderAccountManagementApi> _readerAccountApi;
     private readonly IApizrManager<IReaderAccountTokensApi> _tokensApi;
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly AltchaSolver _altchaSolver;
 
     public GlobalReaderAccountAuthenticationService(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
                                                     IApizrManager<IReaderAccountTokensApi> tokensApi,
-                                                    IHttpClientFactory httpClientFactory,
                                                     AltchaSolver altchaSolver)
     {
         _readerAccountApi = readerAccountApi;
         _tokensApi = tokensApi;
-        _httpClientFactory = httpClientFactory;
         _altchaSolver = altchaSolver;
     }
 
