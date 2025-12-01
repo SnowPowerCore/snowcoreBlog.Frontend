@@ -21,14 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj" />
     <ProjectReference Include="..\..\snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj" />
     <ProjectReference Include="..\..\snowcoreBlog.Universal\PublicApi\snowcoreBlog.PublicApi.csproj" />
+    <ProjectReference Include="..\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\" />
-    <Folder Include="Components\Fluent\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

@@ -27,9 +27,10 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddTimeWarpState(static options =>
         {
             options.Assemblies = [
-                typeof(Articles.Extensions.ServiceCollectionExtensions).Assembly,
-                typeof(ReadersManagement.Extensions.ServiceCollectionExtensions).Assembly,
-                typeof(SharedComponents.Extensions.ServiceCollectionExtensions).Assembly,
+                typeof(_Imports).Assembly,
+                typeof(SharedComponents._Imports).Assembly,
+                typeof(Articles._Imports).Assembly,
+                typeof(ReadersManagement._Imports).Assembly,
                 typeof(TimeWarp.State.Plus.AssemblyMarker).Assembly
             ];
         });

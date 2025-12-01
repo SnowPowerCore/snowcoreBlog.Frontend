@@ -1,9 +1,9 @@
 ﻿<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="[
-        typeof(snowcoreBlog.Frontend.Articles.Extensions.ServiceCollectionExtensions).Assembly,
-        typeof(snowcoreBlog.Frontend.ReadersManagement.Extensions.ServiceCollectionExtensions).Assembly,
-        typeof(snowcoreBlog.Frontend.Client.Program).Assembly,
-        typeof(snowcoreBlog.Frontend.ClientShared.Extensions.ServiceCollectionExtensions).Assembly,
-        typeof(snowcoreBlog.Frontend.SharedComponents.Extensions.ServiceCollectionExtensions).Assembly,
+        typeof(_Imports).Assembly,
+        typeof(snowcoreBlog.Frontend.ClientShared._Imports).Assembly,
+        typeof(snowcoreBlog.Frontend.Articles._Imports).Assembly,
+        typeof(snowcoreBlog.Frontend.ReadersManagement._Imports).Assembly,
+        typeof(snowcoreBlog.Frontend.SharedComponents._Imports).Assembly,
     ]">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(ClientShared.Layout.DefaultBlogLayout)">

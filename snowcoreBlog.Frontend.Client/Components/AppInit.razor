@@ -1,5 +1,7 @@
-﻿@using snowcoreBlog.ApplicationLaunch.Interfaces
+﻿@using TimeWarp.State
+@using snowcoreBlog.ApplicationLaunch.Interfaces
 
+@inherits TimeWarpStateComponent
 @attribute [StreamRendering]
 
 @inject IApplicationLaunchService ApplicationLaunch

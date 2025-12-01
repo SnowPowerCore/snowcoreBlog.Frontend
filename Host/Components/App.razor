@@ -1,10 +1,11 @@
-﻿@using snowcoreBlog.Frontend.Core.Constants
+﻿@using snowcoreBlog.Frontend.Client.Components;
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, height=device-height initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>snowcore's Blog</title>
     <base href="@(HttpContext.Request.PathBase.Value + "/")" />
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
@@ -17,10 +18,7 @@
 </head>
 
 <body>
-    @if (IsNonClient)
-    {
-        <AppInit @rendermode="new InteractiveServerRenderMode(prerender: false)"/>
-    }
+    <AppInit @rendermode="new InteractiveAutoRenderMode(prerender: false)"/>
     <Routes @rendermode="InteractiveAuto"/>
     <script src="_framework/blazor.web.js"></script>
     <script
@@ -37,8 +35,6 @@
 {
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
-
-    private bool IsNonClient => RendererInfo.Name != RendererNameConstants.WebAssembly;
 
     private IComponentRenderMode? PageRenderMode =>
         HttpContext.AcceptsInteractiveRouting() ? InteractiveAuto : default;

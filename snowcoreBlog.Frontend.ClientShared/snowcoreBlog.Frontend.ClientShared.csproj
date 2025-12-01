@@ -24,9 +24,7 @@
     <ProjectReference Include="..\Modules\Articles\snowcoreBlog.Frontend.Articles.csproj" />
     <ProjectReference Include="..\Modules\ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj" />
     <ProjectReference Include="..\Modules\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj" />
-    <ProjectReference Include="..\snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj" />
     <ProjectReference Include="..\snowcoreBlog.Universal\PublicApi\snowcoreBlog.PublicApi.csproj" />
-    <ProjectReference Include="..\snowcoreBlog.Universal\UniversalModules\ApplicationLaunch.Implementations\snowcoreBlog.ApplicationLaunch.Implementations.csproj" />
   </ItemGroup>
 
 </Project>

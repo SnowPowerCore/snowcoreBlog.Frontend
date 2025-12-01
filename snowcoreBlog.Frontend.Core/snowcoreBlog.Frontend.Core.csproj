@@ -15,4 +15,8 @@
     <Localize Include="Resources\TranslationResources_*.json" NamespaceName="snowcoreBlog.Frontend.Core.Resources" ClassName="TranslationResources" NeutralCulture="en" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\snowcoreBlog.Universal\UniversalModules\ApplicationLaunch\snowcoreBlog.ApplicationLaunch.csproj" />
+  </ItemGroup>
+
 </Project>
