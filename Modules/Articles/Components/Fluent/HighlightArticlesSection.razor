@@ -16,12 +16,15 @@
 			{
 				<div class="col-12 col-md-8">
 					<a class="d-flex flex-column text-decoration-none text-reset h-100" href="@GetArticleUrl(three[0])" aria-label="@three[0].Title">
-						<FloatingCard Style="display: contents;">
-							<div class="highlight-main-image w-100"></div>
-							<div class="p-3 highlight-main-body d-flex flex-column gap-2 flex-grow-1">
-								<h3 class="title mb-0">@three[0].Title</h3>
-								<p class="meta mb-0">@FormatDate(three[0].PublishedAt) • @string.Join(", ", three[0].AuthorUserIds ?? new Guid[0])</p>
-								<p class="excerpt mt-auto mb-0">@Excerpt(three[0].Markdown)</p>
+						<FloatingCard class="d-block p-0 h-100 position-relative">
+							@if (!string.IsNullOrWhiteSpace(three[0].CoverImageUrl))
+							{
+								<img src="@three[0].CoverImageUrl" alt="@three[0].Title" class="highlight-main-image w-100 h-100 position-absolute top-0 start-0" />
+							}
+					<div class="highlight-main-overlay d-flex flex-column gap-2 position-absolute bottom-0 start-0 end-0 text-white" style="padding: calc(var(--design-unit) * 5px);">
+						<h3 class="title">@three[0].Title</h3>
+								<p class="meta">@FormatDate(three[0].PublishedAt) • @string.Join(", ", three[0].AuthorUserIds ?? new Guid[0])</p>
+								<p class="excerpt">@Excerpt(three[0].Markdown)</p>
 							</div>
 						</FloatingCard>
 					</a>
@@ -31,23 +34,28 @@
 			<div class="col-12 col-md-4 d-flex flex-column justify-content-between highlight-side">
 				@if (three.Length >= 2)
 				{
-					<a class="d-flex align-items-center gap-3 text-decoration-none text-reset mb-3 side-item" href="@GetArticleUrl(three[1])" aria-label="@three[1].Title">
-						<FloatingCard Style="display: contents;">
-							<div class="side-thumb flex-shrink-0"></div>
-							<div class="side-body">
+					<a class="d-flex text-decoration-none text-reset mb-4 side-item highlight-side-item" href="@GetArticleUrl(three[1])" aria-label="@three[1].Title">
+						<FloatingCard class="d-block p-0 w-100 position-relative">
+							@if (!string.IsNullOrWhiteSpace(three[1].CoverImageUrl))
+							{
+								<img src="@three[1].CoverImageUrl" alt="@three[1].Title" class="highlight-side-image w-100 h-100 position-absolute top-0 start-0" />
+							}
+							<div class="highlight-side-overlay d-flex flex-column gap-1 position-absolute bottom-0 start-0 end-0 text-white" style="padding: calc(var(--design-unit) * 5px);">
 								<h4 class="title mb-0">@three[1].Title</h4>
 								<p class="meta mb-0">@FormatDate(three[1].PublishedAt)</p>
 							</div>
 						</FloatingCard>
 					</a>
 				}
-
 				@if (three.Length >= 3)
 				{
-					<a class="d-flex align-items-center gap-3 text-decoration-none text-reset side-item" href="@GetArticleUrl(three[2])" aria-label="@three[2].Title">
-						<FloatingCard Style="display: contents;">
-							<div class="side-thumb flex-shrink-0"></div>
-							<div class="side-body">
+					<a class="d-flex text-decoration-none text-reset side-item highlight-side-item" href="@GetArticleUrl(three[2])" aria-label="@three[2].Title">
+						<FloatingCard class="d-block p-0 w-100 position-relative">
+							@if (!string.IsNullOrWhiteSpace(three[2].CoverImageUrl))
+							{
+								<img src="@three[2].CoverImageUrl" alt="@three[2].Title" class="highlight-side-image w-100 h-100 position-absolute top-0 start-0" />
+							}
+							<div class="highlight-side-overlay d-flex flex-column gap-1 position-absolute bottom-0 start-0 end-0 text-white" style="padding: calc(var(--design-unit) * 5px);">
 								<h4 class="title mb-0">@three[2].Title</h4>
 								<p class="meta mb-0">@FormatDate(three[2].PublishedAt)</p>
 							</div>

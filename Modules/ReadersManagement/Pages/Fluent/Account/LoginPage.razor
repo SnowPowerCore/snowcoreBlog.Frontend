@@ -48,8 +48,10 @@
                                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                     <FluentSpacer />
                                     <FluentSpacer />
+                                    <FluentSpacer />
                                     <FluentTextField Name="login" Label="@TranslationResources.EmailFieldLabel" InputMode="InputMode.Email" @bind-Value=@PasswordlessLogin.Email Required Size="40" />
                                     <FluentValidationMessage For=@(() => PasswordlessLogin.Email) />
+                                    <FluentSpacer />
                                     <FluentSpacer />
                                     <FluentLabel>
                                         <FluentAnchor Appearance="Appearance.Hypertext" Href="javascript: void(0);">
@@ -62,9 +64,11 @@
                                         </FluentAnchor>
                                     </FluentLabel>
                                     <FluentSpacer />
+                                    <FluentSpacer />
                                     <AltchaWidget
                                         ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
                                         OnVerified="HandleOnVerified"/>
+                                    <FluentSpacer />
                                     <FluentSpacer />
                                     <FluentButton Class="align-self-end" Type="ButtonType.Submit" Appearance="Appearance.Accent">
                                         @TranslationResources.LoginButtonLabel
@@ -93,7 +97,9 @@
                                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                     <FluentSpacer />
                                     <FluentSpacer />
+                                    <FluentSpacer />
                                     <FluentTextField Name="login" Label="@TranslationResources.EmailFieldLabel" InputMode="InputMode.Email" Required Size="40" />
+                                    <FluentSpacer />
                                     <FluentSpacer />
                                     <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
                                         VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
@@ -102,6 +108,7 @@
                                         @TranslationResources.OTCNextPageInfoLabel1<br/>
                                         @TranslationResources.OTCNextPageInfoLabel2
                                     </FluentStack>
+                                    <FluentSpacer />
                                     <FluentSpacer />
                                     <FluentButton Class="align-self-end" Type="ButtonType.Submit" Appearance="Appearance.Accent">
                                         @TranslationResources.AuthenticatorButtonLabel
@@ -125,6 +132,7 @@
                         </Header>
                         <Content>
                             <FluentStack Orientation="Orientation.Vertical">
+                                <FluentSpacer />
                                 <FluentSpacer />
                                 <FluentSpacer />
                                 <FluentLabel Alignment="HorizontalAlignment.Center">
@@ -171,6 +179,7 @@
                 <FluentDivider Class="w-100" Orientation="Orientation.Horizontal"
                     Role="DividerRole.Presentation" />
                 <FluentSpacer />
+                <FluentSpacer />
                 <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
                     VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
                     <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
@@ -178,7 +187,8 @@
                     <FluentLabel>@TranslationResources.RegisterPromptLabel</FluentLabel>
                 </FluentStack>
                 <FluentSpacer />
-                <FluentButton OnClick="@(() => Navigation.NavigateTo("register"))" Class="align-self-end" Appearance="Appearance.Neutral">
+                <FluentSpacer />
+                <FluentButton OnClick="@(() => Navigation.NavigateTo("register"))" Class="align-self-end" Appearance="Appearance.Outline">
                     @TranslationResources.RegisterButtonLabel
                 </FluentButton>
                 <FluentOverlay @bind-Visible=@_overlayVisible

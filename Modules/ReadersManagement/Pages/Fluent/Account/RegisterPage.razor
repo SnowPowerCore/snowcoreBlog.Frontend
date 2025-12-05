@@ -33,20 +33,26 @@
                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                     <FluentSpacer />
                     <FluentSpacer />
+                    <FluentSpacer />
                     <FluentTextField InputMode="InputMode.Email" Name="email" Label="@TranslationResources.EmailFieldLabel" @bind-Value=@CreateNewAccount.Email Required />
                     <FluentValidationMessage For=@(() => CreateNewAccount.Email) />
+                    <FluentSpacer />
                     <FluentSpacer />
                     <FluentTextField Name="firstName" Label="@TranslationResources.FirstNameFieldLabel" @bind-Value=@CreateNewAccount.FirstName Required />
                     <FluentValidationMessage For=@(() => CreateNewAccount.FirstName) />
                     <FluentSpacer />
+                    <FluentSpacer />
                     <FluentTextField Name="lastName" Label="@TranslationResources.LastNameFieldLabel" @bind-Value=@CreateNewAccount.LastName />
                     <FluentValidationMessage For=@(() => CreateNewAccount.LastName) />
+                    <FluentSpacer />
                     <FluentSpacer />
                     <FluentTextField Name="nickName" Label="@TranslationResources.NickNameFieldLabel" @bind-Value=@CreateNewAccount.NickName Required />
                     <FluentValidationMessage For=@(() => CreateNewAccount.NickName) />
                     <FluentSpacer />
+                    <FluentSpacer />
                     <FluentTextField InputMode="InputMode.Telephone" Name="phoneNumber" Label="@TranslationResources.PhoneNumberFieldLabel" @bind-Value=@CreateNewAccount.PhoneNumber />
                     <FluentValidationMessage For=@(() => CreateNewAccount.PhoneNumber) />
+                    <FluentSpacer />
                     <FluentSpacer />
                     <FluentCheckbox @bind-Value="@CreateNewAccount.InitialEmailConsent" Required>
                         @TranslationResources.InitialEmailConsentInfoLabel1<br/>@TranslationResources.InitialEmailConsentInfoLabel2
@@ -59,9 +65,11 @@
                     </FluentCheckbox>
                     <FluentValidationMessage For=@(() => CreateNewAccount.ConfirmedAgreement) />
                     <FluentSpacer />
+                    <FluentSpacer />
                     <AltchaWidget
                         ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
                         OnVerified="HandleOnVerified"/>
+                    <FluentSpacer />
                     <FluentSpacer />
                     <FluentButton Class="align-self-end" Type="ButtonType.Submit"
                         Appearance="Appearance.Accent">@TranslationResources.RegisterButtonLabel
@@ -78,6 +86,7 @@
             <FluentDivider Class="w-100" Orientation="Orientation.Horizontal"
                 Role="DividerRole.Presentation" />
             <FluentSpacer />
+            <FluentSpacer />
             <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
                 VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
                 <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
@@ -85,7 +94,8 @@
                 <FluentLabel>@TranslationResources.LoginPromptLabel</FluentLabel>
             </FluentStack>
             <FluentSpacer />
-            <FluentButton OnClick="@(() => Navigation.NavigateTo("login"))" Class="align-self-end" Appearance="Appearance.Neutral">
+            <FluentSpacer />
+            <FluentButton OnClick="@(() => Navigation.NavigateTo("login"))" Class="align-self-end" Appearance="Appearance.Outline">
                 @TranslationResources.LoginButtonLabel
             </FluentButton>
             <FluentSpacer />

@@ -87,6 +87,7 @@
                     @* Desktop/Tablet View - MD and up *@
                     <FluentGridItem HiddenWhen="GridItemHidden.SmAndDown" Class="mw-100">
                         <FluentStack Orientation="Orientation.Horizontal" Class="d-flex align-items-center w-100" HorizontalGap="10">
+                            <FluentSpacer Width="10" />
                             <FluentIcon Value="@(new Icons.Color.Size28.CodeBlock())" Class="cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))" />
                             <FluentLabel Class="mb-0" Style="cursor: pointer;" @onclick="@(() => HeaderItemNavigateTo(string.Empty))">@Title</FluentLabel>
                             <FluentDivider Class="ms-2" Style="height: 15px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
@@ -96,11 +97,13 @@
                                 {
                                     <FluentAnchor Href="@navLink.Value" Appearance="Appearance.Lightweight">@navLink.Key</FluentAnchor>
                                 }
-                                <FluentDivider Style="height: 15px; width: 15px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
+                                <FluentDivider Style="height: 15px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
+                                <FluentSpacer Width="5" />
                                 <FluentButton Appearance="Appearance.Accent" @onclick="@(() => HeaderItemNavigateTo(AccountLink))">
                                     Sign In
                                 </FluentButton>
                             </FluentStack>
+                            <FluentSpacer Width="10" />
                         </FluentStack>
                     </FluentGridItem>
                     
@@ -132,7 +135,7 @@
             <Authorizing>
                 @* Loading State *@
                 <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
-                    <FluentGridItem>
+                    <FluentGridItem Class="mw-100">
                         <FluentStack Orientation="Orientation.Horizontal" Class="d-flex align-items-center" HorizontalGap="10">
                             <FluentIcon Value="@(new Icons.Color.Size28.CodeBlock())" />
                             <FluentLabel Class="mb-0">@Title</FluentLabel>

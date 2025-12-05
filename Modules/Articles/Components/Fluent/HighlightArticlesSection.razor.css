@@ -1,23 +1,30 @@
+.g-3
+{
+    --bs-gutter-x: 1.5rem !important;
+}
+
 .no-articles
 {
     padding: 1rem;
     color: var(--neutral-foreground, #666);
 }
 
-.highlight-main-image
+.highlight-main-image,
+.highlight-side-image
 {
-    background-size: cover;
-    background-position: center;
-    height: 50%;
+    object-fit: cover;
+    display: block;
 }
 
-.side-thumb
+.highlight-main-overlay,
+.highlight-side-overlay
 {
-    width: 96px;
-    height: 64px;
-    background-size: cover;
-    background-position: center;
-    border-radius: 4px;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.3) 80%, transparent 100%);
+}
+
+.highlight-side-item
+{
+    height: 200px;
 }
 
 .title
