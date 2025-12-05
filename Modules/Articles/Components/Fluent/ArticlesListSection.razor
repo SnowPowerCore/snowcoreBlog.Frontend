@@ -17,7 +17,7 @@
                         <FloatingCard Class="masonry-card p-0 position-relative d-flex flex-column">
                             @if (!string.IsNullOrWhiteSpace(a.CoverImageUrl))
 							{
-								<img src="@a.CoverImageUrl" alt="@a.Title" class="masonry-thumb position-absolute top-0 start-0 w-100 h-100" />
+								<img src="@a.CoverImageUrl" alt="@a.Title" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" />
 							}
                             <div class="masonry-tint position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.85));"></div>
                             <div class="flex-grow-1" style="min-height: 200px;"></div>
