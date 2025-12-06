@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BitzArt.Blazor.Auth.Server" Version="2.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.11" />
+    <PackageReference Include="BitzArt.Blazor.Auth.Server" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
   </ItemGroup>
 
   <ItemGroup>

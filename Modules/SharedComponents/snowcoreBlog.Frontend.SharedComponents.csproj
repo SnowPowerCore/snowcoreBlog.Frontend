@@ -12,15 +12,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Antiforgery" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.11" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.11" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.13.1" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.13.1" />
-    <PackageReference Include="TimeWarp.State" Version="11.0.3" />
-    <PackageReference Include="TimeWarp.State.Plus" Version="11.0.3" />
-    <PackageReference Include="TimeWarp.State.Policies" Version="11.0.3" />
-    <PackageReference Include="FluentValidation" Version="12.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Antiforgery" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" />
+    <PackageReference Include="TimeWarp.State" />
+    <PackageReference Include="TimeWarp.State.Plus" />
+    <PackageReference Include="TimeWarp.State.Policies" />
+    <PackageReference Include="FluentValidation" />
   </ItemGroup>
 
   <ItemGroup>

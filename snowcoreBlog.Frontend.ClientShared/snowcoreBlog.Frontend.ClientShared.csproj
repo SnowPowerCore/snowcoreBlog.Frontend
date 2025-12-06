@@ -12,16 +12,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Apizr.Extensions.Microsoft.DependencyInjection" Version="6.4.2" />
-    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.13.1" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.13.1" />
+    <PackageReference Include="Apizr.Extensions.Microsoft.DependencyInjection" />
+    <PackageReference Include="Blazored.LocalStorage" />
+    <PackageReference Include="Blazored.SessionStorage" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Modules\Articles\snowcoreBlog.Frontend.Articles.csproj" />
+    <ProjectReference Include="..\Modules\Notifications\snowcoreBlog.Frontend.Notifications.csproj" />
     <ProjectReference Include="..\Modules\ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj" />
     <ProjectReference Include="..\Modules\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj" />
     <ProjectReference Include="..\snowcoreBlog.Universal\PublicApi\snowcoreBlog.PublicApi.csproj" />

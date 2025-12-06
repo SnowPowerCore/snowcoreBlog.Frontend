@@ -1,0 +1,115 @@
+@using snowcoreBlog.Frontend.Notifications.Features.NotificationBar
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@inherits TimeWarpStateComponent
+
+@inject HttpClient HttpClient
+
+@if (NotificationBarState.HasVisibleNotifications)
+{
+    <div class="notification-bar-container">
+        @foreach (var notification in NotificationBarState.VisibleNotifications)
+        {
+            <div class="notification-bar @GetNotificationClass(notification.Type)" role="alert">
+                <div class="notification-content">
+                    <FluentIcon Value="@GetNotificationIcon(notification.Type)" Class="notification-icon" />
+                    <span class="notification-title">@notification.Title</span>
+                    @if (!string.IsNullOrWhiteSpace(notification.Description))
+                    {
+                        <span class="notification-description">— @notification.Description</span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(notification.LinkUrl))
+                    {
+                        <FluentAnchor Href="@notification.LinkUrl" 
+                                     Target="_blank" 
+                                     Appearance="Appearance.Lightweight"
+                                     Class="notification-link">
+                            @(notification.LinkText ?? "Learn more")
+                        </FluentAnchor>
+                    }
+                </div>
+                @if (notification.IsDismissible)
+                {
+                    <FluentButton Appearance="Appearance.Lightweight"
+                                 Class="notification-dismiss"
+                                 IconEnd="@(new Icons.Regular.Size16.Dismiss())"
+                                 Title="Dismiss"
+                                 @onclick="@(() => DismissNotification(notification.Id))" />
+                }
+            </div>
+        }
+    </div>
+}
+
+@code
+{
+    private NotificationBarState NotificationBarState => GetState<NotificationBarState>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadNotificationsAsync();
+    }
+
+    private async Task LoadNotificationsAsync()
+    {
+        try
+        {
+            await NotificationBarState.SetLoading(true);
+
+            var response = await HttpClient.GetFromJsonAsync<NotificationApiResponse>("/api/v1/notifications/active");
+
+            if (response?.Data is not null)
+            {
+                await NotificationBarState.SetNotifications(response.Data);
+            }
+            else
+            {
+                await NotificationBarState.SetNotifications([]);
+            }
+        }
+        catch (Exception ex)
+        {
+            await NotificationBarState.SetError(ex.Message);
+        }
+    }
+
+    private Task DismissNotification(Guid notificationId)
+    {
+        return NotificationBarState.DismissNotification(notificationId);
+    }
+
+    private static string GetNotificationClass(NotificationTypeDto type) => type switch
+    {
+        NotificationTypeDto.Info => "notification-info",
+        NotificationTypeDto.Warning => "notification-warning",
+        NotificationTypeDto.Success => "notification-success",
+        NotificationTypeDto.Announcement => "notification-announcement",
+        NotificationTypeDto.Maintenance => "notification-maintenance",
+        NotificationTypeDto.Outage => "notification-outage",
+        NotificationTypeDto.FeatureUpdate => "notification-feature",
+        _ => "notification-info"
+    };
+
+    private static Icon GetNotificationIcon(NotificationTypeDto type) => type switch
+    {
+        NotificationTypeDto.Info => new Icons.Regular.Size20.Info(),
+        NotificationTypeDto.Warning => new Icons.Regular.Size20.Warning(),
+        NotificationTypeDto.Success => new Icons.Regular.Size20.CheckmarkCircle(),
+        NotificationTypeDto.Announcement => new Icons.Regular.Size20.Megaphone(),
+        NotificationTypeDto.Maintenance => new Icons.Regular.Size20.Wrench(),
+        NotificationTypeDto.Outage => new Icons.Regular.Size20.ErrorCircle(),
+        NotificationTypeDto.FeatureUpdate => new Icons.Regular.Size20.Sparkle(),
+        _ => new Icons.Regular.Size20.Info()
+    };
+
+    /// <summary>
+    /// API response wrapper for notifications.
+    /// </summary>
+    private sealed record NotificationApiResponse
+    {
+        public IReadOnlyList<NotificationDto>? Data { get; init; }
+        public int DataCount { get; init; }
+        public int StatusCode { get; init; }
+    }
+}

@@ -1,0 +1,109 @@
+.notification-bar-container {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+}
+
+.notification-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    min-height: 40px;
+    gap: 0.5rem;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.notification-icon {
+    flex-shrink: 0;
+}
+
+.notification-title {
+    font-weight: 600;
+}
+
+.notification-description {
+    opacity: 0.9;
+}
+
+.notification-link {
+    margin-left: 0.5rem;
+}
+
+.notification-dismiss {
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.notification-dismiss:hover {
+    opacity: 1;
+}
+
+/* Info - Uses accent color (default blue-ish) */
+.notification-info {
+    background-color: var(--accent-fill-rest);
+    color: var(--foreground-on-accent-rest);
+}
+
+/* Warning - Orange/Yellow tint */
+.notification-warning {
+    background-color: #FFF3CD;
+    color: #856404;
+}
+
+/* Success - Green tint */
+.notification-success {
+    background-color: #D4EDDA;
+    color: #155724;
+}
+
+/* Announcement - Accent with slightly different treatment */
+.notification-announcement {
+    background-color: var(--accent-fill-rest);
+    color: var(--foreground-on-accent-rest);
+}
+
+/* Maintenance - Neutral/Gray */
+.notification-maintenance {
+    background-color: var(--neutral-fill-secondary-rest);
+    color: var(--neutral-foreground-rest);
+}
+
+/* Outage - Red/Error tint */
+.notification-outage {
+    background-color: #F8D7DA;
+    color: #721C24;
+}
+
+/* Feature Update - Accent variation */
+.notification-feature {
+    background-color: var(--accent-fill-rest);
+    color: var(--foreground-on-accent-rest);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .notification-warning {
+        background-color: #5C4813;
+        color: #FFF3CD;
+    }
+
+    .notification-success {
+        background-color: #155724;
+        color: #D4EDDA;
+    }
+
+    .notification-outage {
+        background-color: #721C24;
+        color: #F8D7DA;
+    }
+}

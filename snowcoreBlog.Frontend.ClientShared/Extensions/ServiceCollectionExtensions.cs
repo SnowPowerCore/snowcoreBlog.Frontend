@@ -7,6 +7,7 @@ using snowcoreBlog.ApplicationLaunch.Interfaces;
 using snowcoreBlog.Frontend.Articles.Extensions;
 using snowcoreBlog.Frontend.ClientShared.Services;
 using snowcoreBlog.Frontend.Infrastructure.Extensions;
+using snowcoreBlog.Frontend.Notifications.Extensions;
 using snowcoreBlog.Frontend.ReadersManagement.Extensions;
 using snowcoreBlog.Frontend.SharedComponents.Extensions;
 using snowcoreBlog.PublicApi.BusinessObjects.Dto;
@@ -20,6 +21,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddClient(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddArticles();
+        serviceCollection.AddNotifications();
         serviceCollection.AddReadersManagement();
         serviceCollection.AddSharedComponents();
         serviceCollection.AddBlazoredLocalStorage();
@@ -30,6 +32,7 @@ public static class ServiceCollectionExtensions
                 typeof(_Imports).Assembly,
                 typeof(SharedComponents._Imports).Assembly,
                 typeof(Articles._Imports).Assembly,
+                typeof(Notifications._Imports).Assembly,
                 typeof(ReadersManagement._Imports).Assembly,
                 typeof(TimeWarp.State.Plus.AssemblyMarker).Assembly
             ];
