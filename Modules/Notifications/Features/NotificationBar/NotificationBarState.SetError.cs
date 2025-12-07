@@ -9,9 +9,14 @@ partial class NotificationBarState
     /// </summary>
     public static class SetErrorActionSet
     {
-        public sealed class Action(string? errorMessage) : IAction
+        public sealed class Action : IAction
         {
-            public string? ErrorMessage { get; } = errorMessage;
+            public string? ErrorMessage { get; }
+
+            public Action(string? errorMessage)
+            {
+                ErrorMessage = errorMessage;
+            }
         }
 
         public sealed class Handler(IStore store) : ActionHandler<Action>(store)

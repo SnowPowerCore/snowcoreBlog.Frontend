@@ -10,9 +10,14 @@ partial class NotificationBarState
     /// </summary>
     public static class SetNotificationsActionSet
     {
-        public sealed class Action(IReadOnlyList<NotificationDto> notifications) : IAction
+        public sealed class Action : IAction
         {
-            public IReadOnlyList<NotificationDto> Notifications { get; } = notifications;
+            public IReadOnlyList<NotificationDto> Notifications { get; }
+
+            public Action(IReadOnlyList<NotificationDto> notifications)
+            {
+                Notifications = notifications;
+            }
         }
 
         public sealed class Handler(IStore store) : ActionHandler<Action>(store)

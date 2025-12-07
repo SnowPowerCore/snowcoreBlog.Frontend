@@ -9,9 +9,14 @@ partial class NotificationBarState
     /// </summary>
     public static class DismissNotificationActionSet
     {
-        public sealed class Action(Guid notificationId) : IAction
+        public sealed class Action : IAction
         {
-            public Guid NotificationId { get; } = notificationId;
+            public Guid NotificationId { get; }
+
+            public Action(Guid notificationId)
+            {
+                NotificationId = notificationId;
+            }
         }
 
         public sealed class Handler(IStore store) : ActionHandler<Action>(store)

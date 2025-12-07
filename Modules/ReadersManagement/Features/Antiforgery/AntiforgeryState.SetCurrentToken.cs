@@ -6,9 +6,15 @@ partial class AntiforgeryState
 {
     public static class SetCurrentTokenActionSet
     {
-        public sealed class Action(string? token) : IAction
+        public sealed class Action : IAction
         {
-            public string? Token { get; } = token;
+            public string? Token { get; }
+
+            public Action(string? token)
+            {
+                Token = token;
+            }
+
         }
 
         public sealed class Handler(IStore store) : ActionHandler<Action>(store)
