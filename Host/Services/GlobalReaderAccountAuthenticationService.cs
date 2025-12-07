@@ -11,37 +11,26 @@ using CookieExtensions = snowcoreBlog.Frontend.Infrastructure.Extensions.CookieE
 
 namespace snowcoreBlog.Frontend.Host.Services;
 
-public class GlobalReaderAccountAuthenticationService : AuthenticationService<LoginByAssertionDto>
+public class GlobalReaderAccountAuthenticationService(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
+                                                IApizrManager<IReaderAccountTokensApi> tokensApi,
+                                                AltchaSolver altchaSolver) : AuthenticationService<LoginByAssertionDto>
 {
-    private readonly IApizrManager<IReaderAccountManagementApi> _readerAccountApi;
-    private readonly IApizrManager<IReaderAccountTokensApi> _tokensApi;
-    private readonly AltchaSolver _altchaSolver;
-
-    public GlobalReaderAccountAuthenticationService(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
-                                                    IApizrManager<IReaderAccountTokensApi> tokensApi,
-                                                    AltchaSolver altchaSolver)
-    {
-        _readerAccountApi = readerAccountApi;
-        _tokensApi = tokensApi;
-        _altchaSolver = altchaSolver;
-    }
-
     public override async Task<AuthenticationResult> SignInAsync(LoginByAssertionDto signInPayload, CancellationToken cancellationToken = default)
     {
-        using var antiforgeryResponse = await _tokensApi.ExecuteAsync(static (opt, api) => api.GetAntiforgeryToken(opt), o => o.WithCancellation(cancellationToken));
+        using var antiforgeryResponse = await tokensApi.ExecuteAsync(static (opt, api) => api.GetAntiforgeryToken(opt), o => o.WithCancellation(cancellationToken));
         var antiforgeryData = antiforgeryResponse.ToData<AntiforgeryResultDto>(out var antiforgeryErrors);
         if (antiforgeryData is default(AntiforgeryResultDto) || antiforgeryErrors.Count > 0)
             return AuthenticationResult.Failure("Failed to retrieve antiforgery token");
         
-        using var captchaResponse = await _tokensApi.ExecuteAsync(static (opt, api) => api.GetAltchaChallenge(opt), o => o.WithCancellation(cancellationToken));
+        using var captchaResponse = await tokensApi.ExecuteAsync(static (opt, api) => api.GetAltchaChallenge(opt), o => o.WithCancellation(cancellationToken));
         if (!captchaResponse.IsSuccess)
             return AuthenticationResult.Failure(captchaResponse.Exception?.Message);
 
-        var solverResult = _altchaSolver.Solve(captchaResponse.Result);
+        var solverResult = altchaSolver.Solve(captchaResponse.Result);
         if (!solverResult.Success)
             return AuthenticationResult.Failure(solverResult.Error.Message);
 
-        using var loginResponse = await _readerAccountApi.ExecuteAsync((opt, api) =>
+        using var loginResponse = await readerAccountApi.ExecuteAsync((opt, api) =>
             api.LoginByAssertion(signInPayload, antiforgeryData.RequestToken!, solverResult.Altcha, opt), o => o.WithCancellation(cancellationToken));
         var loginData = loginResponse.ToData<LoginByAssertionResultDto>(out var loginErrors);
         if (loginData is default(LoginByAssertionResultDto) || loginErrors.Count > 0)

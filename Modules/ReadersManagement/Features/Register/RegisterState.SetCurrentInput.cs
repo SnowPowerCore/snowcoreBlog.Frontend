@@ -7,19 +7,13 @@ partial class RegisterState
 {
     public static class SetCurrentInputActionSet
     {
-        public sealed class Action : IAction
+        public sealed class Action(RequestCreateReaderAccountDto? request) : IAction
         {
-            public RequestCreateReaderAccountDto? Request { get; }
-
-            public Action(RequestCreateReaderAccountDto? request)
-            {
-                Request = request;
-            }
+            public RequestCreateReaderAccountDto? Request { get; } = request;
         }
 
-        public sealed class Handler : ActionHandler<Action>
+        public sealed class Handler(IStore store) : ActionHandler<Action>(store)
         {
-            public Handler(IStore store) : base(store) { }
 
             private RegisterState RegisterState => Store.GetState<RegisterState>();
 

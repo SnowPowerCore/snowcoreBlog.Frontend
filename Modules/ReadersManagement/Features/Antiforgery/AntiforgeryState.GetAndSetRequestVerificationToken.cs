@@ -15,20 +15,14 @@ partial class AntiforgeryState
             public Action() { }
         }
 
-        public sealed class Handler : ActionHandler<Action>
+        public sealed class Handler(IStore store, IApizrManager<IReaderAccountTokensApi> tokensApi) : ActionHandler<Action>(store)
         {
-            private readonly IApizrManager<IReaderAccountTokensApi> _tokensApi;
-
-            public Handler(IStore store, IApizrManager<IReaderAccountTokensApi> tokensApi) : base(store)
-            {
-                _tokensApi = tokensApi;
-            }
 
             private AntiforgeryState AntiforgeryState => Store.GetState<AntiforgeryState>();
 
             public override async Task Handle(Action action, CancellationToken cancellationToken)
             {
-                using var response = await _tokensApi.ExecuteAsync(static (opt, api) =>
+                using var response = await tokensApi.ExecuteAsync(static (opt, api) =>
                     api.GetAntiforgeryToken(opt), o => o.WithCancellation(cancellationToken));
                 var data = response.ToData<AntiforgeryResultDto>(out var errors);
                 if (data is default(AntiforgeryResultDto) && errors.Count > 0)

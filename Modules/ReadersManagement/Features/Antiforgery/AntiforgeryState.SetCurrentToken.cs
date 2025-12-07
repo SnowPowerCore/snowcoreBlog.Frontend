@@ -6,19 +6,13 @@ partial class AntiforgeryState
 {
     public static class SetCurrentTokenActionSet
     {
-        public sealed class Action : IAction
+        public sealed class Action(string? token) : IAction
         {
-            public string? Token { get; }
-
-            public Action(string? token)
-            {
-                Token = token;
-            }
+            public string? Token { get; } = token;
         }
 
-        public sealed class Handler : ActionHandler<Action>
+        public sealed class Handler(IStore store) : ActionHandler<Action>(store)
         {
-            public Handler(IStore store) : base(store) { }
 
             private AntiforgeryState AntiforgeryState => Store.GetState<AntiforgeryState>();
 

@@ -9,14 +9,9 @@ partial class NotificationBarState
     /// </summary>
     public static class SetLoadingActionSet
     {
-        public sealed class Action : IAction
+        public sealed class Action(bool isLoading) : IAction
         {
-            public bool IsLoading { get; }
-
-            public Action(bool isLoading)
-            {
-                IsLoading = isLoading;
-            }
+            public bool IsLoading { get; } = isLoading;
         }
 
         public sealed class Handler(IStore store) : ActionHandler<Action>(store)

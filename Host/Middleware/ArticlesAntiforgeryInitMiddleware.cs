@@ -7,18 +7,10 @@ namespace snowcoreBlog.Frontend.Host.Middleware;
 /// Middleware that ensures fresh antiforgery cookies are set for the Articles service.
 /// This runs early in the pipeline to establish cookies before any API calls are made.
 /// </summary>
-public class ArticlesAntiforgeryInitMiddleware
+public class ArticlesAntiforgeryInitMiddleware(RequestDelegate next, IHttpClientFactory httpClientFactory)
 {
     private const string HttpClientName = "ArticlesAntiforgeryClient";
     private const string CookiePrefix = ".AspNetCore.Antiforgery";
-    private readonly RequestDelegate _next;
-    private readonly IHttpClientFactory _httpClientFactory;
-
-    public ArticlesAntiforgeryInitMiddleware(RequestDelegate next, IHttpClientFactory httpClientFactory)
-    {
-        _next = next;
-        _httpClientFactory = httpClientFactory;
-    }
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -28,7 +20,7 @@ public class ArticlesAntiforgeryInitMiddleware
             context.Request.Path.StartsWithSegments("/_content") ||
             context.Request.Path.Value?.Contains('.') == true) // Skip static files
         {
-            await _next(context);
+            await next(context);
             return;
         }
 
@@ -39,7 +31,7 @@ public class ArticlesAntiforgeryInitMiddleware
         {
             try
             {
-                var httpClient = _httpClientFactory.CreateClient(HttpClientName);
+                var httpClient = httpClientFactory.CreateClient(HttpClientName);
                 httpClient.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
                 {
                     NoCache = true,
@@ -80,6 +72,6 @@ public class ArticlesAntiforgeryInitMiddleware
             catch { }
         }
 
-        await _next(context);
+        await next(context);
     }
 }
