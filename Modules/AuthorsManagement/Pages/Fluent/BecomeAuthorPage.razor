@@ -1,0 +1,286 @@
+@page "/author/become"
+@attribute [Authorize]
+
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using TimeWarp.State
+@using TimeWarp.State.Plus
+@using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
+
+@inherits TimeWarpStateComponent
+
+@inject IApizrManager<IAuthorsManagementApi> AuthorsManagementApiManager
+@inject NavigationManager Navigation
+
+<PageTitle>@TranslationResources.BecomeAuthorPageTitle</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="24" Style="max-width: 800px; margin: 0 auto; padding: 24px;">
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+        <FluentLabel Typo="Typography.H2">@TranslationResources.BecomeAuthorHeading</FluentLabel>
+        <FluentLabel Typo="Typography.Body">
+            @TranslationResources.BecomeAuthorIntro
+        </FluentLabel>
+    </FluentStack>
+
+    <FluentDivider />
+
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+        <FluentLabel Typo="Typography.H4">@TranslationResources.BecomeAuthorFaqHeading</FluentLabel>
+        
+        <FluentAccordion>
+            <FluentAccordionItem Heading="@TranslationResources.BecomeAuthorFaqWhatCanIDoHeading">
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentLabel>@TranslationResources.BecomeAuthorFaqWhatCanIDoIntro</FluentLabel>
+                    <ul>
+                        <li>@TranslationResources.BecomeAuthorFaqWhatCanIDo1</li>
+                        <li>@TranslationResources.BecomeAuthorFaqWhatCanIDo2</li>
+                        <li>@TranslationResources.BecomeAuthorFaqWhatCanIDo3</li>
+                        <li>@TranslationResources.BecomeAuthorFaqWhatCanIDo4</li>
+                        <li>@TranslationResources.BecomeAuthorFaqWhatCanIDo5</li>
+                    </ul>
+                </FluentStack>
+            </FluentAccordionItem>
+
+            <FluentAccordionItem Heading="@TranslationResources.BecomeAuthorFaqRequirementsHeading">
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentLabel>@TranslationResources.BecomeAuthorFaqRequirementsIntro</FluentLabel>
+                    <ul>
+                        <li>@TranslationResources.BecomeAuthorFaqRequirements1</li>
+                        <li>@TranslationResources.BecomeAuthorFaqRequirements2</li>
+                        <li>@TranslationResources.BecomeAuthorFaqRequirements3</li>
+                    </ul>
+                    <FluentLabel>@TranslationResources.BecomeAuthorFaqRequirementsNoFees</FluentLabel>
+                </FluentStack>
+            </FluentAccordionItem>
+
+            <FluentAccordionItem Heading="@TranslationResources.BecomeAuthorFaqHowToWriteHeading">
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentLabel>
+                        @TranslationResources.BecomeAuthorFaqHowToWriteIntro
+                    </FluentLabel>
+                    <ul>
+                        <li>@TranslationResources.BecomeAuthorFaqHowToWrite1</li>
+                        <li>@TranslationResources.BecomeAuthorFaqHowToWrite2</li>
+                        <li>@TranslationResources.BecomeAuthorFaqHowToWrite3</li>
+                        <li>@TranslationResources.BecomeAuthorFaqHowToWrite4</li>
+                        <li>@TranslationResources.BecomeAuthorFaqHowToWrite5</li>
+                    </ul>
+                </FluentStack>
+            </FluentAccordionItem>
+
+            <FluentAccordionItem Heading="@TranslationResources.BecomeAuthorFaqPenNameHeading">
+                <FluentLabel>
+                    @TranslationResources.BecomeAuthorFaqPenNameText
+                </FluentLabel>
+            </FluentAccordionItem>
+
+            <FluentAccordionItem Heading="@TranslationResources.BecomeAuthorFaqGuidelinesHeading">
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentLabel>@TranslationResources.BecomeAuthorFaqGuidelinesIntro</FluentLabel>
+                    <ul>
+                        <li>@TranslationResources.BecomeAuthorFaqGuidelines1</li>
+                        <li>@TranslationResources.BecomeAuthorFaqGuidelines2</li>
+                        <li>@TranslationResources.BecomeAuthorFaqGuidelines3</li>
+                        <li>@TranslationResources.BecomeAuthorFaqGuidelines4</li>
+                    </ul>
+                    <FluentLabel>
+                        @TranslationResources.BecomeAuthorFaqGuidelinesFooter
+                    </FluentLabel>
+                </FluentStack>
+            </FluentAccordionItem>
+
+            <FluentAccordionItem Heading="@TranslationResources.BecomeAuthorFaqStopHeading">
+                <FluentLabel>
+                    @TranslationResources.BecomeAuthorFaqStopText
+                </FluentLabel>
+            </FluentAccordionItem>
+        </FluentAccordion>
+    </FluentStack>
+
+    <FluentDivider />
+
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+        <FluentLabel Typo="Typography.H4">@TranslationResources.BecomeAuthorReadyHeading</FluentLabel>
+        
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="max-width: 400px;">
+            <FluentTextField @bind-Value="@_displayName" 
+                            Label="@TranslationResources.BecomeAuthorDisplayNameLabel" 
+                            Placeholder="@TranslationResources.BecomeAuthorDisplayNamePlaceholder"
+                            Required="true"
+                            Style="width: 100%;" />
+            
+            <FluentLabel Style="font-size: 12px; color: var(--neutral-foreground-hint);">
+                @TranslationResources.BecomeAuthorDisplayNameHint
+            </FluentLabel>
+
+            <FluentButton Appearance="Appearance.Accent" 
+                         OnClick="@BecomeAuthorAsync"
+                         Loading="@_isSubmitting"
+                         Disabled="@(string.IsNullOrWhiteSpace(_displayName) || _isSubmitting)"
+                         IconStart="@(new Icons.Regular.Size20.PersonAdd())"
+                         Style="margin-top: 8px;">
+                @TranslationResources.BecomeAuthorButtonLabel
+            </FluentButton>
+        </FluentStack>
+    </FluentStack>
+
+    @if (_isAuthor)
+    {
+        <FluentMessageBar Title="@TranslationResources.BecomeAuthorAlreadyAuthorTitle" 
+                         Intent="@MessageIntent.Success"
+                         Style="margin-top: 16px;">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                <FluentLabel>
+                    @TranslationResources.BecomeAuthorAlreadyAuthorMessage
+                </FluentLabel>
+                <FluentButton Appearance="Appearance.Accent" 
+                             OnClick="@NavigateToCreateArticle"
+                             IconStart="@(new Icons.Regular.Size20.DocumentAdd())">
+                    @TranslationResources.BecomeAuthorCreateFirstArticleButton
+                </FluentButton>
+            </FluentStack>
+        </FluentMessageBar>
+    }
+
+    @if (_registrationComplete)
+    {
+        <FluentMessageBar Title="@TranslationResources.BecomeAuthorWelcomeTitle" 
+                         Intent="@MessageIntent.Success"
+                         Style="margin-top: 16px;">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                <FluentLabel>
+                    @TranslationResources.BecomeAuthorWelcomeMessage
+                </FluentLabel>
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                    <FluentButton Appearance="Appearance.Accent" 
+                                 OnClick="@NavigateToCreateArticle"
+                                 IconStart="@(new Icons.Regular.Size20.DocumentAdd())">
+                        @TranslationResources.BecomeAuthorCreateFirstArticleButton
+                    </FluentButton>
+                    <FluentButton Appearance="Appearance.Outline" 
+                                 OnClick="@NavigateToHome">
+                        @TranslationResources.BecomeAuthorReturnHomeButton
+                    </FluentButton>
+                </FluentStack>
+            </FluentStack>
+        </FluentMessageBar>
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <FluentMessageBar Title="@TranslationResources.BecomeAuthorErrorTitle" 
+                         Intent="@MessageIntent.Error"
+                         Style="margin-top: 16px;">
+            @_errorMessage
+        </FluentMessageBar>
+    }
+</FluentStack>
+
+@code {
+    private string _displayName = string.Empty;
+    private bool _isSubmitting = false;
+    private bool _isAuthor = false;
+    private bool _registrationComplete = false;
+    private string? _errorMessage = null;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await CheckIfAlreadyAuthorAsync();
+    }
+
+    private async Task CheckIfAlreadyAuthorAsync()
+    {
+        if (AuthenticationStateTask is null) return;
+        
+        var authState = await AuthenticationStateTask;
+        var user = authState?.User;
+        
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            var authorClaim = user.FindFirst("authorAccount");
+            _isAuthor = authorClaim?.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
+        }
+    }
+
+    private async Task BecomeAuthorAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_displayName))
+        {
+            _errorMessage = TranslationResources.BecomeAuthorErrorDisplayName;
+            return;
+        }
+
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            if (AuthenticationStateTask is null)
+            {
+                _errorMessage = TranslationResources.BecomeAuthorErrorAuthState;
+                return;
+            }
+
+            var authState = await AuthenticationStateTask;
+            var user = authState?.User;
+            
+            if (user?.Identity?.IsAuthenticated != true)
+            {
+                _errorMessage = TranslationResources.BecomeAuthorErrorNotLoggedIn;
+                NavigateToLogin();
+                return;
+            }
+
+            var userIdClaim = user.FindFirst("ReaderAccountUserId");
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                _errorMessage = TranslationResources.BecomeAuthorErrorUserId;
+                return;
+            }
+
+            var request = new BecomeAuthorAccountRequestDto(userId, _displayName.Trim());
+            
+            using var antiforgery = GetState<AntiforgeryState>();
+            using var tokenSource = new CancellationTokenSource();
+            
+            var response = await AuthorsManagementApiManager.ExecuteAsync(
+                (opt, api) => api.BecomeAuthor(request, antiforgery.RequestVerificationToken, opt),
+                o => o.WithCancellation(tokenSource.Token));
+
+            if (response.IsSuccess)
+            {
+                _registrationComplete = true;
+                
+                // Refresh authentication to get the new claim
+                await RefreshAuthenticationStateAsync();
+            }
+            else
+            {
+                _errorMessage = response.Exception?.Message ?? TranslationResources.BecomeAuthorErrorGeneric;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = string.Format(TranslationResources.BecomeAuthorErrorUnexpected, ex.Message);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task RefreshAuthenticationStateAsync()
+    {
+        // Trigger a page reload to refresh authentication state with new claims
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+
+    private void NavigateToCreateArticle() => Navigation.NavigateTo("articles/create");
+    
+    private void NavigateToHome() => Navigation.NavigateTo("/");
+    
+    private void NavigateToLogin() => Navigation.NavigateTo("login");
+}

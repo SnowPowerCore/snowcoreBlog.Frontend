@@ -36,6 +36,16 @@ public static class ApizrConfigurationExtensions
             .WithRequestTimeout(TimeSpan.FromMinutes(1))
             .WithOperationTimeout(TimeSpan.FromMinutes(3))
             .WithHttpMessageHandler<IncludeCookiesHandler>());
+
+        serviceCollection.ConfigureSnowcoreBlogBackendAuthorsManagementApizrManagers(options => options
+            .WithBaseAddress("https://localhost/api/authors")
+            .WithRefitSettings(new RefitSettings
+            {
+                ContentSerializer = new SystemTextJsonContentSerializer(serializerOptions)
+            })
+            .WithRequestTimeout(TimeSpan.FromMinutes(1))
+            .WithOperationTimeout(TimeSpan.FromMinutes(3))
+            .WithHttpMessageHandler<IncludeCookiesHandler>());
             
         return serviceCollection;
     }

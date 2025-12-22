@@ -1,9 +1,11 @@
 using BitzArt.Blazor.Auth.Server;
 using Ixnas.AltchaNet;
+using Microsoft.AspNetCore.Components.Authorization;
 using snowcoreBlog.Frontend.ClientShared.Extensions;
 using snowcoreBlog.Frontend.Host.Components;
 using snowcoreBlog.Frontend.Host.Extensions;
 using snowcoreBlog.Frontend.Host.Middleware;
+using snowcoreBlog.Frontend.Host.Providers;
 using snowcoreBlog.Frontend.Host.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,7 @@ builder.Services.AddSingleton(static sp => Altcha.CreateSolverBuilder().Build())
 builder.Services.AddClient();
 builder.Services.AddServerSideApizrManagers();
 builder.AddBlazorAuth<GlobalReaderAccountAuthenticationService>();
+builder.Services.AddScoped<AuthenticationStateProvider, SafeAuthenticationStateProvider>();
 
 var app = builder.Build();
 

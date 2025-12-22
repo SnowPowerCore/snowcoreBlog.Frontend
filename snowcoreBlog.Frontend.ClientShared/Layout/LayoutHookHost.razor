@@ -1,0 +1,20 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Rendering
+@using snowcoreBlog.Frontend.SharedComponents.LayoutHooks
+@using System.Linq
+
+@inject IEnumerable<ILayoutHook> Hooks
+
+@foreach (var hook in Hooks.OrderBy(static h => h.Order))
+{
+    @RenderHook(hook.ComponentType)
+}
+
+@code
+{
+    private static RenderFragment RenderHook(Type componentType) => builder =>
+    {
+        builder.OpenComponent(0, componentType);
+        builder.CloseComponent();
+    };
+}

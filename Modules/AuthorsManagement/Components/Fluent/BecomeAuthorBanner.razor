@@ -1,0 +1,116 @@
+@using snowcoreBlog.Frontend.AuthorsManagement.Features.BannerDismissal
+@using snowcoreBlog.Frontend.Core.Resources
+@using snowcoreBlog.Frontend.SharedComponents.LayoutHooks
+
+@inherits TimeWarpStateComponent
+
+@inject IMessageService MessageService
+@inject NavigationManager Navigation
+@inject IStore Store
+
+@code
+{
+    private const string AuthorAccountClaimType = "authorAccount";
+
+    private Message? _becomeAuthorMessage;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    private BannerDismissalState BannerDismissalState => GetState<BannerDismissalState>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        await SyncBecomeAuthorMessageAsync();
+    }
+
+    private async Task SyncBecomeAuthorMessageAsync()
+    {
+        var shouldShow = await ShouldShowBecomeAuthorMessageAsync();
+
+        if (shouldShow)
+        {
+            if (_becomeAuthorMessage is not default(Message))
+            {
+                return;
+            }
+
+            _becomeAuthorMessage = MessageService.ShowMessageBar(options =>
+            {
+                options.Section = LayoutSections.TopMessageBar;
+                options.Intent = MessageIntent.Info;
+                options.Title = TranslationResources.BecomeAuthorBannerTitle;
+                options.Body = TranslationResources.BecomeAuthorBannerMessage;
+
+                options.PrimaryAction = new ActionButton<Message>
+                {
+                    Text = TranslationResources.LearnMoreButtonLabel,
+                    OnClick = NavigateToBecomeAuthorPageAsync
+                };
+
+                options.OnClose = DismissBannerAsync;
+            });
+        }
+        else
+        {
+            if (_becomeAuthorMessage is default(Message))
+            {
+                return;
+            }
+
+            var messageToRemove = _becomeAuthorMessage;
+            _becomeAuthorMessage = default;
+            MessageService.Remove(messageToRemove);
+        }
+    }
+
+    private async Task<bool> ShouldShowBecomeAuthorMessageAsync()
+    {
+        if (AuthenticationStateTask is default(Task<AuthenticationState>))
+        {
+            return false;
+        }
+
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated is not true)
+        {
+            return false;
+        }
+
+        if (HasAuthorAccountClaim(user))
+        {
+            return false;
+        }
+
+        return !BannerDismissalState.IsBecomeAuthorBannerDismissed;
+    }
+
+    private Task NavigateToBecomeAuthorPageAsync(Message message)
+    {
+        Navigation.NavigateTo("author/become");
+        return Task.CompletedTask;
+    }
+
+    private async Task DismissBannerAsync(Message message)
+    {
+        if (!ReferenceEquals(message, _becomeAuthorMessage))
+        {
+            return;
+        }
+
+        _becomeAuthorMessage = default;
+
+        await BannerDismissalState.DismissBanner();
+    }
+
+    private static bool HasAuthorAccountClaim(System.Security.Claims.ClaimsPrincipal user)
+    {
+        var claim = user.FindFirst(AuthorAccountClaimType);
+        return claim is not default(Claim)
+            && bool.TryParse(claim.Value, out var isAuthor)
+            && isAuthor;
+    }
+}

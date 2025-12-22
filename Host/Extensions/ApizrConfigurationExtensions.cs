@@ -16,6 +16,20 @@ public static class ApizrConfigurationExtensions
         }
 
         serviceCollection.AddScoped<HttpContextCookiesPropagationHandler>();
+
+        serviceCollection.AddHttpClient("ReadersManagementClient")
+            .ConfigureHttpClient(static c =>
+            {
+                c.BaseAddress = new Uri("https://localhost/api/readers");
+                c.Timeout = TimeSpan.FromMinutes(1);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                UseCookies = false
+            })
+            .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
+                sp.GetRequiredService<IHttpContextAccessor>(),
+                excludeAuthCookies: false));
         
         serviceCollection.AddHttpClient("ReadersManagementAntiforgeryClient")
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
@@ -52,6 +66,19 @@ public static class ApizrConfigurationExtensions
         
         serviceCollection.ConfigureSnowcoreBlogBackendReadersManagementApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/readers")
+            .WithRefitSettings(new RefitSettings
+            {
+                ContentSerializer = new SystemTextJsonContentSerializer(serializerOptions)
+            })
+            .WithRequestTimeout(TimeSpan.FromMinutes(1))
+            .WithOperationTimeout(TimeSpan.FromMinutes(3))
+            .ConfigureHttpClientBuilder(http => http
+                .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    excludeAuthCookies: false))));
+
+        serviceCollection.ConfigureSnowcoreBlogBackendAuthorsManagementApizrManagers(options => options
+            .WithBaseAddress("https://localhost/api/authors")
             .WithRefitSettings(new RefitSettings
             {
                 ContentSerializer = new SystemTextJsonContentSerializer(serializerOptions)

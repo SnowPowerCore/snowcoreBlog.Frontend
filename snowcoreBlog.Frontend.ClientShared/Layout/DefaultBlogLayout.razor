@@ -1,6 +1,9 @@
-﻿@using Microsoft.FluentUI.AspNetCore.Components.DesignTokens
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.DesignTokens
 @using System.Diagnostics.CodeAnalysis
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.Frontend.SharedComponents.LayoutHooks
 
 @inherits LayoutComponentBase
 
@@ -10,7 +13,6 @@
 <FluentToastProvider />
 <FluentDialogProvider />
 <FluentTooltipProvider />
-<FluentMessageBarProvider />
 <FluentMenuProvider />
 
 <div class="root-layout-item">
@@ -26,6 +28,8 @@
                                 ["About"] = "about"
                             })">
                         </GeneralHeader>
+                        <FluentMessageBarProvider Section="@LayoutSections.TopMessageBar" />
+                        <LayoutHookHost />
                         <article class="h-100">
                             @Body
                         </article>
@@ -42,6 +46,8 @@
                                 ["About"] = "about"
                             })">
                         </GeneralHeader>
+                        <FluentMessageBarProvider Section="@LayoutSections.TopMessageBar" />
+                        <LayoutHookHost />
                         <article class="h-100">
                             @Body
                         </article>

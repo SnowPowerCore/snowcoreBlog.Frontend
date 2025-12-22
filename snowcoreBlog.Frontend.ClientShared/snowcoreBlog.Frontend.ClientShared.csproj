@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Modules\Articles\snowcoreBlog.Frontend.Articles.csproj" />
+    <ProjectReference Include="..\Modules\AuthorsManagement\snowcoreBlog.Frontend.AuthorsManagement.csproj" />
     <ProjectReference Include="..\Modules\Notifications\snowcoreBlog.Frontend.Notifications.csproj" />
     <ProjectReference Include="..\Modules\ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj" />
     <ProjectReference Include="..\Modules\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj" />

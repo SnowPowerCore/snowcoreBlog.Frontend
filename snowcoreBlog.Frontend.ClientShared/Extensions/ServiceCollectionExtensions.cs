@@ -4,6 +4,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
 using snowcoreBlog.ApplicationLaunch.Interfaces;
+using snowcoreBlog.Frontend.AuthorsManagement.Extensions;
 using snowcoreBlog.Frontend.Articles.Extensions;
 using snowcoreBlog.Frontend.ClientShared.Services;
 using snowcoreBlog.Frontend.Infrastructure.Extensions;
@@ -22,6 +23,7 @@ public static class ServiceCollectionExtensions
     {
         serviceCollection.AddArticles();
         serviceCollection.AddNotifications();
+        serviceCollection.AddAuthorsManagement();
         serviceCollection.AddReadersManagement();
         serviceCollection.AddSharedComponents();
         serviceCollection.AddBlazoredLocalStorage();
@@ -32,6 +34,7 @@ public static class ServiceCollectionExtensions
                 typeof(_Imports).Assembly,
                 typeof(SharedComponents._Imports).Assembly,
                 typeof(Articles._Imports).Assembly,
+                typeof(AuthorsManagement._Imports).Assembly,
                 typeof(Notifications._Imports).Assembly,
                 typeof(ReadersManagement._Imports).Assembly,
                 typeof(TimeWarp.State.Plus.AssemblyMarker).Assembly
