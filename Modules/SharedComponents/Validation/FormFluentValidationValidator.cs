@@ -91,11 +91,35 @@ public class FormFluentValidationValidator : ComponentBase
             return [];
 
         if (fieldIdentifier is null)
-            return LastValidationResult.Values.SelectMany(f => f).ToArray();
+        {
+            var values = LastValidationResult.Values;
+
+            var totalCount = 0;
+            foreach (var failureList in values)
+                totalCount += failureList.Count;
+
+            if (totalCount == 0)
+                return [];
+
+            var allFailures = new ValidationFailure[totalCount];
+            var index = 0;
+            foreach (var failureList in values)
+            {
+                failureList.CopyTo(allFailures, index);
+                index += failureList.Count;
+            }
+
+            return allFailures;
+        }
 
         if (!LastValidationResult.TryGetValue(fieldIdentifier.Value, out var failures))
             return [];
 
-        return failures.ToArray();
+        if (failures.Count == 0)
+            return [];
+
+        var fieldFailures = new ValidationFailure[failures.Count];
+        failures.CopyTo(fieldFailures);
+        return fieldFailures;
     }
 }

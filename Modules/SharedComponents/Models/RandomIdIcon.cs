@@ -1,3 +1,5 @@
+using System.Buffers;
+using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components.Extensions;
@@ -125,8 +127,36 @@ public class RandomIdIcon : IconInfo
         // Attribute xmlns="http://www.w3.org/2000/svg" is required for SVG data URI.
         svg = svg.Contains("http://www.w3.org/2000/svg") ? svg : svg.Replace("<svg ", "<svg xmlns=\"http://www.w3.org/2000/svg\" ");
 
-        var base64Svg = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(svg));
+        var base64Svg = ToBase64Utf8(svg);
         return $"data:image/svg+xml;base64,{base64Svg}";
+    }
+
+    private static string ToBase64Utf8(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return string.Empty;
+
+        ReadOnlySpan<char> chars = value.AsSpan();
+        var byteCount = Encoding.UTF8.GetByteCount(chars);
+
+        byte[]? rented = null;
+        try
+        {
+            Span<byte> bytes = byteCount <= 1024
+                ? stackalloc byte[byteCount]
+                : (rented = ArrayPool<byte>.Shared.Rent(byteCount));
+
+            if (rented is not null)
+                bytes = bytes.Slice(0, byteCount);
+
+            var bytesWritten = Encoding.UTF8.GetBytes(chars, bytes);
+            return Convert.ToBase64String(bytes.Slice(0, bytesWritten));
+        }
+        finally
+        {
+            if (rented is not null)
+                ArrayPool<byte>.Shared.Return(rented, clearArray: true);
+        }
     }
 
     /// <summary>

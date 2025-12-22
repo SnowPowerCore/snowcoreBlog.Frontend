@@ -9,64 +9,97 @@ public static class CookieExtensions
     {
         try
         {
-            var parts = setCookieHeader.Split(';');
-            if (parts.Length == 0) return default;
+            if (string.IsNullOrWhiteSpace(setCookieHeader))
+                return default;
 
-            var nameValue = parts[0].Split('=', 2);
-            if (nameValue.Length != 2) return default;
+            ReadOnlySpan<char> input = setCookieHeader.AsSpan();
+            var position = 0;
+
+            scoped ReadOnlySpan<char> nameValueSegment = ReadNextSemicolonSegment(input, ref position);
+            if (nameValueSegment.Length == 0)
+                return default;
+
+            nameValueSegment = nameValueSegment.Trim();
+            if (nameValueSegment.Length == 0)
+                return default;
+
+            int equalsIndex = nameValueSegment.IndexOf('=');
+            if (equalsIndex <= 0)
+                return default;
+
+            scoped ReadOnlySpan<char> nameSpan = nameValueSegment.Slice(0, equalsIndex).Trim();
+            scoped ReadOnlySpan<char> valueSpan = nameValueSegment.Slice(equalsIndex + 1).Trim();
+            if (nameSpan.Length == 0)
+                return default;
 
             var cookie = new CookieInfo
             {
-                Name = nameValue[0].Trim(),
-                Value = nameValue[1].Trim(),
+                Name = nameSpan.ToString(),
+                Value = valueSpan.ToString(),
                 Path = "/",
                 SameSite = SameSiteMode.Lax
             };
 
-            for (var i = 1; i < parts.Length; i++)
+            while (position < input.Length)
             {
-                var attribute = parts[i].Trim();
-                var attrParts = attribute.Split('=', 2);
-                var attrName = attrParts[0].Trim().ToLowerInvariant();
+                scoped ReadOnlySpan<char> attributeSegment = ReadNextSemicolonSegment(input, ref position);
+                attributeSegment = attributeSegment.Trim();
+                if (attributeSegment.Length == 0)
+                    continue;
 
-                switch (attrName)
+                scoped ReadOnlySpan<char> attrNameSpan;
+                scoped ReadOnlySpan<char> attrValueSpan;
+
+                int attributeEqualsIndex = attributeSegment.IndexOf('=');
+                if (attributeEqualsIndex < 0)
                 {
-                    case "path":
-                        cookie.Path = attrParts.Length > 1 ? attrParts[1].Trim() : "/";
-                        break;
-                    case "domain":
-                        cookie.Domain = attrParts.Length > 1 ? attrParts[1].Trim() : null;
-                        break;
-                    case "secure":
-                        cookie.Secure = true;
-                        break;
-                    case "httponly":
-                        cookie.HttpOnly = true;
-                        break;
-                    case "expires":
-                        if (attrParts.Length > 1 && DateTimeOffset.TryParse(attrParts[1].Trim(), out var expires))
-                        {
-                            cookie.Expires = expires;
-                        }
-                        break;
-                    case "max-age":
-                        if (attrParts.Length > 1 && int.TryParse(attrParts[1].Trim(), out var maxAge))
-                        {
-                            cookie.Expires = DateTimeOffset.UtcNow.AddSeconds(maxAge);
-                        }
-                        break;
-                    case "samesite":
-                        if (attrParts.Length > 1)
-                        {
-                            cookie.SameSite = attrParts[1].Trim().ToLowerInvariant() switch
-                            {
-                                "strict" => SameSiteMode.Strict,
-                                "lax" => SameSiteMode.Lax,
-                                "none" => SameSiteMode.None,
-                                _ => SameSiteMode.Lax
-                            };
-                        }
-                        break;
+                    attrNameSpan = attributeSegment;
+                    attrValueSpan = default;
+                }
+                else
+                {
+                    attrNameSpan = attributeSegment.Slice(0, attributeEqualsIndex).Trim();
+                    attrValueSpan = attributeSegment.Slice(attributeEqualsIndex + 1).Trim();
+                }
+
+                if (attrNameSpan.Equals("path", StringComparison.OrdinalIgnoreCase))
+                {
+                    cookie.Path = attrValueSpan.Length > 0 ? attrValueSpan.ToString() : "/";
+                }
+                else if (attrNameSpan.Equals("domain", StringComparison.OrdinalIgnoreCase))
+                {
+                    cookie.Domain = attrValueSpan.Length > 0 ? attrValueSpan.ToString() : null;
+                }
+                else if (attrNameSpan.Equals("secure", StringComparison.OrdinalIgnoreCase))
+                {
+                    cookie.Secure = true;
+                }
+                else if (attrNameSpan.Equals("httponly", StringComparison.OrdinalIgnoreCase))
+                {
+                    cookie.HttpOnly = true;
+                }
+                else if (attrNameSpan.Equals("expires", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (attrValueSpan.Length > 0 && DateTimeOffset.TryParse(attrValueSpan, out var expires))
+                        cookie.Expires = expires;
+                }
+                else if (attrNameSpan.Equals("max-age", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (attrValueSpan.Length > 0 && int.TryParse(attrValueSpan, out var maxAge))
+                        cookie.Expires = DateTimeOffset.UtcNow.AddSeconds(maxAge);
+                }
+                else if (attrNameSpan.Equals("samesite", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (attrValueSpan.Length > 0)
+                    {
+                        cookie.SameSite = attrValueSpan.Equals("strict", StringComparison.OrdinalIgnoreCase)
+                            ? SameSiteMode.Strict
+                            : attrValueSpan.Equals("lax", StringComparison.OrdinalIgnoreCase)
+                                ? SameSiteMode.Lax
+                                : attrValueSpan.Equals("none", StringComparison.OrdinalIgnoreCase)
+                                    ? SameSiteMode.None
+                                    : SameSiteMode.Lax;
+                    }
                 }
             }
 
@@ -76,5 +109,22 @@ public static class CookieExtensions
         {
             return default;
         }
+    }
+
+    private static ReadOnlySpan<char> ReadNextSemicolonSegment(ReadOnlySpan<char> input, ref int position)
+    {
+        if (position >= input.Length)
+            return default;
+
+        var start = position;
+        var nextSeparator = input.Slice(position).IndexOf(';');
+        if (nextSeparator < 0)
+        {
+            position = input.Length;
+            return input.Slice(start);
+        }
+
+        position += nextSeparator + 1;
+        return input.Slice(start, nextSeparator);
     }
 }

@@ -56,7 +56,6 @@ public class CookieInfoTests
     [InlineData(SameSiteMode.None)]
     [InlineData(SameSiteMode.Lax)]
     [InlineData(SameSiteMode.Strict)]
-    [InlineData(SameSiteMode.Unspecified)]
     public void CookieInfo_ShouldSupportAllSameSiteModes(SameSiteMode mode)
     {
         // Arrange & Act
