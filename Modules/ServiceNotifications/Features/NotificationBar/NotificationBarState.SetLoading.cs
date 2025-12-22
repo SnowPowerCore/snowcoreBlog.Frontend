@@ -1,21 +1,21 @@
 using TimeWarp.State;
 
-namespace snowcoreBlog.Frontend.Notifications.Features.NotificationBar;
+namespace snowcoreBlog.Frontend.ServiceNotifications.Features.NotificationBar;
 
 partial class NotificationBarState
 {
     /// <summary>
-    /// Action to set an error message.
+    /// Action to set loading state.
     /// </summary>
-    public static class SetErrorActionSet
+    public static class SetLoadingActionSet
     {
         public sealed class Action : IAction
         {
-            public string? ErrorMessage { get; }
+            public bool IsLoading { get; }
 
-            public Action(string? errorMessage)
+            public Action(bool isLoading)
             {
-                ErrorMessage = errorMessage;
+                IsLoading = isLoading;
             }
         }
 
@@ -25,8 +25,7 @@ partial class NotificationBarState
 
             public override Task Handle(Action action, CancellationToken cancellationToken)
             {
-                State.ErrorMessage = action.ErrorMessage;
-                State.IsLoading = false;
+                State.IsLoading = action.IsLoading;
                 return Task.CompletedTask;
             }
         }

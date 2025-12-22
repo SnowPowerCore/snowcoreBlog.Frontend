@@ -1,7 +1,7 @@
 using FluentAssertions;
-using snowcoreBlog.Frontend.Notifications.Features.NotificationBar;
+using snowcoreBlog.Frontend.ServiceNotifications.Features.NotificationBar;
 
-namespace snowcoreBlog.Frontend.Notifications.Tests.Features;
+namespace snowcoreBlog.Frontend.ServiceNotifications.Tests.Features;
 
 public class NotificationBarStateTests
 {

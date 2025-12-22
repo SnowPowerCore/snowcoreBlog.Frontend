@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Modules\Notifications\snowcoreBlog.Frontend.Notifications.csproj" />
+    <ProjectReference Include="..\Modules\ServiceNotifications\snowcoreBlog.Frontend.ServiceNotifications.csproj" />
   </ItemGroup>
 
 </Project>

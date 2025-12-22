@@ -1,7 +1,7 @@
 using snowcoreBlog.PublicApi.BusinessObjects.Dto;
 using TimeWarp.State;
 
-namespace snowcoreBlog.Frontend.Notifications.Features.NotificationBar;
+namespace snowcoreBlog.Frontend.ServiceNotifications.Features.NotificationBar;
 
 /// <summary>
 /// State for managing active notifications displayed in the top bar.

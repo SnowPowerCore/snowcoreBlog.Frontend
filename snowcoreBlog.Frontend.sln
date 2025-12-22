@@ -23,9 +23,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Clien
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{CA253913-39DE-BFD0-C9A3-4B7EC6FBDF17}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notifications", "Notifications", "{E4F07A3A-0D15-4D3A-4C13-E2BD6EBFF108}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServiceNotifications", "ServiceNotifications", "{E4F07A3A-0D15-4D3A-4C13-E2BD6EBFF108}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Notifications", "Modules\Notifications\snowcoreBlog.Frontend.Notifications.csproj", "{B6D42F6B-2599-4152-9282-287BE931951B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.ServiceNotifications", "Modules\ServiceNotifications\snowcoreBlog.Frontend.ServiceNotifications.csproj", "{B6D42F6B-2599-4152-9282-287BE931951B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
 EndProject
@@ -37,7 +37,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Share
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Articles.Tests", "snowcoreBlog.Frontend.Articles.Tests\snowcoreBlog.Frontend.Articles.Tests.csproj", "{36E43FCC-9962-4B63-8EBB-98C5468671BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.Notifications.Tests", "snowcoreBlog.Frontend.Notifications.Tests\snowcoreBlog.Frontend.Notifications.Tests.csproj", "{594ED497-51BA-4069-AB26-0664FC02AC74}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.ServiceNotifications.Tests", "snowcoreBlog.Frontend.ServiceNotifications.Tests\snowcoreBlog.Frontend.ServiceNotifications.Tests.csproj", "{594ED497-51BA-4069-AB26-0664FC02AC74}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snowcoreBlog.Frontend.ReadersManagement.Tests", "snowcoreBlog.Frontend.ReadersManagement.Tests\snowcoreBlog.Frontend.ReadersManagement.Tests.csproj", "{6AF39822-BBC2-4983-8256-9107FDEB83DD}"
 EndProject

@@ -1,21 +1,21 @@
 using TimeWarp.State;
 
-namespace snowcoreBlog.Frontend.Notifications.Features.NotificationBar;
+namespace snowcoreBlog.Frontend.ServiceNotifications.Features.NotificationBar;
 
 partial class NotificationBarState
 {
     /// <summary>
-    /// Action to dismiss a notification.
+    /// Action to set an error message.
     /// </summary>
-    public static class DismissNotificationActionSet
+    public static class SetErrorActionSet
     {
         public sealed class Action : IAction
         {
-            public Guid NotificationId { get; }
+            public string? ErrorMessage { get; }
 
-            public Action(Guid notificationId)
+            public Action(string? errorMessage)
             {
-                NotificationId = notificationId;
+                ErrorMessage = errorMessage;
             }
         }
 
@@ -25,11 +25,8 @@ partial class NotificationBarState
 
             public override Task Handle(Action action, CancellationToken cancellationToken)
             {
-                var dismissed = new HashSet<Guid>(State.DismissedNotificationIds)
-                {
-                    action.NotificationId
-                };
-                State.DismissedNotificationIds = dismissed;
+                State.ErrorMessage = action.ErrorMessage;
+                State.IsLoading = false;
                 return Task.CompletedTask;
             }
         }

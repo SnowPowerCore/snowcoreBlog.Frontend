@@ -8,7 +8,7 @@ using snowcoreBlog.Frontend.AuthorsManagement.Extensions;
 using snowcoreBlog.Frontend.Articles.Extensions;
 using snowcoreBlog.Frontend.ClientShared.Services;
 using snowcoreBlog.Frontend.Infrastructure.Extensions;
-using snowcoreBlog.Frontend.Notifications.Extensions;
+using snowcoreBlog.Frontend.ServiceNotifications.Extensions;
 using snowcoreBlog.Frontend.ReadersManagement.Extensions;
 using snowcoreBlog.Frontend.SharedComponents.Extensions;
 using snowcoreBlog.PublicApi.BusinessObjects.Dto;
@@ -22,7 +22,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddClient(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddArticles();
-        serviceCollection.AddNotifications();
+        serviceCollection.AddServiceNotifications();
         serviceCollection.AddAuthorsManagement();
         serviceCollection.AddReadersManagement();
         serviceCollection.AddSharedComponents();
@@ -35,7 +35,7 @@ public static class ServiceCollectionExtensions
                 typeof(SharedComponents._Imports).Assembly,
                 typeof(Articles._Imports).Assembly,
                 typeof(AuthorsManagement._Imports).Assembly,
-                typeof(Notifications._Imports).Assembly,
+                typeof(ServiceNotifications._Imports).Assembly,
                 typeof(ReadersManagement._Imports).Assembly,
                 typeof(TimeWarp.State.Plus.AssemblyMarker).Assembly
             ];
