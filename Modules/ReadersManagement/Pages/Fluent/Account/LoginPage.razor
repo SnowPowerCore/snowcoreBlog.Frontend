@@ -1,22 +1,18 @@
 ﻿@using Apizr
 @using BitzArt.Blazor.Auth
+@using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
 @using Fido2NetLib
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
-@using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
-@using System.Text.Json
-@using snowcoreBlog.Frontend.Infrastructure.Context
 @using snowcoreBlog.Frontend.Infrastructure.Events
 @using snowcoreBlog.Frontend.Infrastructure.Protocol
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
-@using snowcoreBlog.Frontend.ReadersManagement.Resources
-@using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
 @using snowcoreBlog.Frontend.SharedComponents.Components.Altcha
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.Frontend.SharedComponents.Resources.Icons
 @using snowcoreBlog.Frontend.SharedComponents.Validation
 @using snowcoreBlog.PublicApi.Api
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
 @using snowcoreBlog.PublicApi.Extensions
-@using snowcoreBlog.PublicApi.Validation.Dto
 
 @page "/login"
 @attribute [StreamRendering]
@@ -53,16 +49,7 @@
                                     <FluentValidationMessage For=@(() => PasswordlessLogin.Email) />
                                     <FluentSpacer />
                                     <FluentSpacer />
-                                    <FluentLabel>
-                                        <FluentAnchor Appearance="Appearance.Hypertext" Href="javascript: void(0);">
-                                            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
-                                                VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
-                                                <FluentRandomIdIcon Width="24px" Value="@(new QuestionIcon())" />
-                                                <FluentSpacer Width="5" />
-                                                @TranslationResources.PasswordlessDialogHyperlinkLabel
-                                            </FluentStack>
-                                        </FluentAnchor>
-                                    </FluentLabel>
+                                    <PasswordlessInfoModal />
                                     <FluentSpacer />
                                     <FluentSpacer />
                                     <AltchaWidget

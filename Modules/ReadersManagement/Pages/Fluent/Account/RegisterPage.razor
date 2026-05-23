@@ -1,20 +1,17 @@
 ﻿@using Apizr
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
-@using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
 @using Microsoft.AspNetCore.Components.Forms
 @using snowcoreBlog.Frontend.Infrastructure.Events
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Register
-@using snowcoreBlog.Frontend.ReadersManagement.Resources
-@using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
 @using snowcoreBlog.Frontend.SharedComponents.Components.Altcha
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
 @using snowcoreBlog.Frontend.SharedComponents.Providers
+@using snowcoreBlog.Frontend.SharedComponents.Resources.Icons
 @using snowcoreBlog.Frontend.SharedComponents.Validation
 @using snowcoreBlog.PublicApi.Api
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
 @using snowcoreBlog.PublicApi.Extensions
-@using snowcoreBlog.PublicApi.Validation.Dto
 
 @page "/register"
 @attribute [StreamRendering]
@@ -27,59 +24,63 @@
 <FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())">
     <RegularSizeContent>
         <FluentStack Class="px-3" Orientation="Orientation.Vertical">
-            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitFormWithLoadingAsync">
+            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitFormWithLoadingAsync" @ref="_editForm">
                 <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestCreateReaderAccountValidator" />
                 <FormTrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChangedAsync"/>
-                <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
+
+                <FluentWizard StepperPosition="StepperPosition.Top" StepSequence="WizardStepSequence.Linear" OnFinish="OnWizardFinish">
+                    <Steps>
+                        <FluentWizardStep Label="Contact">
+                            <FluentStack Orientation="Orientation.Vertical">
+                                <FluentSpacer />
+                                <FluentTextField InputMode="InputMode.Email" Name="email" Label="@TranslationResources.EmailFieldLabel" @bind-Value=@CreateNewAccount.Email Required />
+                                <FluentValidationMessage For=@(() => CreateNewAccount.Email) />
+                                <FluentSpacer />
+                                <FluentTextField InputMode="InputMode.Telephone" Name="phoneNumber" Label="@TranslationResources.PhoneNumberFieldLabel" @bind-Value=@CreateNewAccount.PhoneNumber />
+                                <FluentValidationMessage For=@(() => CreateNewAccount.PhoneNumber) />
+                                <FluentSpacer />
+                                <FluentCheckbox @bind-Value="@CreateNewAccount.InitialEmailConsent" Required>
+                                    @TranslationResources.InitialEmailConsentInfoLabel1<br/>@TranslationResources.InitialEmailConsentInfoLabel2
+                                </FluentCheckbox>
+                                <FluentValidationMessage For=@(() => CreateNewAccount.InitialEmailConsent) />
+                            </FluentStack>
+                        </FluentWizardStep>
+
+                        <FluentWizardStep Label="Personal">
+                            <FluentStack Orientation="Orientation.Vertical">
+                                <FluentTextField Name="firstName" Label="@TranslationResources.FirstNameFieldLabel" @bind-Value=@CreateNewAccount.FirstName Required />
+                                <FluentValidationMessage For=@(() => CreateNewAccount.FirstName) />
+                                <FluentSpacer />
+                                <FluentTextField Name="lastName" Label="@TranslationResources.LastNameFieldLabel" @bind-Value=@CreateNewAccount.LastName />
+                                <FluentValidationMessage For=@(() => CreateNewAccount.LastName) />
+                                <FluentSpacer />
+                                <FluentTextField Name="nickName" Label="@TranslationResources.NickNameFieldLabel" @bind-Value=@CreateNewAccount.NickName Required />
+                                <FluentValidationMessage For=@(() => CreateNewAccount.NickName) />
+                            </FluentStack>
+                        </FluentWizardStep>
+
+                        <FluentWizardStep Label="Consent">
+                            <FluentStack Orientation="Orientation.Vertical">
+                                <FluentCheckbox @bind-Value="@CreateNewAccount.ConfirmedAgreement" Required>
+                                    @TranslationResources.ConfirmedAgreementInfoLabel1<FluentAnchor
+                                        Id="termsAndConditionsInfo" Appearance="Appearance.Hypertext"
+                                        Href="javascript: void(0);">@TranslationResources.ConfirmedAgreementInfoLabel2</FluentAnchor>@TranslationResources.ConfirmedAgreementInfoLabel3
+                                </FluentCheckbox>
+                                <FluentValidationMessage For=@(() => CreateNewAccount.ConfirmedAgreement) />
+                                <FluentSpacer />
+                                <AltchaWidget
+                                    ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
+                                    OnVerified="HandleOnVerified"/>
+                            </FluentStack>
+                        </FluentWizardStep>
+                    </Steps>
+                </FluentWizard>
+
+                @foreach(var error in _registrationErrors)
+                {
                     <FluentSpacer />
-                    <FluentSpacer />
-                    <FluentSpacer />
-                    <FluentTextField InputMode="InputMode.Email" Name="email" Label="@TranslationResources.EmailFieldLabel" @bind-Value=@CreateNewAccount.Email Required />
-                    <FluentValidationMessage For=@(() => CreateNewAccount.Email) />
-                    <FluentSpacer />
-                    <FluentSpacer />
-                    <FluentTextField Name="firstName" Label="@TranslationResources.FirstNameFieldLabel" @bind-Value=@CreateNewAccount.FirstName Required />
-                    <FluentValidationMessage For=@(() => CreateNewAccount.FirstName) />
-                    <FluentSpacer />
-                    <FluentSpacer />
-                    <FluentTextField Name="lastName" Label="@TranslationResources.LastNameFieldLabel" @bind-Value=@CreateNewAccount.LastName />
-                    <FluentValidationMessage For=@(() => CreateNewAccount.LastName) />
-                    <FluentSpacer />
-                    <FluentSpacer />
-                    <FluentTextField Name="nickName" Label="@TranslationResources.NickNameFieldLabel" @bind-Value=@CreateNewAccount.NickName Required />
-                    <FluentValidationMessage For=@(() => CreateNewAccount.NickName) />
-                    <FluentSpacer />
-                    <FluentSpacer />
-                    <FluentTextField InputMode="InputMode.Telephone" Name="phoneNumber" Label="@TranslationResources.PhoneNumberFieldLabel" @bind-Value=@CreateNewAccount.PhoneNumber />
-                    <FluentValidationMessage For=@(() => CreateNewAccount.PhoneNumber) />
-                    <FluentSpacer />
-                    <FluentSpacer />
-                    <FluentCheckbox @bind-Value="@CreateNewAccount.InitialEmailConsent" Required>
-                        @TranslationResources.InitialEmailConsentInfoLabel1<br/>@TranslationResources.InitialEmailConsentInfoLabel2
-                    </FluentCheckbox>
-                    <FluentValidationMessage For=@(() => CreateNewAccount.InitialEmailConsent) />
-                    <FluentCheckbox @bind-Value="@CreateNewAccount.ConfirmedAgreement" Required>
-                        @TranslationResources.ConfirmedAgreementInfoLabel1<FluentAnchor
-                            Id="termsAndConditionsInfo" Appearance="Appearance.Hypertext"
-                            Href="javascript: void(0);">@TranslationResources.ConfirmedAgreementInfoLabel2</FluentAnchor>@TranslationResources.ConfirmedAgreementInfoLabel3
-                    </FluentCheckbox>
-                    <FluentValidationMessage For=@(() => CreateNewAccount.ConfirmedAgreement) />
-                    <FluentSpacer />
-                    <FluentSpacer />
-                    <AltchaWidget
-                        ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
-                        OnVerified="HandleOnVerified"/>
-                    <FluentSpacer />
-                    <FluentSpacer />
-                    <FluentButton Class="align-self-end" Type="ButtonType.Submit"
-                        Appearance="Appearance.Accent">@TranslationResources.RegisterButtonLabel
-                    </FluentButton>
-                    @foreach(var error in _registrationErrors)
-                    {
-                        <FluentSpacer />
-                        <FluentDirectValidationMessage Message="@error" />
-                    }
-                </FluentStack>
+                    <FluentDirectValidationMessage Message="@error" />
+                }
             </EditForm>
             <FluentSpacer />
             <FluentSpacer />
@@ -116,6 +117,9 @@
     public const string ReaderAccountRegisterFormName = "ReaderAccountRegisterForm";
     private bool _overlayVisible = false;
     private List<string> _registrationErrors = [];
+
+    // reference to the outer EditForm so the wizard can trigger submit programmatically
+    private EditForm? _editForm;
 
     private FormFluentValidationValidator? _fluentValidationValidator;
     private readonly RequestCreateReaderAccountDto _emptyState = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
@@ -156,6 +160,20 @@
     private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
     {
         Captcha = verifyArgs.Payload;
+    }
+
+    private async Task OnWizardFinish()
+    {
+        // Try to use the EditForm's EditContext if available so existing submit logic keeps working
+        if (_editForm is not null && _editForm.EditContext is not null)
+        {
+            await SubmitFormWithLoadingAsync(_editForm.EditContext);
+            return;
+        }
+
+        // Fallback: create an EditContext from the model
+        var editContext = new EditContext(CreateNewAccount ?? _emptyState);
+        await SubmitFormWithLoadingAsync(editContext);
     }
 
     private Task SubmitFormWithLoadingAsync(EditContext editContext) =>

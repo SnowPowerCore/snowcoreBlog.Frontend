@@ -1,7 +1,7 @@
 using Microsoft.FluentUI.AspNetCore.Components;
 using snowcoreBlog.Frontend.SharedComponents.Models;
 
-namespace snowcoreBlog.Frontend.ReadersManagement.Resources.Icons;
+namespace snowcoreBlog.Frontend.SharedComponents.Resources.Icons;
 
 public class QuestionIcon : RandomIdIcon
 {

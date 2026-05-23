@@ -1,21 +1,15 @@
-﻿@using Apizr
+﻿@using System.Text.Json
+@using Apizr
 @using Fido2NetLib
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
-@using Emojis = Microsoft.FluentUI.AspNetCore.Components.Emojis
-@using Microsoft.AspNetCore.Components.Forms
-@using System.Web
-@using System.Text.Json
 @using snowcoreBlog.Frontend.Infrastructure.Context
 @using snowcoreBlog.Frontend.Infrastructure.Protocol
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
-@using snowcoreBlog.Frontend.ReadersManagement.Features.Register
-@using snowcoreBlog.Frontend.ReadersManagement.Resources
-@using snowcoreBlog.Frontend.ReadersManagement.Resources.Icons
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.Frontend.SharedComponents.Resources.Icons
 @using snowcoreBlog.PublicApi.Api
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
 @using snowcoreBlog.PublicApi.Extensions
-@using snowcoreBlog.PublicApi.Validation.Dto
 
 @page "/register/complete"
 @attribute [StreamRendering]

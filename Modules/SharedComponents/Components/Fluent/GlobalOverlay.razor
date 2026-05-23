@@ -1,0 +1,51 @@
+@using snowcoreBlog.Frontend.SharedComponents.Services
+@inject OverlayService OverlayService
+
+@implements IDisposable
+
+@code {
+    private RenderFragment? _content;
+    private bool _visible;
+
+    protected override void OnInitialized()
+    {
+        OverlayService.OnChange += HandleOverlayChanged;
+        base.OnInitialized();
+    }
+
+    private void HandleOverlayChanged()
+    {
+        _content = OverlayService.Content;
+        _visible = OverlayService.Visible;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private bool _bindingVisible
+    {
+        get => _visible;
+        set
+        {
+            if (_visible == value) return;
+            _visible = value;
+            if (!_visible)
+            {
+                // ensure the service state is cleared when overlay dismissed interactively
+                OverlayService.Hide();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        OverlayService.OnChange -= HandleOverlayChanged;
+    }
+}
+
+@if (_content is not null)
+{
+    <FluentOverlay @bind-Visible="_bindingVisible" Dismissable="true" Transparent="false" Alignment="Align.Center" Justification="JustifyContent.Center">
+        <FluentStack @onclick:stopPropagation="true">
+            @_content
+        </FluentStack>
+    </FluentOverlay>
+}
