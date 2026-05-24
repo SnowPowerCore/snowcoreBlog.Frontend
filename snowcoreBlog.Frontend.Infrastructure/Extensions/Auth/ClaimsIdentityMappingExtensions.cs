@@ -10,7 +10,7 @@ public static class ClaimsIdentityMappingExtensions
         var claims = dto.Claims?.Select(x => x.ToModel()).ToList();
         var authenticationType = dto.AuthenticationType;
 
-        if (claims is null) return new(authenticationType);
+        if (claims is default(List<Claim>)) return new(authenticationType);
 
         return new(claims, authenticationType);
     }

@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System.Reflection;
+using FluentValidation;
 using FluentValidation.Internal;
 using Microsoft.AspNetCore.Components.Forms;
 using snowcoreBlog.Frontend.SharedComponents.Utilities;
@@ -100,11 +101,11 @@ public static class EditContextFluentValidationExtensions
     {
         ValidationContext<object> context;
 
-        if (fluentValidationValidator.ValidateOptions is not null)
+        if (fluentValidationValidator.ValidateOptions is not default(Action<ValidationStrategy<object>>))
         {
             context = ValidationContext<object>.CreateWithOptions(editContext.Model, fluentValidationValidator.ValidateOptions);
         }
-        else if (fluentValidationValidator.Options is not null)
+        else if (fluentValidationValidator.Options is not default(Action<ValidationStrategy<object>>))
         {
             context = ValidationContext<object>.CreateWithOptions(editContext.Model, fluentValidationValidator.Options);
         }
@@ -150,7 +151,7 @@ public static class EditContextFluentValidationExtensions
                 nextToken = nextToken.Slice(0, nextToken.Length - 1);
                 var prop = obj.GetType().GetProperty("Item");
 
-                if (prop is not null)
+                if (prop is not default(PropertyInfo))
                 {
                     // we've got an Item property
                     var indexerType = prop.GetIndexParameters()[0].ParameterType;

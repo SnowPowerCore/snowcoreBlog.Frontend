@@ -9,7 +9,7 @@ public static class ClaimsPrincipalMappingExtensions
     {
         var identities = dto.Identities?.Select(x => x.ToModel()).ToList();
 
-        if (identities is null) return new();
+        if (identities is default(List<ClaimsIdentity>)) return new();
 
         return new(identities);
     }

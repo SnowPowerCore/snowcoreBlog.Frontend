@@ -4,7 +4,7 @@
 @using snowcoreBlog.PublicApi.Extensions
 
 <div class="w-100">
-	@if (Articles is null || !Articles.Any())
+	@if (Articles is default(IEnumerable<ArticleDto>) || !Articles.Any())
 	{
 		<div class="no-articles">No articles yet.</div>
 	}

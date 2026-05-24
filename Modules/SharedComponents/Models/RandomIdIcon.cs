@@ -146,7 +146,7 @@ public class RandomIdIcon : IconInfo
                 ? stackalloc byte[byteCount]
                 : (rented = ArrayPool<byte>.Shared.Rent(byteCount));
 
-            if (rented is not null)
+            if (rented is not default(byte[]))
                 bytes = bytes.Slice(0, byteCount);
 
             var bytesWritten = Encoding.UTF8.GetBytes(chars, bytes);
@@ -154,7 +154,7 @@ public class RandomIdIcon : IconInfo
         }
         finally
         {
-            if (rented is not null)
+            if (rented is not default(byte[]))
                 ArrayPool<byte>.Shared.Return(rented, clearArray: true);
         }
     }

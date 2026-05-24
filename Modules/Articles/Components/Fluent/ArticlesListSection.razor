@@ -3,7 +3,7 @@
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
 
 <div class="articles-list-section">
-    @if (Articles is null || !Articles.Skip(3).Any())
+    @if (Articles is default(IEnumerable<ArticleDto>) || !Articles.Skip(3).Any())
     {
         <div class="no-more">No more articles.</div>
     }

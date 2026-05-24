@@ -18,7 +18,7 @@ public class FormFluentValidationValidator : ComponentBase
 
     public bool Validate(Action<ValidationStrategy<object>>? options = null)
     {
-        if (CurrentEditContext is null)
+        if (CurrentEditContext is default(EditContext))
         {
             throw new NullReferenceException(nameof(CurrentEditContext));
         }
@@ -41,7 +41,7 @@ public class FormFluentValidationValidator : ComponentBase
     /// <returns>True if there are no validation messages after validation; otherwise false.</returns>
     public async Task<bool> ValidateAsync(Action<ValidationStrategy<object>>? options = null)
     {
-        if (CurrentEditContext is null)
+        if (CurrentEditContext is default(EditContext))
         {
             throw new NullReferenceException(nameof(CurrentEditContext));
         }
@@ -87,7 +87,7 @@ public class FormFluentValidationValidator : ComponentBase
     /// <returns>Validation failures.</returns>
     public ValidationFailure[] GetFailuresFromLastValidation(FieldIdentifier? fieldIdentifier = null)
     {
-        if (LastValidationResult is null)
+        if (LastValidationResult is default(Dictionary<FieldIdentifier, List<ValidationFailure>>))
             return [];
 
         if (fieldIdentifier is null)

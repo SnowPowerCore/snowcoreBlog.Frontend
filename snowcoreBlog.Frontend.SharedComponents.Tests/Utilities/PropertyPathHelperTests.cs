@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Components.Forms;
-using snowcoreBlog.Frontend.SharedComponents.Utilities;
 using System.Reflection;
 
 namespace snowcoreBlog.Frontend.SharedComponents.Tests.Utilities;
@@ -109,7 +108,7 @@ internal static class PropertyPathHelperAccessor
 
     static PropertyPathHelperAccessor()
     {
-        var assembly = typeof(snowcoreBlog.Frontend.SharedComponents.Validation.FormFluentValidationValidator).Assembly;
+        var assembly = typeof(Validation.FormFluentValidationValidator).Assembly;
         HelperType = assembly.GetType("snowcoreBlog.Frontend.SharedComponents.Utilities.PropertyPathHelper")!;
         ToFluentPropertyPathMethod = HelperType.GetMethod("ToFluentPropertyPath", BindingFlags.Public | BindingFlags.Static)!;
     }

@@ -65,7 +65,7 @@ internal static class PropertyPathHelper
                         });
                     }
                 }
-                else if (instance is not null)
+                else if (instance is not default(object))
                 {
                     nodes.Push(new Node()
                     {
@@ -88,7 +88,7 @@ internal static class PropertyPathHelper
         };
         var next = currentNode;
 
-        while (next is not null)
+        while (next is not default(Node))
         {
             if (!string.IsNullOrEmpty(next.PropertyName))
             {

@@ -59,7 +59,7 @@
 
             var response = await HttpClient.GetFromJsonAsync<NotificationApiResponse>("/api/v1/notifications/active");
 
-            if (response?.Data is not null)
+            if (response?.Data is not default(IReadOnlyList<NotificationDto>))
             {
                 await NotificationBarState.SetNotifications(response.Data);
             }

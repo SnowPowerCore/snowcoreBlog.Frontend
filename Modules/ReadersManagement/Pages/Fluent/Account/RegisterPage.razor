@@ -165,7 +165,7 @@
     private async Task OnWizardFinish()
     {
         // Try to use the EditForm's EditContext if available so existing submit logic keeps working
-        if (_editForm is not null && _editForm.EditContext is not null)
+        if (_editForm is not default(EditForm) && _editForm.EditContext is not default(EditContext))
         {
             await SubmitFormWithLoadingAsync(_editForm.EditContext);
             return;

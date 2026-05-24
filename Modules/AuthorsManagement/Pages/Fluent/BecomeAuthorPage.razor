@@ -193,7 +193,7 @@
 
     private async Task CheckIfAlreadyAuthorAsync()
     {
-        if (AuthenticationStateTask is null) return;
+        if (AuthenticationStateTask is default(Task<AuthenticationState>)) return;
         
         var authState = await AuthenticationStateTask;
         var user = authState?.User;
@@ -218,7 +218,7 @@
 
         try
         {
-            if (AuthenticationStateTask is null)
+            if (AuthenticationStateTask is default(Task<AuthenticationState>))
             {
                 _errorMessage = TranslationResources.BecomeAuthorErrorAuthState;
                 return;
