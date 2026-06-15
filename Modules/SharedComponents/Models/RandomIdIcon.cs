@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -12,71 +11,126 @@ namespace snowcoreBlog.Frontend.SharedComponents.Models;
 /// </summary>
 public class RandomIdIcon : IconInfo
 {
-    /// <summary>
-    /// Please use the constructor including parameters.
-    /// </summary>
-    /// <exception cref="ArgumentNullException"></exception>
-    public RandomIdIcon() : this(string.Empty, IconVariant.Regular, IconSize.Size24, string.Empty)
+    //
+    // Summary:
+    //     Gets the content of the icon: SVG path.
+    public virtual string Content { get; }
+
+    //
+    // Summary:
+    //     Gets the color of the icon.
+    internal virtual string? Color { get; private set; }
+
+    //
+    // Summary:
+    //     Gets the width of the icon.
+    protected internal virtual int Width
+    {
+        get
+        {
+            if (Size != IconSize.Custom)
+            {
+                return (int)Size;
+            }
+
+            return 20;
+        }
+    }
+
+    //
+    // Summary:
+    //     Returns true if the icon contains a SVG content.
+    protected internal bool ContainsSVG
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(Content))
+            {
+                if (!Content.StartsWith("<path ") && !Content.StartsWith("<rect ") && !Content.StartsWith("<g ") && !Content.StartsWith("<circle "))
+                {
+                    return Content.StartsWith("<mark ");
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    //
+    // Summary:
+    //     Please use the constructor including parameters.
+    //
+    // Exceptions:
+    //   T:System.ArgumentNullException:
+    public RandomIdIcon()
+        : this(string.Empty, IconVariant.Regular, IconSize.Size24, string.Empty)
     {
         throw new ArgumentNullException("Please use the constructor including parameters.");
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Icon"/> class.
-    /// </summary>
-    /// <param name="name"><see cref="IconInfo.Name"/></param>
-    /// <param name="variant"><see cref="IconInfo.Variant"/></param>
-    /// <param name="size"><see cref="IconInfo.Size"/></param>
-    /// <param name="formattableSvg">Svg string with {0} in each node id of defs and references. A random string will be attached to the id using this class.</param>
-    public RandomIdIcon(string name, IconVariant variant, IconSize size, string formattableSvg)
+    //
+    // Summary:
+    //     Initializes a new instance of the Microsoft.FluentUI.AspNetCore.Components.Icon
+    //     class.
+    //
+    // Parameters:
+    //   name:
+    //     Microsoft.FluentUI.AspNetCore.Components.IconInfo.Name
+    //
+    //   variant:
+    //     Microsoft.FluentUI.AspNetCore.Components.IconInfo.Variant
+    //
+    //   size:
+    //     Microsoft.FluentUI.AspNetCore.Components.IconInfo.Size
+    //
+    //   content:
+    //     Microsoft.FluentUI.AspNetCore.Components.Icon.Content
+    public RandomIdIcon(string name, IconVariant variant, IconSize size, string content)
     {
         Name = name;
         Variant = variant;
         Size = size;
-        Content = string.Format(formattableSvg, GetHashCode().ToString());
+        Content = string.Format(content, GetHashCode().ToString());
     }
 
-    /// <summary>
-    /// Gets the content of the icon: SVG path.
-    /// </summary>
-    public virtual string Content { get; }
-
-    /// <summary>
-    /// Gets the color of the icon.
-    /// </summary>
-    internal virtual string? Color { get; private set; }
-
-    /// <summary>
-    /// Sets the color of the icon.
-    /// </summary>
-    /// <param name="color"></param>
-    /// <returns></returns>
+    //
+    // Summary:
+    //     Sets the color of the icon.
+    //
+    // Parameters:
+    //   color:
     public virtual RandomIdIcon WithColor(string? color)
     {
         if (!string.IsNullOrEmpty(color))
         {
             Color = color;
         }
+
         return this;
     }
 
-    /// <summary>
-    /// Sets the color of the icon.
-    /// </summary>
-    /// <param name="color"></param>
-    /// <returns></returns>
+    //
+    // Summary:
+    //     Sets the color of the icon.
+    //
+    // Parameters:
+    //   color:
     public virtual RandomIdIcon WithColor(Color color)
     {
         Color = color.ToAttributeValue();
         return this;
     }
 
-    /// <summary>
-    /// Inverse the color of the icon, if the <paramref name="accentContainer"/> is true,
-    /// and is not set (<see cref="Color"/> overrides this accent color).
-    /// </summary>
-    /// <param name="accentContainer"></param>
-    /// <returns></returns>
+    //
+    // Summary:
+    //     Inverse the color of the icon, if the accentContainer is true, and is not set
+    //     (Microsoft.FluentUI.AspNetCore.Components.Icon.Color overrides this accent color).
+    //
+    //
+    // Parameters:
+    //   accentContainer:
     internal RandomIdIcon InverseColor(bool accentContainer)
     {
         if (accentContainer && Color == null)
@@ -87,115 +141,56 @@ public class RandomIdIcon : IconInfo
         return this;
     }
 
-    /// <summary>
-    /// Gets the HTML markup of the icon.
-    /// </summary>
+    //
+    // Summary:
+    //     Gets the HTML markup of the icon.
     public virtual MarkupString ToMarkup(string? size = null, string? color = null)
     {
         if (Size != IconSize.Custom && ContainsSVG)
         {
-            var styleWidth = size ?? $"{(int)Size}px";
-            var styleColor = color ?? Color ?? "var(--accent-fill-rest)";
-            return new MarkupString($"<svg viewBox=\"0 0 {(int)Size} {(int)Size}\" width=\"{styleWidth}\" fill=\"{styleColor}\" style=\"background-color: var(--neutral-layer-1); width: {styleWidth};\" aria-hidden=\"true\">{Content}</svg>");
+            var value = size ?? $"{Size}px";
+            var value2 = color ?? Color ?? "var(--accent-fill-rest)";
+            return new MarkupString($"<svg viewBox=\"0 0 {Size} {Size}\" width=\"{value}\" fill=\"{value2}\" style=\"background-color: var(--neutral-layer-1); width: {value};\" aria-hidden=\"true\">{Content}</svg>");
         }
-        else
-        {
-            if (string.IsNullOrEmpty(size) && string.IsNullOrEmpty(color))
-            {
-                return new MarkupString(Content);
-            }
-            else
-            {
-                var attributes = new StyleBuilder()
-                    .AddStyle("display", "inline-block")
-                    .AddStyle("fill", color, when: !string.IsNullOrEmpty(color))
-                    .AddStyle("width", size, when: !string.IsNullOrEmpty(size))
-                    .Build();
 
-                return new MarkupString($"<div style=\"{attributes}\">{Content}</div>");
-            }
+        if (string.IsNullOrEmpty(size) && string.IsNullOrEmpty(color))
+        {
+            return new MarkupString(Content);
         }
+
+        var value3 = new StyleBuilder()
+            .AddStyle("display", "inline-block")
+            .AddStyle("fill", color, !string.IsNullOrEmpty(color))
+            .AddStyle("width", size, !string.IsNullOrEmpty(size))
+            .Build();
+        return new MarkupString($"<div style=\"{value3}\">{Content}</div>");
     }
 
-    /// <summary>
-    /// Gets the data URI of the icon.
-    /// </summary>
+    //
+    // Summary:
+    //     Gets the data URI of the icon.
     public virtual string ToDataUri(string? size = null, string? color = null)
     {
-        var svg = ToMarkup(size, color).Value;
-
-        // Attribute xmlns="http://www.w3.org/2000/svg" is required for SVG data URI.
-        svg = svg.Contains("http://www.w3.org/2000/svg") ? svg : svg.Replace("<svg ", "<svg xmlns=\"http://www.w3.org/2000/svg\" ");
-
-        var base64Svg = ToBase64Utf8(svg);
-        return $"data:image/svg+xml;base64,{base64Svg}";
+        var value = ToMarkup(size, color).Value;
+        value = value.Contains("http://www.w3.org/2000/svg") ? value : value.Replace("<svg ", "<svg xmlns=\"http://www.w3.org/2000/svg\" ");
+        var text = Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
+        return "data:image/svg+xml;base64," + text;
     }
 
-    private static string ToBase64Utf8(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return string.Empty;
-
-        ReadOnlySpan<char> chars = value.AsSpan();
-        var byteCount = Encoding.UTF8.GetByteCount(chars);
-
-        byte[]? rented = null;
-        try
-        {
-            Span<byte> bytes = byteCount <= 1024
-                ? stackalloc byte[byteCount]
-                : (rented = ArrayPool<byte>.Shared.Rent(byteCount));
-
-            if (rented is not default(byte[]))
-                bytes = bytes.Slice(0, byteCount);
-
-            var bytesWritten = Encoding.UTF8.GetBytes(chars, bytes);
-            return Convert.ToBase64String(bytes.Slice(0, bytesWritten));
-        }
-        finally
-        {
-            if (rented is not default(byte[]))
-                ArrayPool<byte>.Shared.Return(rented, clearArray: true);
-        }
-    }
-
-    /// <summary>
-    /// Gets the width of the icon.
-    /// </summary>
-    protected internal virtual int Width => Size == IconSize.Custom ? 20 : (int)Size;
-
-    /// <summary>
-    /// Returns true if the icon contains a SVG content.
-    /// </summary>
-    /// <returns></returns>
-    protected internal bool ContainsSVG
-    {
-        get
-        {
-            return !string.IsNullOrEmpty(Content) &&
-                   (Content.StartsWith("<path ") ||
-                    Content.StartsWith("<rect ") ||
-                    Content.StartsWith("<g ") ||
-                    Content.StartsWith("<circle ") ||
-                    Content.StartsWith("<mark "));
-        }
-    }
-
-    /// <summary>
-    /// Returns an icon instance.
-    /// </summary>
-    /// <returns></returns>
-    public static TIcon FromType<TIcon>()
-        where TIcon : Icon, new()
+    //
+    // Summary:
+    //     Returns an icon instance.
+    public static TIcon FromType<TIcon>() where TIcon : Icon, new()
     {
         return new TIcon();
     }
 
-    /// <summary>
-    /// Returns an icon from an image source.
-    /// </summary>
-    /// <param name="imageSource"></param>
-    /// <returns></returns>
+    //
+    // Summary:
+    //     Returns an icon from an image source.
+    //
+    // Parameters:
+    //   imageSource:
     public static IconFromImage FromImageUrl(string imageSource)
     {
         return new IconFromImage(imageSource);
