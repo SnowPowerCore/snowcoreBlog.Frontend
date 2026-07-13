@@ -72,7 +72,7 @@
 	[Parameter]
 	public IEnumerable<ArticleDto>? Articles { get; set; }
 
-	private string GetArticleUrl(ArticleDto article) => $"/articles/{(article.Slug ?? article.Id.ToString())}";
+	private string GetArticleUrl(ArticleDto article) => $"articles/{(article.Slug ?? article.Id.ToString())}";
 
 	private string Excerpt(string? markdown, int max = 160)
 	{
