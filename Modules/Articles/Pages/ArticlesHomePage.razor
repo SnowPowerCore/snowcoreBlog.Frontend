@@ -3,12 +3,15 @@
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
 @using snowcoreBlog.PublicApi.Extensions
 @using snowcoreBlog.Frontend.Articles.Components.Fluent
+@using Microsoft.JSInterop
 
 @page "/"
 @attribute [StreamRendering]
+@implements IAsyncDisposable
 
 @inject IApizrManager<IArticlesApi> ArticlesApi
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <FluentStack Orientation="Orientation.Vertical">
     <FluentSpacer />
@@ -26,7 +29,7 @@
     <FluentSpacer />
     <FluentStack Orientation="Orientation.Horizontal">
         <FluentButton OnClick="@(() => Navigation.NavigateTo("login"))" Appearance="@Appearance.Accent">Go to Login</FluentButton>
-        <FluentButton OnClick="@(() => Navigation.NavigateTo(string.Empty))" Appearance="@Appearance.Neutral">To the top</FluentButton>
+        <FluentButton OnClick="ScrollToTopAsync" Appearance="@Appearance.Neutral">To the top</FluentButton>
     </FluentStack>
     <FluentSpacer />
     <FluentSpacer />
@@ -38,6 +41,28 @@
 @code
 {
 	private List<ArticleDto>? _articles;
+	private IJSObjectReference? _scrollModule;
+
+	private async Task ScrollToTopAsync()
+	{
+		_scrollModule ??= await JS.InvokeAsync<IJSObjectReference>(
+			"import", "./_content/snowcoreBlog.Frontend.Articles/js/scrollToTop.js");
+		await _scrollModule.InvokeVoidAsync("scrollToTop");
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		if (_scrollModule is not null)
+		{
+			try
+			{
+				await _scrollModule.DisposeAsync();
+			}
+			catch (JSDisconnectedException)
+			{
+			}
+		}
+	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{

@@ -25,7 +25,8 @@ partial class RegisterState
 
             public override Task Handle(Action action, CancellationToken cancellationToken)
             {
-                RegisterState.CurrentModel = action.Request;
+                if (action.Request is not null)
+                    RegisterState.CurrentModel = action.Request;
                 return Task.CompletedTask;
             }
         }

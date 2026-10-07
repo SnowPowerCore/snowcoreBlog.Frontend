@@ -4,6 +4,10 @@
 @using snowcoreBlog.PublicApi.Extensions
 
 <div class="w-100">
+	<FluentStack Orientation="Orientation.Vertical" VerticalGap="8" class="section-header">
+		<FluentLabel Typo="Typography.H2">Highlights</FluentLabel>
+		<FluentDivider />
+	</FluentStack>
 	@if (Articles is default(IEnumerable<ArticleDto>) || !Articles.Any())
 	{
 		<div class="no-articles">No articles yet.</div>

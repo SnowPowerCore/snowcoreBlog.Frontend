@@ -3,6 +3,12 @@
     width: 100%;
 }
 
+.section-header
+{
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
 .no-more
 {
     padding: 1rem;

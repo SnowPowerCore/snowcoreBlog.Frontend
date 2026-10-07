@@ -1,0 +1,132 @@
+@using Apizr
+@using snowcoreBlog.PublicApi.Api
+@using snowcoreBlog.PublicApi.BusinessObjects.Dto
+@using snowcoreBlog.PublicApi.Extensions
+@using Markdig
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@page "/articles/{Slug}"
+@attribute [StreamRendering]
+
+@inject IApizrManager<IArticlesApi> ArticlesApi
+
+<PageTitle>@(_article?.Title ?? "Article")</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical">
+    <FluentSpacer />
+    <FluentSpacer />
+    @if (_loading)
+    {
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12" class="article-status" HorizontalAlignment="HorizontalAlignment.Center">
+            <FluentProgressRing />
+            <FluentLabel Typo="Typography.Body">Loading article…</FluentLabel>
+        </FluentStack>
+    }
+    else if (_notFound)
+    {
+        <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Center" class="article-status">
+            <FluentLabel Typo="Typography.H4">Article not found.</FluentLabel>
+            <FluentButton OnClick="@(() => Navigation.NavigateTo("/"))" Appearance="@Appearance.Neutral">Back to articles</FluentButton>
+        </FluentStack>
+    }
+    else if (_article is not null)
+    {
+        <article class="article-page">
+            @if (!string.IsNullOrWhiteSpace(_article.CoverImageUrl))
+            {
+                <img src="@_article.CoverImageUrl" alt="@_article.Title" class="article-cover" />
+            }
+            <header class="article-header">
+                <FluentLabel Typo="Typography.H1" Class="article-title">@_article.Title</FluentLabel>
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" class="article-meta">
+                    @if (_article.PublishedAt is { } publishedAt)
+                    {
+                        <FluentLabel Typo="Typography.Body" class="article-date">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.CalendarLtr())" />
+                            @FormatDate(publishedAt)
+                        </FluentLabel>
+                    }
+                    @if (_article.Tags is { Length: > 0 })
+                    {
+                        <span class="article-tags">
+                            @foreach (var tag in _article.Tags)
+                            {
+                                <FluentBadge Shape="BadgeShape.Rounded" class="article-tag">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Tag())" />
+                                    @tag
+                                </FluentBadge>
+                            }
+                        </span>
+                    }
+                </FluentStack>
+            </header>
+            <FluentDivider class="article-divider" />
+            <div class="markdown-body">
+                @((MarkupString)_renderedMarkdown)
+            </div>
+            <FluentDivider class="article-divider" />
+        </article>
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Left" class="article-footer">
+            <FluentButton OnClick="@(() => Navigation.NavigateTo("/"))" Appearance="@Appearance.Neutral" IconStart="@(new Icons.Regular.Size20.ArrowLeft())">Back to articles</FluentButton>
+        </FluentStack>
+    }
+    <FluentSpacer />
+</FluentStack>
+
+@code
+{
+	[Parameter]
+	public string Slug { get; set; } = default!;
+
+	[Inject]
+	private NavigationManager Navigation { get; set; } = default!;
+
+	private static readonly MarkdownPipeline MarkdownPipeline = new MarkdownPipelineBuilder()
+		.UseAdvancedExtensions()
+		.UseSoftlineBreakAsHardlineBreak()
+		.DisableHtml()
+		.Build();
+
+	private ArticleDto? _article;
+	private bool _loading = true;
+	private bool _notFound;
+
+	private string _renderedMarkdown = string.Empty;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await base.OnAfterRenderAsync(firstRender);
+
+		if (firstRender)
+		{
+			await LoadArticleAsync();
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
+	private async Task LoadArticleAsync()
+	{
+		using var tokenSource = new CancellationTokenSource();
+
+		using var response = await ArticlesApi.ExecuteAsync(
+			(opt, api) => api.GetArticleBySlug(Slug, opt),
+			o => o.WithCancellation(tokenSource.Token));
+
+		var data = response.ToData<ArticleDto>(out var errors);
+		if (data is not default(ArticleDto))
+		{
+			_article = data;
+			_renderedMarkdown = string.IsNullOrWhiteSpace(data.Markdown)
+				? string.Empty
+				: Markdig.Markdown.ToHtml(data.Markdown, MarkdownPipeline);
+		}
+		else
+		{
+			_notFound = true;
+		}
+
+		_loading = false;
+	}
+
+	private static string FormatDate(DateTime? dt) => dt?.ToString("MMMM d, yyyy") ?? string.Empty;
+}

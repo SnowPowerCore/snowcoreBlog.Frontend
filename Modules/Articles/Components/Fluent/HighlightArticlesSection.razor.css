@@ -3,6 +3,12 @@
     --bs-gutter-x: 1.5rem !important;
 }
 
+.section-header
+{
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
 .no-articles
 {
     padding: 1rem;

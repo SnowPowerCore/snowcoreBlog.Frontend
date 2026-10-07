@@ -1,15 +1,20 @@
 ﻿@using Soenneker.Blazor.Masonry
+@using Microsoft.FluentUI.AspNetCore.Components
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
 
 <div class="articles-list-section">
+	<FluentStack Orientation="Orientation.Vertical" VerticalGap="8" class="section-header">
+		<FluentLabel Typo="Typography.H2">More Articles</FluentLabel>
+		<FluentDivider />
+	</FluentStack>
     @if (Articles is default(IEnumerable<ArticleDto>) || !Articles.Skip(3).Any())
     {
         <div class="no-more">No more articles.</div>
     }
     else
     {
-        <Masonry AutoRender="true" SizerClass="col-sm-1" @ref="_masonry" class="row masonry">
+        <Masonry @ref="_masonry" class="row masonry" AutoRender="false" SizerClass="col-sm-1">
             @foreach (var a in Articles.Skip(3))
             {
                 <MasonryItem class="col-lg-4 col-md-6 mb-4">
@@ -17,7 +22,7 @@
                         <FloatingCard Class="masonry-card p-0 position-relative d-flex flex-column">
                             @if (!string.IsNullOrWhiteSpace(a.CoverImageUrl))
 							{
-								<img src="@a.CoverImageUrl" alt="@a.Title" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" />
+								<img src="@a.CoverImageUrl" @onload="ImageLoadedAsync" alt="@a.Title" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" />
 							}
                             <div class="masonry-tint position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.85));"></div>
                             <div class="flex-grow-1" style="min-height: 200px;"></div>
@@ -40,6 +45,21 @@
 	public IEnumerable<ArticleDto>? Articles { get; set; }
 
 	private Masonry _masonry = null!;
+    private int _loadedImages = 0;
+    private bool _initialized = false;
+
+    private async Task ImageLoadedAsync()
+    {
+        _loadedImages++;
+
+        if (_loadedImages == Articles?.Skip(3).Count())
+        {
+            await _masonry!.Init();
+            _initialized = true;
+        }
+        else if (_initialized)
+            await _masonry!.Layout();
+    }
 
 	private string GetArticleUrl(ArticleDto article) => $"articles/{(article.Slug ?? article.Id.ToString())}";
 

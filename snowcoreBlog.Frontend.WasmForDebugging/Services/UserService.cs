@@ -14,18 +14,50 @@ namespace snowcoreBlog.Frontend.WasmForDebugging.Services;
 public class UserService(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
                          IApizrManager<IReaderAccountTokensApi> tokensApi) : IUserService
 {
+    // The identity authentication type MUST be non-empty: ClaimsIdentity created without
+    // one reports IsAuthenticated == false, so AuthorizeView renders NotAuthorized
+    // even when valid claims exist.
+    private const string AuthenticationType = "Cookies";
+
     private protected IApizrManager<IReaderAccountManagementApi> ReaderAccountApi { get; } = readerAccountApi;
     private protected IApizrManager<IReaderAccountTokensApi> TokensApi { get; } = tokensApi;
 
     public async Task<AuthenticationState> GetAuthenticationStateAsync(CancellationToken cancellationToken = default)
     {
-        using var response = await ReaderAccountApi.ExecuteAsync(static (opt, api) =>
-            api.RequestAuthData(opt), o => o.WithCancellation(cancellationToken));
-        var data = response.ToData<AuthenticationStateDto>(out var errors);
-        if (data is default(AuthenticationStateDto) && errors.Count > 0)
-            return new AuthenticationState(new ClaimsPrincipal());
-        return new AuthenticationState(new(new ClaimsIdentity(data!.Claims.Select(x => new Claim(x.Key, x.Value)))));
+        // NOTE: no refresh attempt on failure here — the backend refresh endpoint
+        // requires a still-valid access token, so an expired pair cannot be recovered.
+        // Proactive rotation before expiry is handled by WasmCookiesAuthenticationStateProvider.
+        return await TryResolveAuthenticationStateAsync(cancellationToken) ?? AnonymousAuthenticationState();
     }
+
+    private async Task<AuthenticationState?> TryResolveAuthenticationStateAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await ReaderAccountApi.ExecuteAsync(static (opt, api) =>
+                api.RequestAuthData(opt), o => o.WithCancellation(cancellationToken));
+            if (!response.IsSuccess)
+                return null;
+
+            var data = response.ToData<AuthenticationStateDto>(out _);
+            if (data is default(AuthenticationStateDto) || data.Claims.Count == 0)
+                return null;
+
+            var identity = new ClaimsIdentity(
+                data.Claims.Select(x => new Claim(x.Key, x.Value)),
+                authenticationType: AuthenticationType);
+            return new AuthenticationState(new ClaimsPrincipal(identity));
+        }
+        catch
+        {
+            // Network failure, CORS problem, Apizr exception, ... — treat as anonymous
+            // instead of faulting the authentication state task.
+            return null;
+        }
+    }
+
+    private static AuthenticationState AnonymousAuthenticationState() =>
+        new(new ClaimsPrincipal(new ClaimsIdentity()));
 
     public Task SignOutAsync(CancellationToken cancellationToken = default)
     {

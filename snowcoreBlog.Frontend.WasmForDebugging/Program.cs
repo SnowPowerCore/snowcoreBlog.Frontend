@@ -24,7 +24,7 @@ builder.Services
     .AddHttpMessageHandler<IncludeCookiesHandler>();
 builder.Services.AddSingleton(static sp => Altcha.CreateSolverBuilder().Build());
 
-builder.Services.AddClient();
+builder.Services.AddClient(builder.Configuration);
 builder.Services.AddClientSideApizrManagers();
 builder.AddBlazorAuth();
 

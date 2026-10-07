@@ -1,6 +1,7 @@
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
 using snowcoreBlog.ApplicationLaunch.Interfaces;
@@ -19,12 +20,12 @@ namespace snowcoreBlog.Frontend.ClientShared.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddClient(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddClient(this IServiceCollection serviceCollection, IConfiguration configuration)
     {
         serviceCollection.AddArticles();
         serviceCollection.AddServiceNotifications();
-        serviceCollection.AddAuthorsManagement();
-        serviceCollection.AddReadersManagement();
+        serviceCollection.AddAuthorsManagement(configuration);
+        serviceCollection.AddReadersManagement(configuration);
         serviceCollection.AddSharedComponents();
         serviceCollection.AddBlazoredLocalStorage();
         serviceCollection.AddBlazoredSessionStorage();
@@ -47,6 +48,8 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddCascadingAuthenticationState();
 
         serviceCollection.AddSingleton<IValidator<RequestCreateReaderAccountDto>, RequestCreateReaderAccountValidator>();
+        serviceCollection.AddSingleton<IValidator<CheckNickNameNotTakenDto>, CheckNickNameNotTakenValidator>();
+        serviceCollection.AddSingleton<IValidator<CheckAuthorDisplayNameNotTakenDto>, CheckAuthorDisplayNameNotTakenValidator>();
         serviceCollection.AddSingleton<IValidator<RequestAssertionOptionsDto>, RequestAssertionOptionsValidator>();
         serviceCollection.AddSingleton<IValidator<RequestAttestationOptionsDto>, RequestAttestationOptionsValidator>();
         serviceCollection.AddSingleton<IValidator<ConfirmCreateReaderAccountDto>, ConfirmCreateReaderAccountValidator>();

@@ -12,6 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ActualLab.Fusion" />
+    <PackageReference Include="ActualLab.Fusion.Blazor" />
+    <PackageReference Include="ActualLab.Fusion.Blazor.Authentication" />
+    <PackageReference Include="ActualLab.Generators" PrivateAssets="all" />
+    <PackageReference Include="ActualLab.Rpc" />
     <PackageReference Include="BitzArt.Blazor.Auth.Client" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" />

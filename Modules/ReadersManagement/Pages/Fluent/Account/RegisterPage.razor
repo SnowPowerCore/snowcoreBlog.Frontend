@@ -2,6 +2,7 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Microsoft.AspNetCore.Components.Forms
 @using snowcoreBlog.Frontend.Infrastructure.Events
+@using snowcoreBlog.Frontend.ReadersManagement.Components.NickName
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Register
 @using snowcoreBlog.Frontend.SharedComponents.Components.Altcha
@@ -21,7 +22,7 @@
 @inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi
 @inject IValidator<RequestCreateReaderAccountDto> RequestCreateReaderAccountValidator
 
-<FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())">
+<FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())" MaxContentWidth="30rem">
     <RegularSizeContent>
         <FluentStack Class="px-3" Orientation="Orientation.Vertical">
             <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitFormWithLoadingAsync" @ref="_editForm">
@@ -54,8 +55,13 @@
                                 <FluentTextField Name="lastName" Label="@TranslationResources.LastNameFieldLabel" @bind-Value=@CreateNewAccount.LastName />
                                 <FluentValidationMessage For=@(() => CreateNewAccount.LastName) />
                                 <FluentSpacer />
-                                <FluentTextField Name="nickName" Label="@TranslationResources.NickNameFieldLabel" @bind-Value=@CreateNewAccount.NickName Required />
+                                <FluentTextField Name="nickName"
+                                                  Label="@TranslationResources.NickNameFieldLabel"
+                                                  @bind-Value=@CreateNewAccount.NickName
+                                                  Immediate="true"
+                                                  Required />
                                 <FluentValidationMessage For=@(() => CreateNewAccount.NickName) />
+                                <NickNameAvailabilityIndicator Candidate="@CreateNewAccount.NickName" />
                             </FluentStack>
                         </FluentWizardStep>
 
@@ -147,14 +153,20 @@
 
         if (firstRender)
         {
-            CreateNewAccount = RegisterState.CurrentModel;
+            CreateNewAccount = RegisterState.CurrentModel ?? _emptyState;
         }
     }
 
-    private Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
+    private async Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
     {
         _registrationErrors.Clear();
-        return RegisterState.SetCurrentInput(CreateNewAccount);
+
+        // Persist the current input so the wizard / navigation can restore it.
+        // Nickname availability needs no dispatch here: the re-render triggered by
+        // this handler flows the fresh CreateNewAccount.NickName down to
+        // NickNameAvailabilityIndicator.Candidate, which debounces and recomputes
+        // its Fusion-backed ComputedState on its own.
+        await RegisterState.SetCurrentInput(CreateNewAccount);
     }
 
     private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)

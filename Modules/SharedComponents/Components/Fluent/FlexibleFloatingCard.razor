@@ -13,14 +13,14 @@
 @inject NavigationManager Navigation
 
 <div class="h-100 d-flex justify-content-center align-items-center @Class">
-    <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true">
-        <FluentGridItem HiddenWhen="GridItemHidden.SmAndUp">
-            <FloatingCard Class="w-100">
+    <FluentGrid OnBreakpointEnter="@OnBreakpointEnterHandler" AdaptiveRendering="true" Class="@GridClass">
+        <FluentGridItem HiddenWhen="GridItemHidden.SmAndUp" Xs="@ItemSpan">
+            <FloatingCard Class="@MobileCardClass" Style="@MobileCardStyle">
                 @(MobileSizeContent ?? RegularSizeContent)
             </FloatingCard>
         </FluentGridItem>
-        <FluentGridItem HiddenWhen="@(GridItemHidden.XsAndDown | GridItemHidden.XlAndUp)">
-            <div class="d-grid my-5">
+        <FluentGridItem HiddenWhen="@(GridItemHidden.XsAndDown | GridItemHidden.XlAndUp)" Xs="@ItemSpan">
+            <div class="d-grid my-5" Style="@GridStyle">
                 <FloatingCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
                     @RegularSizeContent
                 </FloatingCard>
@@ -29,8 +29,8 @@
                 </div>
             </div>
         </FluentGridItem>
-        <FluentGridItem HiddenWhen="GridItemHidden.LgAndDown">
-            <div class="d-grid my-5">
+        <FluentGridItem HiddenWhen="GridItemHidden.LgAndDown" Xs="@ItemSpan">
+            <div class="d-grid my-5" Style="@GridStyle">
                 <FloatingCard Class="w-100" Style="grid-row: 1; grid-column: 1;">
                     @(WideSizeContent ?? RegularSizeContent)
                 </FloatingCard>
@@ -58,6 +58,26 @@
 
     [Parameter]
     public Icon FloatingIcon { get; set; } = new Icon(string.Empty, IconVariant.Regular, IconSize.Custom, string.Empty);
+    [Parameter]
+    public string? MaxContentWidth { get; set; }
+
+    private bool HasMaxContentWidth => !string.IsNullOrEmpty(MaxContentWidth);
+
+    // Full-width grid row so the card container can size against the viewport (min(100%, cap))
+    // instead of the content-sized (fit-content) default grid item.
+    private string GridClass => HasMaxContentWidth ? "w-100" : string.Empty;
+
+    private int? ItemSpan => HasMaxContentWidth ? 12 : null;
+
+    private string GridStyle => HasMaxContentWidth
+        ? $"width: min(100%, {MaxContentWidth}); margin-inline: auto; grid-template-columns: minmax(0, 1fr);"
+        : string.Empty;
+
+    private string MobileCardStyle => HasMaxContentWidth
+        ? $"width: min(100%, {MaxContentWidth}); margin-inline: auto;"
+        : string.Empty;
+
+    private string MobileCardClass => HasMaxContentWidth ? string.Empty : "w-100";
 
     private void OnBreakpointEnterHandler(GridItemSize size) { }
 }

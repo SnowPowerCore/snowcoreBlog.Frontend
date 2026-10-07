@@ -4,6 +4,7 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using TimeWarp.State
 @using TimeWarp.State.Plus
+@using snowcoreBlog.Frontend.AuthorsManagement.Components.Fluent
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
 
 @inherits TimeWarpStateComponent
@@ -111,6 +112,8 @@
             <FluentLabel Style="font-size: 12px; color: var(--neutral-foreground-hint);">
                 @TranslationResources.BecomeAuthorDisplayNameHint
             </FluentLabel>
+
+            <AuthorDisplayNameAvailabilityIndicator Candidate="@_displayName" />
 
             <FluentButton Appearance="Appearance.Accent" 
                          OnClick="@BecomeAuthorAsync"

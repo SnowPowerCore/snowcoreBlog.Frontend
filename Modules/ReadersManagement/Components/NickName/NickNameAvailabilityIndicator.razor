@@ -1,0 +1,248 @@
+@using ActualLab.Fusion
+@using ActualLab.Fusion.Blazor
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using snowcoreBlog.PublicApi.BusinessObjects.Dto
+@using snowcoreBlog.PublicApi.Services
+
+@inherits ComputedStateComponent<NickNameAvailability>
+
+@inject IValidator<CheckNickNameNotTakenDto> NickNameValidator
+@inject INickNameAvailabilityService GetNickNameAvailability
+
+@*
+    Real-time nickname availability indicator.
+    Renders nothing while idle (empty input). Otherwise shows a colored status line:
+    - Checking: muted spinner text (candidate changed, debounce running or RPC in flight)
+    - Available: green check
+    - Taken:     red cross
+    - Invalid:   amber warning (too short / too long)
+    Fusion notes: ComputedState<T>.Value is get-only and exposes only COMPLETED
+    computations, so there is no "mid-calculation" value to push. The pending
+    ("Checking") state is derived at render time by comparing the Candidate
+    parameter with the candidate the last completed compute belongs to, and the
+    debounced State.Recompute() below is what actually (re)triggers the calculation.
+    Server-side invalidations auto-refresh the value through the component's
+    ComputedState update cycle (Updating/Updated events re-render the component).
+*@
+
+@if (Display.Status is NickNameAvailabilityStatus.Idle)
+{
+    return;
+}
+
+<FluentStack Orientation="Orientation.Horizontal"
+             HorizontalGap="6"
+             VerticalAlignment="VerticalAlignment.Center"
+             Class="@($"nickname-availability nick-name-availability--{Display.Status.ToString().ToLowerInvariant()}")">
+    @switch (Display.Status)
+    {
+        case NickNameAvailabilityStatus.Checking:
+            <FluentProgressRing Style="width:14px;height:14px;" />
+            <FluentLabel Class="nick-name-availability__label">@TranslationResources.NickNameCheckingLabel</FluentLabel>
+            break;
+
+        case NickNameAvailabilityStatus.Available:
+            <FluentIcon Value="@(new Icons.Color.Size24.CheckmarkCircle())" Color="Color.Success" />
+            <FluentLabel Class="nick-name-availability__label nick-name-availability__label--ok">
+                @string.Format(TranslationResources.NickNameAvailableLabel, Display.Candidate)
+            </FluentLabel>
+            break;
+
+        case NickNameAvailabilityStatus.Taken:
+            <FluentIcon Value="@(new Icons.Color.Size24.DismissCircle())" Color="Color.Error" />
+            <FluentLabel Class="nick-name-availability__label nick-name-availability__label--taken">
+                @string.Format(TranslationResources.NickNameTakenLabel, Display.Candidate)
+            </FluentLabel>
+            break;
+
+        case NickNameAvailabilityStatus.Invalid:
+            <FluentIcon Value="@(new Icons.Color.Size24.Warning())" Color="Color.Warning" />
+            <FluentLabel Class="nick-name-availability__label nick-name-availability__label--invalid">
+                @TranslationResources.NickNameInvalidLabel
+            </FluentLabel>
+            break;
+    }
+</FluentStack>
+
+@code {
+    // Cancellation for the debounce timer only; last-writer-wins across keystrokes.
+    private CancellationTokenSource? _debounceCts;
+
+    // Candidate the state is being computed for (set right before State.Recompute()).
+    private string _checkCandidate = string.Empty;
+
+    // Candidate the last COMPLETED compute belongs to (set at the end of ComputeState).
+    private string _computedCandidate = string.Empty;
+
+    // Candidate currently inside its debounce window (dedupes spurious re-renders
+    // so a parent re-render does not restart the debounce timer).
+    private string? _pendingCandidate;
+
+    // Cancels the RPC call currently in flight; re-armed for every published check.
+    private CancellationTokenSource? _requestCts;
+    
+    /// <summary>Debounce window after the last keystroke before a network check fires.</summary>
+    public static readonly TimeSpan DebounceDelay = TimeSpan.FromMilliseconds(400);
+
+    [Parameter]
+    public string Candidate { get; set; } = string.Empty;
+
+    public NickNameAvailabilityIndicator()
+    {
+        // Defaults add RecomputeStateOnParameterChange, which would recompute on
+        // every keystroke and defeat the debounce. Keep only the render points,
+        // so a keystroke instantly re-renders (showing "Checking") while the
+        // debounced recompute is pending.
+        Options = ComputedStateComponentOptions.UseAllRenderPoints;
+    }
+
+    private string TrimmedCandidate => Candidate?.Trim() ?? string.Empty;
+
+    /// <summary>
+    /// Render-time view state: what the indicator should show RIGHT NOW.
+    /// "Checking" here is the derived pending state (candidate changed but the
+    /// computed value for it has not landed yet).
+    /// </summary>
+    private (NickNameAvailabilityStatus Status, string Candidate) Display
+    {
+        get
+        {
+            var candidate = TrimmedCandidate;
+            if (candidate.Length == 0)
+                return (NickNameAvailabilityStatus.Idle, candidate);
+
+            if (!NickNameValidator.Validate(new() { NickName = candidate }).IsValid)
+                return (NickNameAvailabilityStatus.Invalid, candidate);
+
+            // Before the first compute completes there is nothing to show yet.
+            if (State is null || State.Snapshot.IsInitial)
+                return (NickNameAvailabilityStatus.Idle, candidate);
+
+            if (candidate != _computedCandidate)
+            {
+                // Fail soft on a failed check for the new candidate: show Idle so the
+                // user can retry / proceed to submit, where the authoritative final
+                // check still runs. Transient RPC errors are auto-retried by Fusion.
+                return State.HasError
+                    ? (NickNameAvailabilityStatus.Idle, candidate)
+                    : (NickNameAvailabilityStatus.Checking, candidate);
+            }
+
+            // Candidate matches the last completed compute. State.Value throws when
+            // the latest (auto-refresh) compute failed, so fall back to the last
+            // non-error value.
+            var value = State.HasError ? State.LastNonErrorValue : State.Value;
+            return (value.Status, candidate);
+        }
+    }
+
+    /// <summary>Cancels and disposes the in-flight request token, if any.</summary>
+    private void CancelRequest()
+    {
+        if (_requestCts is null)
+            return;
+
+        _requestCts.Cancel();
+        _requestCts.Dispose();
+        _requestCts = null;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var candidate = TrimmedCandidate;
+
+        if (candidate == _checkCandidate)
+            return; // Nothing new to check (initial set, same value re-set, or already computed).
+
+        // Same candidate already in its debounce window (spurious parent
+        // re-render): keep the running timer instead of restarting it.
+        if (_debounceCts is not null
+            && !_debounceCts.IsCancellationRequested
+            && candidate == _pendingCandidate)
+        {
+            return;
+        }
+
+        // Supersede any pending debounce for the previous candidate.
+        _pendingCandidate = candidate;
+        _debounceCts?.Cancel();
+        _debounceCts?.Dispose();
+        var cts = _debounceCts = new CancellationTokenSource();
+
+        if (candidate.Length == 0
+            || !NickNameValidator.Validate(new() { NickName = candidate }).IsValid)
+        {
+            // Empty / clearly-invalid input never leaves the client; the display
+            // state is derived purely from the candidate, no recompute needed.
+            // Any request still in flight for the previous candidate is killed.
+            _checkCandidate = candidate;
+            CancelRequest();
+            return;
+        }
+
+        // Debounce: wait, but bail out if a newer keystroke supersedes us.
+        try
+        {
+            await Task.Delay(DebounceDelay, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        // Last-writer-wins guard: a newer keystroke replaced _debounceCts while
+        // we were delaying, so this invocation is stale and must not publish.
+        // (NOTE: comparing against _checkCandidate here is wrong — it is only
+        // published right before Recompute, so it never matches yet.)
+        if (!ReferenceEquals(_debounceCts, cts))
+            return;
+
+        // Kill the request still in flight for the previous candidate, then arm
+        // a fresh token for the new one. Fusion serializes computes on an async
+        // lock, so cancelling the old call also unblocks the queued one sooner.
+        CancelRequest();
+        _requestCts = new CancellationTokenSource();
+
+        // Publish the candidate this compute belongs to, then (re)compute.
+        // ComputeState reads _checkCandidate (not the live parameter) so the
+        // produced value is always consistent with _computedCandidate.
+        _checkCandidate = candidate;
+        await State.Recompute();
+    }
+
+    protected override async Task<NickNameAvailability> ComputeState(CancellationToken cancellationToken)
+    {
+        // Pure computation: no parameter mutation, no State.Value assignment
+        // (it is get-only anyway), no timers. Debounce lives in OnParametersSetAsync.
+        var candidate = _checkCandidate;
+
+        if (candidate.Length == 0
+            || !NickNameValidator.Validate(new() { NickName = candidate }).IsValid)
+        {
+            return NickNameAvailability.Idle;
+        }
+
+        // Link the state's lifetime token with the per-request token so a newer
+        // keystroke can cancel this call while it is in flight (client-side;
+        // Fusion RPC does not forward cancellation to the server).
+        var requestToken = _requestCts?.Token ?? default;
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, requestToken);
+
+        // Fusion replica call: cached + auto-refreshed on server-side invalidation
+        // by the ComputedState update cycle.
+        var result = await GetNickNameAvailability.GetAsync(candidate, linkedCts.Token);
+
+        // Bookkeeping only: marks which candidate State.Value now belongs to.
+        _computedCandidate = candidate;
+        return result;
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        _debounceCts?.Cancel();
+        _debounceCts?.Dispose();
+        _debounceCts = null;
+        CancelRequest(); // Also cancels any RPC still awaiting.
+        await base.DisposeAsync(); // Disposes the ComputedState (stops its update cycle).
+    }
+}

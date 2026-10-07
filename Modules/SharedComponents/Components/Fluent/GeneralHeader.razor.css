@@ -1,3 +1,20 @@
+::deep fluent-card {
+    --base-height-multiplier: 16;
+}
+
+::deep fluent-button::part(control),
+::deep fluent-anchor::part(control) {
+    padding: 12px 12px;
+    height: 32px;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+::deep .fluent-grid > * {
+    display: flex;
+    align-items: center;
+}
+
 ::deep p {
     -webkit-user-select: none;
     /* Safari */

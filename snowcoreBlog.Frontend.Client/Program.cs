@@ -14,7 +14,7 @@ builder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProvider
 builder.Services
     .AddHttpClient(string.Empty, sp => sp.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
     .AddHttpMessageHandler<IncludeCookiesHandler>();
-builder.Services.AddClient();
+builder.Services.AddClient(builder.Configuration);
 builder.Services.AddClientSideApizrManagers();
 builder.AddBlazorAuth();
 builder.Services.AddScoped<IUserService, BlazorHostBackedClientUserService>();

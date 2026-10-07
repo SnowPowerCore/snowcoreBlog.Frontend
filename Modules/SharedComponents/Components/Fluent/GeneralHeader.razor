@@ -90,14 +90,14 @@
                             <FluentSpacer Width="10" />
                             <FluentIcon Value="@(new Icons.Color.Size28.CodeBlock())" Class="cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))" />
                             <FluentLabel Class="mb-0" Style="cursor: pointer;" @onclick="@(() => HeaderItemNavigateTo(string.Empty))">@Title</FluentLabel>
-                            <FluentDivider Class="ms-2" Style="height: 15px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
+                            <FluentDivider Class="ms-2" Style="height: 16px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
                             <FluentStack Class="ms-auto" Orientation="Orientation.Horizontal" HorizontalGap="5">
                                 <FluentSpacer />
                                 @foreach (var navLink in NavLinks)
                                 {
                                     <FluentAnchor Href="@navLink.Value" Appearance="Appearance.Lightweight">@navLink.Key</FluentAnchor>
                                 }
-                                <FluentDivider Style="height: 15px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
+                                <FluentDivider Class="align-self-center" Style="height: 16px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
                                 <FluentSpacer Width="5" />
                                 <FluentButton Appearance="Appearance.Accent" @onclick="@(() => HeaderItemNavigateTo(AccountLink))">
                                     Sign In
