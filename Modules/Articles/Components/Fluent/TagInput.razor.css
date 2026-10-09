@@ -1,0 +1,51 @@
+.tag-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.tag-input-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 28px;
+    align-items: center;
+}
+
+.tag-input-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px 2px 8px;
+    border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+    border-radius: 12px;
+    background: var(--neutral-fill-secondary-hover, #f5f5f5);
+    color: var(--neutral-foreground-rest);
+    font-size: 0.85rem;
+}
+
+.tag-input-chip-text {
+    line-height: 1;
+}
+
+::deep .tag-input-chip fluent-button {
+    min-width: 20px;
+    height: 20px;
+}
+
+.tag-input-empty {
+    color: var(--neutral-foreground-hint);
+    font-size: 0.85rem;
+}
+
+.tag-input-entry {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    max-width: 360px;
+}
+
+.tag-input-hint {
+    color: var(--neutral-foreground-hint);
+}

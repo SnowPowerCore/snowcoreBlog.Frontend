@@ -1,0 +1,108 @@
+@namespace snowcoreBlog.Frontend.Articles.Components.Fluent
+
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<div class="tag-input">
+    <div class="tag-input-chips">
+        @if (Tags is { Length: > 0 })
+        {
+            @foreach (var tag in Tags)
+            {
+                <span class="tag-input-chip">
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Tag())" />
+                    <span class="tag-input-chip-text">@tag</span>
+                    <FluentButton Appearance="Appearance.Stealth"
+                                  Title="@TranslationResources.TagInputRemoveTagLabel"
+                                  aria-label="@(TranslationResources.TagInputRemoveTagLabel + ": " + tag)"
+                                  OnClick="@(() => RemoveTagAsync(tag))">
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
+                    </FluentButton>
+                </span>
+            }
+        }
+        else
+        {
+            <span class="tag-input-empty">@TranslationResources.TagsFieldNoTagsLabel</span>
+        }
+    </div>
+
+    <div class="tag-input-entry">
+        <FluentTextField @ref="_pendingTagField"
+                         Value="@_pendingTag"
+                         ValueChanged="@OnPendingTagChanged"
+                         Immediate="true"
+                         Placeholder="@Placeholder"
+                         @onkeydown="OnPendingTagKeyDownAsync"
+                         Style="width: 100%;" />
+        <FluentButton Appearance="Appearance.Outline"
+                      Title="@TranslationResources.TagsAddButtonLabel"
+                      Disabled="@_isAddDisabled"
+                      OnClick="@AddTagAsync">
+            <FluentIcon Value="@(new Icons.Regular.Size20.Add())" />
+        </FluentButton>
+    </div>
+
+    <FluentLabel Typo="Typography.Body" Class="tag-input-hint">@Hint</FluentLabel>
+</div>
+
+@code
+{
+    [Parameter] public string[]? Tags { get; set; }
+    [Parameter] public EventCallback<string[]?> TagsChanged { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Hint { get; set; }
+
+    /// <summary>Maximum number of tags accepted.</summary>
+    [Parameter] public int MaxTags { get; set; } = 10;
+
+    /// <summary>Maximum length of a single tag.</summary>
+    [Parameter] public int MaxTagLength { get; set; } = 50;
+
+    private FluentTextField? _pendingTagField;
+    private string _pendingTag = string.Empty;
+
+    private bool _isAddDisabled =>
+        string.IsNullOrWhiteSpace(_pendingTag)
+        || (Tags?.Length ?? 0) >= MaxTags;
+
+    private void OnPendingTagChanged(string? value)
+    {
+        _pendingTag = value ?? string.Empty;
+    }
+
+    private async Task OnPendingTagKeyDownAsync(KeyboardEventArgs args)
+    {
+        if (args?.Key is "Enter" or "Tab")
+        {
+            await AddTagAsync();
+        }
+    }
+
+    private async Task AddTagAsync()
+    {
+        var tag = _pendingTag.Trim();
+        if (tag.Length == 0) return;
+        if (tag.Length > MaxTagLength) tag = tag[..MaxTagLength];
+
+        var tags = Tags?.ToList() ?? [];
+        if (tags.Count >= MaxTags) return;
+
+        // Dedupe, case-insensitive
+        if (tags.Any(t => string.Equals(t, tag, StringComparison.OrdinalIgnoreCase)))
+        {
+            _pendingTag = string.Empty;
+            return;
+        }
+
+        tags.Add(tag);
+        await TagsChanged.InvokeAsync(tags.ToArray());
+
+        _pendingTag = string.Empty;
+    }
+
+    private async Task RemoveTagAsync(string tag)
+    {
+        var tags = (Tags ?? []).Where(t => !string.Equals(t, tag, StringComparison.OrdinalIgnoreCase)).ToArray();
+        await TagsChanged.InvokeAsync(tags);
+    }
+}

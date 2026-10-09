@@ -9,8 +9,10 @@ public class FrontendApplicationLaunchService(IStore store) : IApplicationLaunch
     {
         using var articlesAntiforgeryState = store.GetState<Articles.Features.Antiforgery.AntiforgeryState>();
         using var readerAccountAntiforgeryState = store.GetState<ReadersManagement.Features.Antiforgery.AntiforgeryState>();
-        
+        using var authorsAntiforgeryState = store.GetState<AuthorsManagement.Features.Antiforgery.AntiforgeryState>();
+
         await articlesAntiforgeryState.GetAndSetRequestVerificationToken(CancellationToken.None);
         await readerAccountAntiforgeryState.GetAndSetRequestVerificationToken(CancellationToken.None);
+        await authorsAntiforgeryState.GetAndSetRequestVerificationToken(CancellationToken.None);
     }
 }

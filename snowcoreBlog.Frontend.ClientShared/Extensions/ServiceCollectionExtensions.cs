@@ -24,8 +24,13 @@ public static class ServiceCollectionExtensions
     {
         serviceCollection.AddArticles();
         serviceCollection.AddServiceNotifications();
-        serviceCollection.AddAuthorsManagement(configuration);
+        // ORDER MATTERS: ReadersManagement registers the Fusion RpcWebSocketClientOptions singleton
+        // via a plain AddSingleton (last registration wins in MS.DI). AuthorsManagement then Replace()s
+        // it with the per-peer resolver (readers default + authors peer). If Authors ran first,
+        // Readers' later registration would win and route the "authors" Fusion peer to the
+        // Readers backend → "Endpoint not found: IAuthorDisplayNameAvailabilityService.GetAsync:2".
         serviceCollection.AddReadersManagement(configuration);
+        serviceCollection.AddAuthorsManagement(configuration);
         serviceCollection.AddSharedComponents();
         serviceCollection.AddBlazoredLocalStorage();
         serviceCollection.AddBlazoredSessionStorage();
@@ -48,11 +53,15 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddCascadingAuthenticationState();
 
         serviceCollection.AddSingleton<IValidator<RequestCreateReaderAccountDto>, RequestCreateReaderAccountValidator>();
+        serviceCollection.AddSingleton<IValidator<CreateArticleDto>, CreateArticleValidator>();
         serviceCollection.AddSingleton<IValidator<CheckNickNameNotTakenDto>, CheckNickNameNotTakenValidator>();
         serviceCollection.AddSingleton<IValidator<CheckAuthorDisplayNameNotTakenDto>, CheckAuthorDisplayNameNotTakenValidator>();
         serviceCollection.AddSingleton<IValidator<RequestAssertionOptionsDto>, RequestAssertionOptionsValidator>();
         serviceCollection.AddSingleton<IValidator<RequestAttestationOptionsDto>, RequestAttestationOptionsValidator>();
         serviceCollection.AddSingleton<IValidator<ConfirmCreateReaderAccountDto>, ConfirmCreateReaderAccountValidator>();
+        serviceCollection.AddSingleton<IValidator<SetupReaderAccountAuthenticatorDto>, SetupReaderAccountAuthenticatorValidator>();
+        serviceCollection.AddSingleton<IValidator<ConfirmCreateReaderAccountWithAuthenticatorDto>, ConfirmCreateReaderAccountWithAuthenticatorValidator>();
+        serviceCollection.AddSingleton<IValidator<VerifyOneTimeCodeDto>, VerifyOneTimeCodeValidator>();
 
         serviceCollection.AddScoped<IApplicationLaunchService>(static sp =>
             new FrontendApplicationLaunchService(sp.GetRequiredService<IStore>()));

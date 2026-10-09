@@ -51,6 +51,16 @@ public static class ApizrConfigurationExtensions
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     excludeAuthCookies: true));
 
+        serviceCollection.AddHttpClient("AuthorsAntiforgeryClient")
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                UseCookies = false
+            })
+            .AddHttpMessageHandler(sp =>
+                new HttpContextCookiesPropagationHandler(
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    excludeAuthCookies: true));
+
         serviceCollection.ConfigureSnowcoreBlogBackendArticlesApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/articles")
             .WithRefitSettings(new RefitSettings

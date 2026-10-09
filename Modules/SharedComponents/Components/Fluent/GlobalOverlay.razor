@@ -3,6 +3,15 @@
 
 @implements IDisposable
 
+@if (_content is not default(RenderFragment))
+{
+    <FluentOverlay @bind-Visible="_bindingVisible" Dismissable="true" Transparent="false" Alignment="Align.Center" Justification="JustifyContent.Center">
+        <FluentStack @onclick:stopPropagation="true">
+            @_content
+        </FluentStack>
+    </FluentOverlay>
+}
+
 @code {
     private RenderFragment? _content;
     private bool _visible;
@@ -39,13 +48,4 @@
     {
         OverlayService.OnChange -= HandleOverlayChanged;
     }
-}
-
-@if (_content is not default(RenderFragment))
-{
-    <FluentOverlay @bind-Visible="_bindingVisible" Dismissable="true" Transparent="false" Alignment="Align.Center" Justification="JustifyContent.Center">
-        <FluentStack @onclick:stopPropagation="true">
-            @_content
-        </FluentStack>
-    </FluentOverlay>
 }

@@ -2,14 +2,16 @@
 @attribute [Authorize]
 
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using BitzArt.Blazor.Auth
 @using TimeWarp.State
 @using TimeWarp.State.Plus
 @using snowcoreBlog.Frontend.AuthorsManagement.Components.Fluent
-@using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
+@using snowcoreBlog.Frontend.AuthorsManagement.Features.Antiforgery
 
 @inherits TimeWarpStateComponent
 
 @inject IApizrManager<IAuthorsManagementApi> AuthorsManagementApiManager
+@inject IUserService UserService
 @inject NavigationManager Navigation
 
 <PageTitle>@TranslationResources.BecomeAuthorPageTitle</PageTitle>
@@ -277,11 +279,23 @@
 
     private async Task RefreshAuthenticationStateAsync()
     {
-        // Trigger a page reload to refresh authentication state with new claims
+        // Refresh the JWT pair first: the backend re-queries claim providers during
+        // rotation, so the rotated access token now carries the authorAccount claim.
+        // The empty refresh token makes the backend resolve it from the refresh cookie.
+        try
+        {
+            await UserService.RefreshJwtPairAsync(string.Empty);
+        }
+        catch
+        {
+            // Even if the refresh fails, the force reload below re-resolves auth state.
+        }
+
+        // Force reload so the new cookies are picked up and auth state is rebuilt.
         Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
     }
 
-    private void NavigateToCreateArticle() => Navigation.NavigateTo("articles/create");
+    private void NavigateToCreateArticle() => Navigation.NavigateTo("/articles/create");
     
     private void NavigateToHome() => Navigation.NavigateTo("/");
     

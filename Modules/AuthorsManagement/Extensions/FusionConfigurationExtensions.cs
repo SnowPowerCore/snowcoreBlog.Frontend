@@ -34,7 +34,11 @@ namespace snowcoreBlog.Frontend.AuthorsManagement.Extensions;
 /// <c>{Fusion:AuthorsGatewayUrl}/fusion/ws</c> (YARP route <c>backend-authorsmanagement-fusion</c>).</item>
 /// <item>Every other call (nickname availability, auth, …) keeps routing to
 /// <see cref="RpcRef.Default"/> and connects to the ReadersManagement gateway —
-/// preserving the behavior ReadersManagement configures when it registers later.</item>
+/// preserving the behavior ReadersManagement configured earlier (this module
+/// MUST be registered AFTER ReadersManagement: its <c>Replace</c> of
+/// <see cref="RpcWebSocketClientOptions"/> must be the last registration,
+/// since Readers adds its own descriptor via a plain AddSingleton, and the
+/// last registration wins in MS.DI).</item>
 /// </list>
 /// </para>
 /// </summary>

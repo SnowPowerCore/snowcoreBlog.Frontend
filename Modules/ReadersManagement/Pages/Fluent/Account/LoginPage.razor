@@ -23,6 +23,7 @@
 @inject IUserService<LoginByAssertionDto> User
 @inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi
 @inject IValidator<RequestAssertionOptionsDto> RequestAssertionOptionsValidator
+@inject IValidator<VerifyOneTimeCodeDto> VerifyOneTimeCodeValidator
 
 <div class="h-100">
     <FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.Person())">
@@ -79,23 +80,24 @@
                             </div>
                         </Header>
                         <Content>
-                            <EditForm class="w-100" FormName="@ReaderAccountOneTimeCodeLoginFormName" Model="@PasswordlessLogin" OnSubmit="SubmitOneTimeCodeLoginFormAsync">
-                                <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestAssertionOptionsValidator" />
+                            <EditForm class="w-100" FormName="@ReaderAccountOneTimeCodeLoginFormName" Model="@OneTimeCodeSignIn" OnSubmit="SubmitOneTimeCodeLoginFormWithLoadingAsync">
+                                <FormFluentValidationValidator @ref="_otcFluentValidationValidator" Validator="@VerifyOneTimeCodeValidator" />
                                 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
                                     <FluentSpacer />
                                     <FluentSpacer />
                                     <FluentSpacer />
-                                    <FluentTextField Name="login" Label="@TranslationResources.EmailFieldLabel" InputMode="InputMode.Email" Required Size="40" />
+                                    <FluentTextField Name="login" Label="@TranslationResources.EmailFieldLabel" InputMode="InputMode.Email" @bind-Value=@OneTimeCodeSignIn.Email Required Size="40" />
                                     <FluentSpacer />
                                     <FluentSpacer />
                                     <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
                                         VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
                                         <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
                                         <FluentSpacer Width="5" />
-                                        @TranslationResources.OTCNextPageInfoLabel1<br/>
-                                        @TranslationResources.OTCNextPageInfoLabel2
+                                        @TranslationResources.AuthenticatorLoginInfoLabel
                                     </FluentStack>
                                     <FluentSpacer />
+                                    <FluentTextField Name="code" Label="@TranslationResources.OneTimeCodeFieldLabel" InputMode="InputMode.Numeric" @bind-Value=@OneTimeCodeSignIn.Code Required Size="40" MaxLength="6" />
+                                    <FluentValidationMessage For=@(() => OneTimeCodeSignIn.Code) />
                                     <FluentSpacer />
                                     <FluentButton Class="align-self-end" Type="ButtonType.Submit" Appearance="Appearance.Accent">
                                         @TranslationResources.AuthenticatorButtonLabel
@@ -138,17 +140,20 @@
                                 <FluentSpacer />
                                 <div class="d-flex align-self-center gap-3">
                                     <FluentButton Appearance="Appearance.Neutral"
-                                        Style="height: 72px; width: 72px;">
+                                        Style="height: 72px; width: 72px;"
+                                        OnClick="@(() => BeginExternalLogin("apple"))">
                                         <FluentIcon Value="@(new AppleLogoIcon())" Width="24px" />
                                     </FluentButton>
                                     <FluentSpacer />
                                     <FluentButton Appearance="Appearance.Neutral"
-                                        Style="height: 72px; width: 72px;">
+                                        Style="height: 72px; width: 72px;"
+                                        OnClick="@(() => BeginExternalLogin("google"))">
                                         <FluentIcon Value="@(new GoogleLogoIcon())" Width="24px" />
                                     </FluentButton>
                                     <FluentSpacer />
                                     <FluentButton Appearance="Appearance.Neutral"
-                                        Style="height: 72px; width: 72px;">
+                                        Style="height: 72px; width: 72px;"
+                                        OnClick="@(() => BeginExternalLogin("microsoft"))">
                                         <FluentIcon Value="@(new MicrosoftLogoIcon())" Width="24px" />
                                     </FluentButton>
                                 </div>
@@ -194,32 +199,50 @@
 {
     public const string ReaderAccountPasswordlessLoginFormName = "ReaderAccountPasswordlessLoginForm";
     public const string ReaderAccountOneTimeCodeLoginFormName = "ReaderAccountOneTimeCodeLoginForm";
+    private const string ReadersApiBaseAddress = "https://localhost/api/readers";
+
     private bool _overlayVisible = false;
     private List<string> _loginPasskeyErrors = [];
     private List<string> _loginOTCErrors = [];
     private List<string> _loginOtherErrors = [];
     private FormFluentValidationValidator? _fluentValidationValidator;
+    private FormFluentValidationValidator? _otcFluentValidationValidator;
     private RequestAssertionOptionsDto _emptyState = new() { Email = string.Empty, UserVerification = new() };
-    
+    private VerifyOneTimeCodeDto _emptyOneTimeCodeSignIn = new() { Email = string.Empty, Code = string.Empty };
+
     private string? Captcha { get; set; } = string.Empty;
 
     [SupplyParameterFromForm(FormName = ReaderAccountPasswordlessLoginFormName)]
     private RequestAssertionOptionsDto? PasswordlessLogin { get; set; }
 
+    [SupplyParameterFromForm(FormName = ReaderAccountOneTimeCodeLoginFormName)]
+    private VerifyOneTimeCodeDto? OneTimeCodeSignIn { get; set; }
+
+    [SupplyParameterFromQuery(Name = "externalError")]
+    public string? ExternalError { get; set; }
+
     public LoginPage()
     {
         PasswordlessLogin = _emptyState;
+        OneTimeCodeSignIn = _emptyOneTimeCodeSignIn;
     }
 
     protected override void OnParametersSet()
     {
         PasswordlessLogin ??= _emptyState;
+        OneTimeCodeSignIn ??= _emptyOneTimeCodeSignIn;
+
+        if (!string.IsNullOrWhiteSpace(ExternalError) && _loginOtherErrors.Count == 0)
+            _loginOtherErrors.Add(TranslationResources.ExternalLoginFailedLabel);
     }
 
     private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
     {
         Captcha = verifyArgs.Payload;
     }
+
+    private void BeginExternalLogin(string provider) =>
+        Navigation.NavigateTo($"{ReadersApiBaseAddress}/login/external/{provider}/v1", forceLoad: true);
 
     private Task SubmitPasswordlessLoginFormWithLoadingAsync(EditContext editContext) =>
         SubmitPasswordlessLoginFormAsync(editContext).ContinueWith(
@@ -291,16 +314,37 @@
     {
         _loginOTCErrors.Clear();
 
-        if (_fluentValidationValidator is default(FormFluentValidationValidator))
+        if (_otcFluentValidationValidator is default(FormFluentValidationValidator))
             return;
 
-        var success = await _fluentValidationValidator.ValidateAsync();
+        var success = await _otcFluentValidationValidator.ValidateAsync();
         if (!success)
             return;
 
         if (string.IsNullOrEmpty(Captcha))
             return;
-            
+
         _overlayVisible = true;
+
+        var requestData = (VerifyOneTimeCodeDto)editContext.Model;
+        using var antiforgery = GetState<AntiforgeryState>();
+
+        // The sign-in services (Host / WasmForDebugging) branch on the presence
+        // of the one-time code and complete the login through the backend TOTP
+        // verification endpoint, which sets the auth cookies.
+        var loginResult = await User.SignInAsync(new()
+        {
+            Email = requestData.Email,
+            OneTimeCode = requestData.Code
+        });
+
+        if (loginResult.IsSuccess)
+        {
+            Navigation.NavigateTo(string.Empty, forceLoad: true);
+        }
+        else
+        {
+            _loginOTCErrors.Add(loginResult.ErrorMessage ?? TranslationResources.OneTimeCodeInvalidLabel);
+        }
     }
 }

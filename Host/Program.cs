@@ -45,6 +45,7 @@ app.MapAuthEndpoints();
 app.UseMiddleware<ApplyBasePathMiddleware>();
 app.UseMiddleware<ArticlesAntiforgeryInitMiddleware>();
 app.UseMiddleware<ReadersManagementAntiforgeryInitMiddleware>();
+app.UseMiddleware<AuthorsAntiforgeryInitMiddleware>();
 
 app.UseAntiforgery();
 

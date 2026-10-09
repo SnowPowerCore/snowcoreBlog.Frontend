@@ -24,6 +24,13 @@ public sealed class WasmCookiesAuthenticationStateProvider(IUserService user, IC
     // immediately, which once produced a ~10 req/s request storm.
     private static readonly TimeSpan RotationFailureCooldown = TimeSpan.FromSeconds(30);
 
+    // Minimum delay between proactive ticks while the token is already inside the
+    // rotation window but rotation is NOT cooling down (e.g. rotation succeeded but
+    // the fresh token is still inside the window). Without this floor, a timer due
+    // at TimeSpan.Zero re-armed itself immediately and produced an infinite
+    // check/me request loop.
+    private static readonly TimeSpan RecheckFloorDelay = TimeSpan.FromSeconds(30);
+
     private Timer? _proactiveRefreshTimer;
     private int _refreshInFlight;
     private DateTimeOffset _rotationBlockedUntil;
@@ -76,8 +83,18 @@ public sealed class WasmCookiesAuthenticationStateProvider(IUserService user, IC
             return;
 
         var due = remaining - RefreshMargin;
-        if (due < TimeSpan.Zero)
-            due = TimeSpan.Zero;
+
+        // Never arm the timer at (or near) zero: inside the rotation window we must
+        // wait out the rotation failure cooldown if one is active, or otherwise fall
+        // back to a floor delay. A zero due here was the cause of an infinite tight
+        // loop of check/me requests (tick → notify → re-schedule(0) → tick → …).
+        if (due <= TimeSpan.Zero)
+        {
+            var cooldownLeft = _rotationBlockedUntil - DateTimeOffset.UtcNow;
+            due = cooldownLeft > TimeSpan.Zero
+                ? cooldownLeft + TimeSpan.FromSeconds(1)
+                : RecheckFloorDelay;
+        }
 
         // Clamp to a safe timer range; longer idle periods are handled by the
         // in-window check on the next authentication state resolution.
@@ -146,6 +163,7 @@ public sealed class WasmCookiesAuthenticationStateProvider(IUserService user, IC
                 // Back off: a persistently failing refresh (backend down, contract
                 // mismatch, …) must degrade to "stay signed out at expiry", not to
                 // a tight retry loop driven by every auth-state query.
+                Console.WriteLine($"[AuthRefresh] Rotation failed: {info.ErrorMessage ?? "(no error message)"}");
                 _rotationBlockedUntil = DateTimeOffset.UtcNow + RotationFailureCooldown;
                 return null;
             }

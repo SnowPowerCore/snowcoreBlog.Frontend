@@ -1,0 +1,279 @@
+@namespace snowcoreBlog.Frontend.Articles.Components.Fluent
+
+@using Markdig
+@using Microsoft.AspNetCore.Components.Web
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<div class="markdown-editor">
+    <div class="markdown-editor-toolbar" role="toolbar" aria-label="@TranslationResources.MarkdownEditorToolbarLabel">
+        <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorBoldLabel" OnClick="@(() => ApplyWrapAsync("**", "**", TranslationResources.MarkdownEditorBoldText))"><FluentIcon Value="@(new Icons.Regular.Size20.TextBold())" /></FluentButton>
+        <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorItalicLabel" OnClick="@(() => ApplyWrapAsync("*", "*", TranslationResources.MarkdownEditorItalicText))"><FluentIcon Value="@(new Icons.Regular.Size20.TextItalic())" /></FluentButton>
+        <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorStrikethroughLabel" OnClick="@(() => ApplyWrapAsync("~~", "~~", TranslationResources.MarkdownEditorStrikethroughText))"><FluentIcon Value="@(new Icons.Regular.Size20.TextStrikethrough())" /></FluentButton>
+        <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorInlineCodeLabel" OnClick="@(() => ApplyWrapAsync("`", "`", "code"))"><FluentIcon Value="@(new Icons.Regular.Size20.CodeText())" /></FluentButton>
+        <span class="markdown-editor-separator"></span>
+        <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorHeadingLabel" OnClick="@(() => ApplyLinePrefixAsync("## "))"><FluentIcon Value="@(new Icons.Regular.Size20.TextHeader2())" /></FluentButton>
+        <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorQuoteLabel" OnClick="@(() => ApplyLinePrefixAsync("> "))"><FluentIcon Value="@(new Icons.Regular.Size20.TextQuote())" /></FluentButton>
+        <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorBulletListLabel" OnClick="@(() => ApplyLinePrefixAsync("- "))"><FluentIcon Value="@(new Icons.Regular.Size20.List())" /></FluentButton>
+        <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorNumberListLabel" OnClick="@(() => ApplyLinePrefixAsync("1. "))"><FluentIcon Value="@(new Icons.Regular.Size20.TextNumberListLtr())" /></FluentButton>
+        <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorLinkLabel" OnClick="@ApplyLinkAsync"><FluentIcon Value="@(new Icons.Regular.Size20.Link())" /></FluentButton>
+        <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorCodeBlockLabel" OnClick="@ApplyCodeBlockAsync"><FluentIcon Value="@(new Icons.Regular.Size20.Branch())" /></FluentButton>
+        <span class="markdown-editor-spacer"></span>
+        <FluentSwitch @bind-Value="_previewVisible" Label="@TranslationResources.MarkdownEditorPreviewLabel" Class="markdown-editor-preview-toggle" />
+    </div>
+
+    <div class="markdown-editor-panes @(_previewVisible ? "with-preview" : "")">
+        <div class="markdown-editor-input">
+            <FluentTextArea @ref="_textArea"
+                            Value="@Value"
+                            ValueChanged="@SetValueAsync"
+                            Immediate="true"
+                            Resize="TextAreaResize.Vertical"
+                            Rows="@Rows"
+                            Placeholder="@Placeholder"
+                            Class="markdown-editor-textarea"
+                            Id="@_textAreaId" />
+        </div>
+        @if (_previewVisible)
+        {
+            <div class="markdown-editor-preview markdown-body">
+                @if (string.IsNullOrWhiteSpace(_previewHtml))
+                {
+                    <span class="markdown-editor-preview-empty">@TranslationResources.MarkdownEditorPreviewEmptyLabel</span>
+                }
+                else
+                {
+                    @((MarkupString)_previewHtml)
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code
+{
+    private const string FallbackText = "text";
+
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public int Rows { get; set; } = 18;
+    [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// Debounce interval between the last keystroke and a preview re-render.
+    /// </summary>
+    [Parameter] public int PreviewDebounceMilliseconds { get; set; } = 400;
+
+    private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
+        .UseAdvancedExtensions()
+        .UseSoftlineBreakAsHardlineBreak()
+        .DisableHtml() // XSS hygiene: raw HTML in markdown is escaped
+        .Build();
+
+    private FluentTextArea? _textArea;
+    private IJSObjectReference? _module;
+    private bool _previewVisible = true;
+    private string _previewHtml = string.Empty;
+    private string _textAreaId = "markdown-editor-" + Guid.NewGuid().ToString("N");
+    private (int Start, int End)? _pendingSelection;
+    private CancellationTokenSource? _previewDebounce;
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _previewHtml = RenderPreview(Value);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            try
+            {
+                _module = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/snowcoreBlog.Frontend.Articles/js/markdownEditorInterop.js");
+            }
+            catch (JSException)
+            {
+                _module = null; // toolbar degrades to append-at-end
+            }
+        }
+
+        if (_pendingSelection is { } selection)
+        {
+            _pendingSelection = null;
+            if (_module is not null && _textArea is not null)
+            {
+                await _module.InvokeVoidAsync("setSelection", _textArea.Element, selection.Start, selection.End);
+            }
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _previewDebounce?.Cancel();
+        _previewDebounce?.Dispose();
+
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+    }
+
+    private async Task SetValueAsync(string? value)
+    {
+        Value = value;
+        await ValueChanged.InvokeAsync(value);
+        SchedulePreview();
+    }
+
+    private void SchedulePreview()
+    {
+        _previewDebounce?.Cancel();
+        _previewDebounce?.Dispose();
+        var cts = new CancellationTokenSource();
+        _previewDebounce = cts;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(PreviewDebounceMilliseconds, cts.Token);
+                var html = RenderPreview(Value);
+                await InvokeAsync(() =>
+                {
+                    _previewHtml = html;
+                    StateHasChanged();
+                });
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        });
+    }
+
+    private static string RenderPreview(string? markdown) =>
+        string.IsNullOrWhiteSpace(markdown) ? string.Empty : Markdown.ToHtml(markdown, Pipeline);
+
+    private sealed record SelectionInfo(int Start, int End, int Length);
+
+    private async Task<SelectionInfo> GetSelectionAsync()
+    {
+        if (_module is not null && _textArea is not null)
+        {
+            try
+            {
+                var info = await _module.InvokeAsync<SelectionInfo>("getSelection", _textArea.Element);
+                return new SelectionInfo(info.Start, info.End, info.Length);
+            }
+            catch (JSException)
+            {
+            }
+        }
+
+        var value = Value ?? string.Empty;
+        return new SelectionInfo(value.Length, value.Length, value.Length);
+    }
+
+    /// <summary>Wraps the selected text (or inserts placeholder text) with prefix/suffix markers.</summary>
+    private async Task ApplyWrapAsync(string prefix, string suffix, string placeholder)
+    {
+        var selection = await GetSelectionAsync();
+        var value = Value ?? string.Empty;
+        var start = Math.Min(selection.Start, value.Length);
+        var end = Math.Min(selection.End, value.Length);
+        var selected = value[start..end];
+
+        string newText;
+        int caretStart;
+        int caretEnd;
+
+        if (selected.Length == 0)
+        {
+            // Insert prefix + placeholder + suffix and select the placeholder so typing replaces it.
+            newText = value[..start] + prefix + placeholder + suffix + value[start..];
+            caretStart = start + prefix.Length;
+            caretEnd = caretStart + placeholder.Length;
+        }
+        else
+        {
+            newText = value[..start] + prefix + selected + suffix + value[end..];
+            caretStart = start + prefix.Length;
+            caretEnd = caretStart + selected.Length;
+        }
+
+        await CommitAsync(newText, caretStart, caretEnd);
+    }
+
+    /// <summary>Inserts a line prefix at the start of the line(s) covering the selection.</summary>
+    private async Task ApplyLinePrefixAsync(string linePrefix)
+    {
+        var selection = await GetSelectionAsync();
+        var value = Value ?? string.Empty;
+        var start = Math.Min(selection.Start, value.Length);
+        var end = Math.Min(selection.End, value.Length);
+
+        // Expand to the full first line and apply the prefix per covered line.
+        var lineStart = value.LastIndexOf('\n', Math.Max(start - 1, 0)) + 1;
+        var lineEnd = value.IndexOf('\n', end);
+        if (lineEnd < 0) lineEnd = value.Length;
+
+        var block = value[lineStart..lineEnd];
+        var lines = block.Split('\n');
+        var prefixed = string.Join('\n', lines.Select(l => l.Length == 0 ? linePrefix.TrimEnd() + " " : linePrefix + l));
+
+        var newText = value[..lineStart] + prefixed + value[lineEnd..];
+        await CommitAsync(newText, lineStart, lineStart + prefixed.Length);
+    }
+
+    private async Task ApplyLinkAsync()
+    {
+        var selection = await GetSelectionAsync();
+        var value = Value ?? string.Empty;
+        var start = Math.Min(selection.Start, value.Length);
+        var end = Math.Min(selection.End, value.Length);
+        var selected = value[start..end];
+
+        var text = selected.Length == 0 ? TranslationResources.MarkdownEditorLinkText : selected;
+        var markdown = $"[{text}]({TranslationResources.MarkdownEditorLinkUrl})";
+        var newText = value[..start] + markdown + value[end..];
+
+        // Select the URL part so typing replaces it.
+        var caretStart = start + text.Length + 3;
+        await CommitAsync(newText, caretStart, caretStart + TranslationResources.MarkdownEditorLinkUrl.Length);
+    }
+
+    private async Task ApplyCodeBlockAsync()
+    {
+        var selection = await GetSelectionAsync();
+        var value = Value ?? string.Empty;
+        var start = Math.Min(selection.Start, value.Length);
+        var end = Math.Min(selection.End, value.Length);
+        var selected = value[start..end];
+
+        var body = selected.Length == 0 ? FallbackText : selected;
+        var block = $"```csharp\n{body}\n```";
+        var separator = start > 0 && value[start - 1] != '\n' ? "\n" : string.Empty;
+        var newText = value[..start] + separator + block + value[end..];
+
+        var offset = start + separator.Length + "```csharp\n".Length;
+        await CommitAsync(newText, offset, offset + body.Length);
+    }
+
+    private async Task CommitAsync(string newText, int caretStart, int caretEnd)
+    {
+        Value = newText;
+        _pendingSelection = (caretStart, caretEnd);
+        _previewHtml = RenderPreview(newText);
+        await ValueChanged.InvokeAsync(newText);
+        SchedulePreview();
+    }
+}

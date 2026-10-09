@@ -1,12 +1,17 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@using BitzArt.Blazor.Auth
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Microsoft.FluentUI.AspNetCore.Components.DesignTokens
+@using System.Security.Claims
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
 @using snowcoreBlog.Frontend.SharedComponents.LayoutHooks
+@using snowcoreBlog.PublicApi.Utilities.Dictionary
 
 @inherits LayoutComponentBase
 
 @inject BodyFont BodyFont
+@inject IUserService UserService
+@inject NavigationManager Navigation
 
 <FluentDesignTheme Mode="DesignThemeModes.Dark" StorageName="theme" />
 <FluentToastProvider />
@@ -21,12 +26,7 @@
             <Authorized>
                 <main>
                     <FluentStack Class="h-100" VerticalGap="0" Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
-                        <GeneralHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="@string.Empty" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
-                            {
-                                ["Home"] = "home",
-                                ["Blog"] = "blog",
-                                ["About"] = "about"
-                            })">
+                        <GeneralHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="@string.Empty" OnSignOut="HandleSignOutAsync" NavLinks="@BuildNavLinks(context.User)">
                         </GeneralHeader>
                         <FluentMessageBarProvider Section="@LayoutSections.TopMessageBar" />
                         <LayoutHookHost />
@@ -39,12 +39,7 @@
             <NotAuthorized>
                 <main>
                     <FluentStack Class="h-100" VerticalGap="0" Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
-                        <GeneralHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="login" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
-                            {
-                                ["Home"] = "home",
-                                ["Blog"] = "blog",
-                                ["About"] = "about"
-                            })">
+                        <GeneralHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="login" OnSignOut="HandleSignOutAsync" NavLinks="@BuildNavLinks(null)">
                         </GeneralHeader>
                         <FluentMessageBarProvider Section="@LayoutSections.TopMessageBar" />
                         <LayoutHookHost />
@@ -57,12 +52,7 @@
             <Authorizing>
                 <main>
                     <FluentStack Orientation="Orientation.Vertical">
-                        <GeneralHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="login" NavLinks="@(new PublicApi.Utilities.Dictionary.DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
-                            {
-                                ["Home"] = "home",
-                                ["Blog"] = "blog",
-                                ["About"] = "about"
-                            })">
+                        <GeneralHeader Title="snowcore's Blog" LogoSvg="<svg/>" AccountLink="login" OnSignOut="HandleSignOutAsync" NavLinks="@BuildNavLinks(null)">
                         </GeneralHeader>
                         <article>
                             <FluentLabel>Please wait, we are authorizing the user.</FluentLabel>
@@ -77,6 +67,40 @@
 @code
 {
     private FluentLayout _root = default!;
+
+    // Base nav links shared by every header state. For an authenticated user
+    // carrying the authorAccount claim (set by the AuthorsManagement claim
+    // provider in the JWT on sign-in or token refresh) the "Create Article"
+    // entry is appended, linking to the existing article creation screen.
+    // There is no separate "Blog" entry: the root page ("/") is the blog
+    // itself, so "Home" links straight to it.
+    private static DictionaryWithDefault<string, string> BuildNavLinks(ClaimsPrincipal? user)
+    {
+        var links = new DictionaryWithDefault<string, string>(defaultValue: string.Empty, 0)
+        {
+            ["Home"] = string.Empty,
+            ["About"] = "about"
+        };
+
+        var isAuthor = user?.FindFirst("authorAccount")?.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
+        if (isAuthor)
+        {
+            links["Create Article"] = "articles/create";
+        }
+
+        return links;
+    }
+
+    // Works in every InteractiveAuto context: the resolved IUserService is the
+    // BitzArt-backed proxy in WASM (host /_auth/sign-out clears the host cookies)
+    // and the backend-backed UserService in standalone WebAssembly (tokens/revoke/v1
+    // revokes the Redis record and expires the backend cookies). The forced reload
+    // re-resolves the authentication state so the layout switches to NotAuthorized.
+    private async Task HandleSignOutAsync()
+    {
+        await UserService.SignOutAsync();
+        Navigation.NavigateTo(string.Empty, forceLoad: true);
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

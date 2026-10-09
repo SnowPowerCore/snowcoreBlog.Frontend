@@ -20,6 +20,7 @@
 @inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi
 @inject IValidator<RequestAttestationOptionsDto> RequestAttestationOptionsValidator
 @inject IValidator<ConfirmCreateReaderAccountDto> ConfirmCreateReaderAccountValidator
+@inject IValidator<ConfirmCreateReaderAccountWithAuthenticatorDto> ConfirmCreateReaderAccountWithAuthenticatorValidator
 
 <FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.LockClosed())">
     <RegularSizeContent>
@@ -32,9 +33,47 @@
                 <FluentSpacer />
                 <FluentLabel Alignment="HorizontalAlignment.Center">@TranslationResources.CompleteRegistrationInfoLabel</FluentLabel>
                 <FluentSpacer />
-                <FluentButton OnClick="@CreatePasskeyWithLoadingAsync" Class="align-self-center" Appearance="Appearance.Neutral">
-                    @TranslationResources.ContinueButtonLabel
-                </FluentButton>
+                @if (_method is null)
+                {
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Center">
+                        <FluentButton OnClick="@(() => _method = RegistrationMethod.Passkey)" Appearance="Appearance.Neutral">
+                            @TranslationResources.CompleteRegistrationPasskeyMethodLabel
+                        </FluentButton>
+                        <FluentSpacer />
+                        <FluentButton OnClick="@(() => _method = RegistrationMethod.Authenticator)" Appearance="Appearance.Neutral">
+                            @TranslationResources.CompleteRegistrationAuthenticatorMethodLabel
+                        </FluentButton>
+                    </FluentStack>
+                }
+                else if (_method == RegistrationMethod.Passkey)
+                {
+                    <FluentButton OnClick="@CreatePasskeyWithLoadingAsync" Class="align-self-center" Appearance="Appearance.Neutral">
+                        @TranslationResources.ContinueButtonLabel
+                    </FluentButton>
+                }
+                else
+                {
+                    @if (_authenticatorSetup is null)
+                    {
+                        <FluentButton OnClick="@SetupAuthenticatorWithLoadingAsync" Class="align-self-center" Appearance="Appearance.Neutral">
+                            @TranslationResources.ContinueButtonLabel
+                        </FluentButton>
+                    }
+                    else
+                    {
+                        <div class="align-self-center">@((MarkupString)_authenticatorSetup.SvgQrCode)</div>
+                        <FluentSpacer />
+                        <FluentLabel Alignment="HorizontalAlignment.Center" Style="font-family: monospace;">@_authenticatorSetup.Secret</FluentLabel>
+                        <FluentSpacer />
+                        <FluentLabel Alignment="HorizontalAlignment.Center">@TranslationResources.CompleteRegistrationAuthenticatorSetupLabel</FluentLabel>
+                        <FluentSpacer />
+                        <FluentTextField Class="align-self-center" Name="code" Label="@TranslationResources.OneTimeCodeFieldLabel" InputMode="InputMode.Numeric" @bind-Value=_totpCode Required Size="40" MaxLength="6" />
+                        <FluentSpacer />
+                        <FluentButton OnClick="@ConfirmAuthenticatorWithLoadingAsync" Class="align-self-center" Appearance="Appearance.Accent">
+                            @TranslationResources.ContinueButtonLabel
+                        </FluentButton>
+                    }
+                }
                 @foreach(var error in _completeRegErrors)
                 {
                     <FluentSpacer />
@@ -55,9 +94,18 @@
 
 @code
 {
+    private enum RegistrationMethod
+    {
+        Passkey,
+        Authenticator
+    }
+
     private bool _overlayVisible = false;
     private List<string> _completeRegErrors = [];
     private readonly JsonSerializerOptions _jsonOptions = new FidoBlazorSerializerContext().Options;
+    private RegistrationMethod? _method = null;
+    private SetupReaderAccountAuthenticatorResultDto? _authenticatorSetup = null;
+    private string _totpCode = string.Empty;
 
     private DateTimeOffset VerificationTokenExpirationDate { get; set; } = DateTimeOffset.MinValue;
 
@@ -95,6 +143,82 @@
     private Task CreatePasskeyWithLoadingAsync() =>
         CreatePasskeyAsync().ContinueWith(
             _ => InvokeAsync(() => _overlayVisible = false));
+
+    private Task SetupAuthenticatorWithLoadingAsync() =>
+        SetupAuthenticatorAsync().ContinueWith(
+            _ => InvokeAsync(() => _overlayVisible = false));
+
+    private Task ConfirmAuthenticatorWithLoadingAsync() =>
+        ConfirmAuthenticatorAsync().ContinueWith(
+            _ => InvokeAsync(() => _overlayVisible = false));
+
+    private async Task SetupAuthenticatorAsync()
+    {
+        _completeRegErrors.Clear();
+
+        if (VerificationTokenExpirationDate <= DateTimeOffset.UtcNow)
+            return;
+
+        using var tokenSource = new CancellationTokenSource();
+        using var antiforgery = GetState<AntiforgeryState>();
+
+        _overlayVisible = true;
+
+        using var setupResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
+            api.SetupAuthenticator(new SetupReaderAccountAuthenticatorDto
+            {
+                Email = PasswordlessRegistration.Email,
+                VerificationToken = PasswordlessRegistration.VerificationToken
+            }, antiforgery.RequestVerificationToken, opt), o => o.WithCancellation(tokenSource.Token));
+
+        var setupData = setupResponse.ToData<SetupReaderAccountAuthenticatorResultDto>(out var setupErrors);
+        if (setupData is default(SetupReaderAccountAuthenticatorResultDto) && setupErrors.Count > 0)
+        {
+            _completeRegErrors.AddRange(setupErrors);
+            return;
+        }
+
+        _authenticatorSetup = setupData;
+    }
+
+    private async Task ConfirmAuthenticatorAsync()
+    {
+        _completeRegErrors.Clear();
+
+        if (VerificationTokenExpirationDate <= DateTimeOffset.UtcNow)
+            return;
+
+        using var tokenSource = new CancellationTokenSource();
+
+        var confirmRequest = new ConfirmCreateReaderAccountWithAuthenticatorDto
+        {
+            Email = PasswordlessRegistration.Email,
+            VerificationToken = PasswordlessRegistration.VerificationToken,
+            Code = _totpCode
+        };
+
+        var confirmValidation = await ConfirmCreateReaderAccountWithAuthenticatorValidator.ValidateAsync(confirmRequest, tokenSource.Token);
+        if (!confirmValidation.IsValid)
+        {
+            _completeRegErrors.AddRange(confirmValidation.Errors.Select(e => e.ErrorMessage));
+            return;
+        }
+
+        using var antiforgery = GetState<AntiforgeryState>();
+
+        _overlayVisible = true;
+
+        using var createAccountResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
+            api.ConfirmCreateByAuthenticator(confirmRequest, antiforgery.RequestVerificationToken, opt), o => o.WithCancellation(tokenSource.Token));
+        var createAccountData = createAccountResponse.ToData<ReaderAccountCreatedDto>(out var createAccountErrors);
+        if (createAccountData is default(ReaderAccountCreatedDto) && createAccountErrors.Count > 0)
+        {
+            _completeRegErrors.AddRange(createAccountErrors);
+            return;
+        }
+
+        Navigation.NavigateTo("login");
+    }
 
     private async Task CreatePasskeyAsync()
     {

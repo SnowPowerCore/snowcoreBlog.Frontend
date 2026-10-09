@@ -1,0 +1,267 @@
+@using Apizr
+@using Microsoft.AspNetCore.Components.Web
+@using snowcoreBlog.Frontend.Articles.Components.Fluent
+@using snowcoreBlog.Frontend.Articles.Features.Antiforgery
+@using snowcoreBlog.Frontend.SharedComponents.Validation
+@using snowcoreBlog.PublicApi.Api
+@using snowcoreBlog.PublicApi.BusinessObjects.Dto
+@using snowcoreBlog.PublicApi.Extensions
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@page "/articles/create"
+@attribute [StreamRendering]
+
+@inject NavigationManager Navigation
+@inject IApizrManager<IArticlesApi> ArticlesApi
+@inject IValidator<CreateArticleDto> Validator
+@inject IStore Store
+
+<PageTitle>@TranslationResources.CreateArticlePageTitle</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" Class="create-article-page">
+    <FluentSpacer />
+    <FluentSpacer />
+
+    <FluentLabel Typo="Typography.H2" Class="create-article-heading">@TranslationResources.CreateArticleHeading</FluentLabel>
+
+    @if (!_authChecked)
+    {
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12" HorizontalAlignment="HorizontalAlignment.Center" Class="create-article-status">
+            <FluentProgressRing />
+            <FluentLabel Typo="Typography.Body">@TranslationResources.CreateArticleCheckingPermissionsLabel</FluentLabel>
+        </FluentStack>
+    }
+    else if (!_isAuthor)
+    {
+        <FluentMessageBar Title="@TranslationResources.CreateArticleNotAuthorTitle"
+                          Intent="@MessageIntent.Warning"
+                          Class="create-article-status">
+            @TranslationResources.CreateArticleNotAuthorMessage
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                <FluentButton Appearance="Appearance.Accent" OnClick="@(() => Navigation.NavigateTo("/login"))">
+                    @TranslationResources.CreateArticleLoginButtonLabel
+                </FluentButton>
+                <FluentButton Appearance="Appearance.Outline" OnClick="@(() => Navigation.NavigateTo("/author/become"))">
+                    @TranslationResources.CreateArticleBecomeAuthorButtonLabel
+                </FluentButton>
+            </FluentStack>
+        </FluentMessageBar>
+    }
+    else
+    {
+        <EditForm Model="@_model"
+                  FormName="@FormName"
+                  OnSubmit="@SubmitAsync">
+
+            <FormFluentValidationValidator @ref="_validationValidator" Validator="@Validator" />
+
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Class="create-article-form">
+                <FluentTextField Value="@_model.Title"
+                                 ValueChanged="@OnTitleChanged"
+                                 Name="title"
+                                 Label="@TranslationResources.CreateArticleTitleFieldLabel"
+                                 Placeholder="@TranslationResources.CreateArticleTitleFieldPlaceholder"
+                                 Required />
+                <FluentValidationMessage For="@(() => _model.Title)" />
+
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Top" HorizontalGap="16" Class="create-article-row">
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="flex: 1 1 260px;">
+                        <FluentTextField Value="@_model.Category"
+                                         ValueChanged="@OnCategoryChanged"
+                                         Name="category"
+                                         Label="@TranslationResources.CreateArticleCategoryFieldLabel"
+                                         Placeholder="@TranslationResources.CreateArticleCategoryFieldPlaceholder" />
+                        <FluentValidationMessage For="@(() => _model.Category)" />
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="flex: 2 1 320px;">
+                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600;">@TranslationResources.CreateArticleTagsFieldLabel</FluentLabel>
+                        <TagInput Tags="@_model.Tags"
+                                  TagsChanged="@OnTagsChanged"
+                                  Placeholder="@TranslationResources.CreateArticleTagsFieldPlaceholder"
+                                  Hint="@TranslationResources.CreateArticleTagsFieldHint" />
+                    </FluentStack>
+                </FluentStack>
+
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
+                    <FluentTextField Value="@_model.CoverImageUrl"
+                                     ValueChanged="@OnCoverImageUrlChanged"
+                                     Name="coverImageUrl"
+                                     Label="@TranslationResources.CreateArticleCoverImageUrlFieldLabel"
+                                     Placeholder="@TranslationResources.CreateArticleCoverImageUrlFieldPlaceholder" />
+                    <FluentValidationMessage For="@(() => _model.CoverImageUrl)" />
+                    @if (IsValidHttpUrl(_model.CoverImageUrl))
+                    {
+                        <img src="@_model.CoverImageUrl" alt="@TranslationResources.CreateArticleCoverPreviewAlt" class="create-article-cover-preview" />
+                    }
+                </FluentStack>
+
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
+                    <FluentTextArea Value="@_model.Excerpt"
+                                    ValueChanged="@OnExcerptChanged"
+                                    Rows="3"
+                                    Resize="TextAreaResize.Vertical"
+                                    Label="@TranslationResources.CreateArticleExcerptFieldLabel"
+                                    Placeholder="@TranslationResources.CreateArticleExcerptFieldPlaceholder" />
+                    <FluentValidationMessage For="@(() => _model.Excerpt)" />
+                </FluentStack>
+
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
+                    <FluentTextArea Value="@_model.MetaDescription"
+                                    ValueChanged="@OnMetaDescriptionChanged"
+                                    Rows="2"
+                                    Resize="TextAreaResize.Vertical"
+                                    Label="@TranslationResources.CreateArticleMetaDescriptionFieldLabel"
+                                    Placeholder="@TranslationResources.CreateArticleMetaDescriptionFieldPlaceholder" />
+                    <FluentValidationMessage For="@(() => _model.MetaDescription)" />
+                </FluentStack>
+
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
+                    <FluentLabel Typo="Typography.Body" Style="font-weight: 600;">@TranslationResources.CreateArticleMarkdownFieldLabel</FluentLabel>
+                    <MarkdownEditor Value="@_model.Markdown"
+                                    ValueChanged="@OnMarkdownChanged"
+                                    Placeholder="@TranslationResources.CreateArticleMarkdownFieldPlaceholder"
+                                    Rows="20" />
+                    <FluentValidationMessage For="@(() => _model.Markdown)" />
+                </FluentStack>
+
+                @foreach (var error in _submitErrors)
+                {
+                    <FluentDirectValidationMessage Message="@error" />
+                }
+
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" Class="create-article-actions">
+                    <FluentButton Appearance="Appearance.Accent"
+                                  Type="ButtonType.Submit"
+                                  IconStart="@(new Icons.Regular.Size20.DocumentAdd())"
+                                  Loading="@_isSubmitting">
+                        @TranslationResources.CreateArticleSubmitButtonLabel
+                    </FluentButton>
+                    <FluentButton Appearance="Appearance.Neutral"
+                                  OnClick="@(() => Navigation.NavigateTo("/"))"
+                                  Disabled="@_isSubmitting">
+                        @TranslationResources.CreateArticleCancelButtonLabel
+                    </FluentButton>
+                </FluentStack>
+            </FluentStack>
+        </EditForm>
+    }
+
+    <FluentOverlay @bind-Visible="@_overlayVisible"
+                   Dismissable="false"
+                   Transparent="false"
+                   Alignment="Align.Center"
+                   Justification="JustifyContent.Center">
+        <FluentProgressRing />
+    </FluentOverlay>
+
+    <FluentSpacer />
+</FluentStack>
+
+@code
+{
+    public const string FormName = "CreateArticleForm";
+
+    private CreateArticleDto _model = EmptyModel;
+    private static CreateArticleDto EmptyModel => new()
+    {
+        Title = string.Empty,
+        Markdown = string.Empty
+    };
+
+    private bool _authChecked;
+    private bool _isAuthor;
+    private bool _isSubmitting;
+    private bool _overlayVisible;
+    private readonly List<string> _submitErrors = [];
+    private FormFluentValidationValidator? _validationValidator;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (AuthenticationStateTask is not null)
+        {
+            var authState = await AuthenticationStateTask;
+            var user = authState?.User;
+            _isAuthor = user?.Identity?.IsAuthenticated == true
+                        && user.FindFirst("authorAccount")?.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        _authChecked = true;
+    }
+
+    // CreateArticleDto is an immutable record (init-only props) — mutations go through `with`.
+    private void OnTitleChanged(string? value) => _model = _model with { Title = value ?? string.Empty };
+    private void OnCategoryChanged(string? value) => _model = _model with { Category = string.IsNullOrWhiteSpace(value) ? null : value };
+    private void OnCoverImageUrlChanged(string? value) => _model = _model with { CoverImageUrl = string.IsNullOrWhiteSpace(value) ? null : value };
+    private void OnTagsChanged(string[]? tags) => _model = _model with { Tags = tags };
+    private void OnExcerptChanged(string? value) => _model = _model with { Excerpt = string.IsNullOrWhiteSpace(value) ? null : value };
+    private void OnMetaDescriptionChanged(string? value) => _model = _model with { MetaDescription = string.IsNullOrWhiteSpace(value) ? null : value };
+    private void OnMarkdownChanged(string? value) => _model = _model with { Markdown = value ?? string.Empty };
+
+    private async Task SubmitAsync(EditContext editContext)
+    {
+        _submitErrors.Clear();
+
+        if (_validationValidator is null || _isSubmitting)
+        {
+            return;
+        }
+
+        var success = await _validationValidator.ValidateAsync();
+        if (!success)
+        {
+            return;
+        }
+
+        _isSubmitting = true;
+        _overlayVisible = true;
+        StateHasChanged();
+
+        try
+        {
+            // NOTE: no `using` on purpose — disposing a TimeWarp state instance leaves the
+            // cached instance disposed (its CancellationToken is canceled forever).
+            var antiforgery = Store.GetState<AntiforgeryState>();
+
+            using var tokenSource = new CancellationTokenSource();
+
+            using var response = await ArticlesApi.ExecuteAsync(
+                (opt, api) => api.CreateArticle(_model, antiforgery.RequestVerificationToken, opt),
+                o => o.WithCancellation(tokenSource.Token));
+
+            var data = response.ToData<CreateArticleResultDto>(out var errors);
+            if (data is not default(CreateArticleResultDto)
+                && !string.IsNullOrWhiteSpace(data.Slug)
+                && errors.Count == 0)
+            {
+                Navigation.NavigateTo($"/articles/{data.Slug}");
+                return;
+            }
+
+            _submitErrors.AddRange(errors);
+        }
+        catch (OperationCanceledException)
+        {
+            // cancelled by user navigating away — nothing to report
+        }
+        catch (Exception ex) when (ex is HttpRequestException or ApizrException)
+        {
+            _submitErrors.Add(ex.Message);
+        }
+        finally
+        {
+            _isSubmitting = false;
+            _overlayVisible = false;
+        }
+    }
+
+    private static bool IsValidHttpUrl(string? url) =>
+        !string.IsNullOrWhiteSpace(url)
+        && Uri.TryCreate(url, UriKind.Absolute, out var uri)
+        && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+}
