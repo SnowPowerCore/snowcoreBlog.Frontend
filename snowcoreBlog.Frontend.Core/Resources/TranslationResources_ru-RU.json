@@ -156,5 +156,15 @@
 
     "TagsAddButtonLabel": "Добавить тег",
     "TagInputRemoveTagLabel": "Удалить тег",
-    "TagsFieldNoTagsLabel": "Теги пока не добавлены."
+    "TagsFieldNoTagsLabel": "Теги пока не добавлены.",
+
+    "RegistrationStepWorkingGeneric": "Обрабатываем ваш запрос…",
+    "RegistrationProcessingFailedGeneric": "Не удалось обработать ваш запрос. Попробуйте ещё раз.",
+    "RegistrationStepValidatingEmailDomain": "Проверяем домен вашей электронной почты…",
+    "RegistrationStepCheckingAccountExists": "Проверяем, не существует ли уже аккаунт…",
+    "RegistrationStepCheckingPendingRegistration": "Проверяем наличие незавершённой регистрации…",
+    "RegistrationStepCheckingNickNameAvailability": "Проверяем доступность никнейма…",
+    "RegistrationStepCreatingTempUser": "Создаём предварительную учётную запись…",
+    "RegistrationStepCreatingUserAccount": "Создаём вашу учётную запись…",
+    "RegistrationStepCreatingReaderProfile": "Создаём профиль читателя…"
 }

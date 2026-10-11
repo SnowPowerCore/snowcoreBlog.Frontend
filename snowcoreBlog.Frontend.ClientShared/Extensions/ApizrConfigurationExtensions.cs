@@ -17,7 +17,18 @@ public static class ApizrConfigurationExtensions
         }
         
         serviceCollection.AddScoped<IncludeCookiesHandler>();
-        
+
+        // Named client for the server-sent events flows of the Readers Management
+        // service (SSE streaming responses are not expressible through the
+        // Refit-based Apizr managers). NOTE: the base address must keep its
+        // trailing slash so relative endpoint paths append to "/api/readers"
+        // instead of replacing its last segment during URI combination.
+        serviceCollection.AddHttpClient("ReadersManagementSseClient", static client =>
+        {
+            client.BaseAddress = new Uri("https://localhost/api/readers/");
+            client.Timeout = TimeSpan.FromMinutes(3);
+        }).AddHttpMessageHandler<IncludeCookiesHandler>();
+
         serviceCollection.ConfigureSnowcoreBlogBackendArticlesApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/articles")
             .WithRefitSettings(new RefitSettings

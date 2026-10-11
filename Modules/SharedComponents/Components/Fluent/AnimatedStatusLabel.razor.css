@@ -1,0 +1,50 @@
+.animated-status {
+    width: 100%;
+    min-height: 1.7rem;
+    overflow: hidden;
+    text-align: center;
+}
+
+.animated-status ::deep .animated-status__text {
+    display: block;
+    width: 100%;
+}
+
+/* Newer message: slides UP into place (from below) while fading in. */
+.animated-status ::deep .animated-status__text.status-entering {
+    animation: animated-status-enter 320ms ease-out both;
+}
+
+/* Older message: slides UP out of place (towards the top) while fading out. */
+.animated-status ::deep .animated-status__text.status-leaving {
+    animation: animated-status-leave 260ms ease-in both;
+}
+
+@keyframes animated-status-enter {
+    from {
+        opacity: 0;
+        transform: translateY(0.75rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes animated-status-leave {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-0.75rem);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animated-status ::deep .animated-status__text.status-entering,
+    .animated-status ::deep .animated-status__text.status-leaving {
+        animation-duration: 1ms;
+    }
+}

@@ -1,0 +1,24 @@
+@page "/access-denied"
+@using Microsoft.AspNetCore.Components
+
+<PageTitle>Access restricted</PageTitle>
+
+<h1>Unable to access this resource</h1>
+<p>
+    Your access to the requested resource has been restricted by an access policy.
+    If you believe this is a mistake, please contact the site administrator.
+</p>
+
+@if (!string.IsNullOrWhiteSpace(Reason))
+{
+    <p><em>@Reason</em></p>
+}
+
+<p>
+    <a href="/">Back to home</a>
+</p>
+
+@code {
+    [SupplyParameterFromQuery(Name = "reason")]
+    public string? Reason { get; set; }
+}

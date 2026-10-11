@@ -1,0 +1,11 @@
+<div class="animated-status" aria-live="polite">
+    <FluentLabel Typo="Typography.Body" Class="@GetAnimationClass()">@_displayedMessage</FluentLabel>
+</div>
+
+@code
+{
+    private string GetAnimationClass() =>
+        _isLeaving ? "status-leaving"
+        : _isEntering ? "animated-status__text status-entering"
+        : "animated-status__text";
+}

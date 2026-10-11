@@ -1,6 +1,5 @@
 using ActualLab.DependencyInjection;
 using ActualLab.Fusion;
-using ActualLab.Fusion.Authentication;
 using ActualLab.Fusion.Blazor;
 using ActualLab.Fusion.Blazor.Authentication;
 using ActualLab.Fusion.UI;

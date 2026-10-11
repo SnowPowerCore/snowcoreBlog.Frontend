@@ -30,6 +30,24 @@ public static class ApizrConfigurationExtensions
             .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
                 sp.GetRequiredService<IHttpContextAccessor>(),
                 excludeAuthCookies: false));
+
+        // Named client for the server-sent events flows of the Readers Management
+        // service. NOTE: the base address must keep its trailing slash so relative
+        // endpoint paths append to "/api/readers" instead of replacing its last
+        // segment during URI combination.
+        serviceCollection.AddHttpClient("ReadersManagementSseClient")
+            .ConfigureHttpClient(static c =>
+            {
+                c.BaseAddress = new Uri("https://localhost/api/readers/");
+                c.Timeout = TimeSpan.FromMinutes(3);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                UseCookies = false
+            })
+            .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
+                sp.GetRequiredService<IHttpContextAccessor>(),
+                excludeAuthCookies: false));
         
         serviceCollection.AddHttpClient("ReadersManagementAntiforgeryClient")
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler

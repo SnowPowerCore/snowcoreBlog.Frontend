@@ -1,7 +1,8 @@
-﻿@using Apizr
+﻿@using System.Net
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Microsoft.AspNetCore.Components.Forms
 @using snowcoreBlog.Frontend.Infrastructure.Events
+@using snowcoreBlog.Frontend.Infrastructure.Protocol.Sse
 @using snowcoreBlog.Frontend.ReadersManagement.Components.NickName
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
 @using snowcoreBlog.Frontend.ReadersManagement.Features.Register
@@ -10,22 +11,33 @@
 @using snowcoreBlog.Frontend.SharedComponents.Providers
 @using snowcoreBlog.Frontend.SharedComponents.Resources.Icons
 @using snowcoreBlog.Frontend.SharedComponents.Validation
-@using snowcoreBlog.PublicApi.Api
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
-@using snowcoreBlog.PublicApi.Extensions
 
 @page "/register"
 @attribute [StreamRendering]
 @inherits TimeWarpStateComponent
 
 @inject NavigationManager Navigation
-@inject IApizrManager<IReaderAccountManagementApi> ReaderAccountApi
 @inject IValidator<RequestCreateReaderAccountDto> RequestCreateReaderAccountValidator
+@inject IHttpClientFactory HttpClientFactory
 
 <FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())" MaxContentWidth="30rem">
     <RegularSizeContent>
         <FluentStack Class="px-3" Orientation="Orientation.Vertical">
-            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitFormWithLoadingAsync" @ref="_editForm">
+            @if (_isProcessing)
+            {
+                @* While the backend processes the registration, the whole card content is
+                   swapped for a progress indicator and the live step status message. On any
+                   failure the original form content below is brought back to visibility. *@
+                <FluentStack Class="py-5" Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Center">
+                    <FluentProgressRing />
+                    <FluentSpacer />
+                    <AnimatedStatusLabel Text="@_statusMessage" @ref="_statusLabel" />
+                </FluentStack>
+            }
+            else
+            {
+            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitFormAsync" @ref="_editForm">
                 <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestCreateReaderAccountValidator" />
                 <FormTrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChangedAsync"/>
 
@@ -88,6 +100,7 @@
                     <FluentDirectValidationMessage Message="@error" />
                 }
             </EditForm>
+            }
             <FluentSpacer />
             <FluentSpacer />
             <FluentDivider Class="w-100" Orientation="Orientation.Horizontal"
@@ -107,13 +120,6 @@
             </FluentButton>
             <FluentSpacer />
             <FluentSpacer />
-            <FluentOverlay @bind-Visible=@_overlayVisible
-                Dismissable="false"
-                Transparent="false"
-                Alignment="Align.Center"
-                Justification="JustifyContent.Center">
-                <FluentProgressRing />
-            </FluentOverlay>
         </FluentStack>
     </RegularSizeContent>
 </FlexibleFloatingCard>
@@ -121,7 +127,9 @@
 @code
 {
     public const string ReaderAccountRegisterFormName = "ReaderAccountRegisterForm";
-    private bool _overlayVisible = false;
+    private bool _isProcessing = false;
+    private string _statusMessage = string.Empty;
+    private AnimatedStatusLabel? _statusLabel;
     private List<string> _registrationErrors = [];
 
     // reference to the outer EditForm so the wizard can trigger submit programmatically
@@ -179,18 +187,14 @@
         // Try to use the EditForm's EditContext if available so existing submit logic keeps working
         if (_editForm is not default(EditForm) && _editForm.EditContext is not default(EditContext))
         {
-            await SubmitFormWithLoadingAsync(_editForm.EditContext);
+            await SubmitFormAsync(_editForm.EditContext);
             return;
         }
 
         // Fallback: create an EditContext from the model
         var editContext = new EditContext(CreateNewAccount ?? _emptyState);
-        await SubmitFormWithLoadingAsync(editContext);
+        await SubmitFormAsync(editContext);
     }
-
-    private Task SubmitFormWithLoadingAsync(EditContext editContext) =>
-        SubmitFormAsync(editContext).ContinueWith(
-            _ => InvokeAsync(() => _overlayVisible = false));
 
     private async Task SubmitFormAsync(EditContext editContext)
     {
@@ -206,26 +210,75 @@
         if (string.IsNullOrEmpty(Captcha))
             return;
 
-        _overlayVisible = true;
-
         var requestData = (RequestCreateReaderAccountDto)editContext.Model;
-        using var antiforgery = GetState<AntiforgeryState>();
+        var antiforgery = GetState<AntiforgeryState>();
+        var verificationToken = antiforgery.RequestVerificationToken;
 
-        using var tokenSource = new CancellationTokenSource();
+        _isProcessing = true;
+        _statusMessage = TranslationResources.RegistrationStepWorkingGeneric;
 
-        using var response = await ReaderAccountApi.ExecuteAsync((opt, api) =>
-            api.RequestCreateByEmail(requestData, antiforgery.RequestVerificationToken, Captcha, opt), o => o.WithCancellation(tokenSource.Token));
-        var data = response.ToData<RequestReaderAccountCreationResultDto>(out var errors);
-        if (data is not default(RequestReaderAccountCreationResultDto)
-            && data.Id != Guid.Empty
-            && errors.Count == 0)
+        var playOutQueueOnExit = false;
+
+        try
         {
-            await RegisterState.SetCurrentInput(_emptyState);
-            Navigation.NavigateTo("register/info/confirm");
+            using var tokenSource = new CancellationTokenSource();
+            var httpClient = HttpClientFactory.CreateClient(SseClientNames.ReadersManagement);
+
+            var frames = httpClient.PostServerSentEventsAsync(
+                "create/request/email/v1",
+                requestData,
+                message =>
+                {
+                    message.Headers.Add("RequestVerificationToken", verificationToken);
+                    message.Headers.Add("RequestCaptcha", Captcha);
+                },
+                tokenSource.Token);
+
+            var finalEvent = await StepProgressStreamReader.ReadAsync(
+                frames,
+                stepCode =>
+                {
+                    _statusMessage = RegistrationProgressMessages.ForStep(stepCode);
+                    StateHasChanged();
+                },
+                tokenSource.Token);
+
+            if (finalEvent is not null && finalEvent.StatusCode == (int)HttpStatusCode.OK)
+            {
+                // Let every queued status finish its animation (including the final
+                // readable hold) before leaving the page.
+                playOutQueueOnExit = true;
+
+                if (_statusLabel is not null)
+                {
+                    await _statusLabel.WaitForDrainedAsync();
+                }
+
+                await RegisterState.SetCurrentInput(_emptyState);
+                Navigation.NavigateTo("register/info/confirm");
+                return;
+            }
+
+            _registrationErrors.AddRange(finalEvent?.Response?.Errors ?? []);
+            if (_registrationErrors.Count == 0)
+                _registrationErrors.Add(TranslationResources.RegistrationProcessingFailedGeneric);
         }
-        else
+        catch (Exception)
         {
-            _registrationErrors.AddRange(errors);
+            // Network / protocol failure: bring the original form content back and show a generic error.
+            _registrationErrors.Add(TranslationResources.RegistrationProcessingFailedGeneric);
+        }
+        finally
+        {
+            // On success, let every queued status finish its animation before
+            // swapping the card back to the form. On any failure — including
+            // exceptions — never block: restore the original content immediately.
+            if (playOutQueueOnExit && _statusLabel is not null)
+            {
+                await _statusLabel.WaitForDrainedAsync();
+            }
+
+            _isProcessing = false;
         }
     }
 }

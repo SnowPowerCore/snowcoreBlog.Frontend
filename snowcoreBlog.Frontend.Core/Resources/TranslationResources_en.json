@@ -156,5 +156,15 @@
 
     "TagsAddButtonLabel": "Add tag",
     "TagInputRemoveTagLabel": "Remove tag",
-    "TagsFieldNoTagsLabel": "No tags yet."
+    "TagsFieldNoTagsLabel": "No tags yet.",
+
+    "RegistrationStepWorkingGeneric": "Working on your request…",
+    "RegistrationProcessingFailedGeneric": "Something went wrong while processing your request. Please try again.",
+    "RegistrationStepValidatingEmailDomain": "Validating your email domain…",
+    "RegistrationStepCheckingAccountExists": "Checking whether the account already exists…",
+    "RegistrationStepCheckingPendingRegistration": "Checking for a pending registration…",
+    "RegistrationStepCheckingNickNameAvailability": "Checking nickname availability…",
+    "RegistrationStepCreatingTempUser": "Creating your account placeholder…",
+    "RegistrationStepCreatingUserAccount": "Creating your user account…",
+    "RegistrationStepCreatingReaderProfile": "Creating your reader profile…"
 }
