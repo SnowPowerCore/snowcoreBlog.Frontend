@@ -327,7 +327,6 @@
         _overlayVisible = true;
 
         var requestData = (VerifyOneTimeCodeDto)editContext.Model;
-        using var antiforgery = GetState<AntiforgeryState>();
 
         // The sign-in services (Host / WasmForDebugging) branch on the presence
         // of the one-time code and complete the login through the backend TOTP

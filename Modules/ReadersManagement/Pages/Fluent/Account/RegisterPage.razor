@@ -211,8 +211,8 @@
             return;
 
         var requestData = (RequestCreateReaderAccountDto)editContext.Model;
+
         var antiforgery = GetState<AntiforgeryState>();
-        var verificationToken = antiforgery.RequestVerificationToken;
 
         _isProcessing = true;
         _statusMessage = TranslationResources.RegistrationStepWorkingGeneric;
@@ -229,7 +229,7 @@
                 requestData,
                 message =>
                 {
-                    message.Headers.Add("RequestVerificationToken", verificationToken);
+                    message.Headers.Add("RequestVerificationToken", antiforgery.RequestVerificationToken);
                     message.Headers.Add("RequestCaptcha", Captcha);
                 },
                 tokenSource.Token);
@@ -262,6 +262,12 @@
             _registrationErrors.AddRange(finalEvent?.Response?.Errors ?? []);
             if (_registrationErrors.Count == 0)
                 _registrationErrors.Add(TranslationResources.RegistrationProcessingFailedGeneric);
+        }
+        catch (System.Net.Http.HttpRequestException hre) when (hre.StatusCode is not null)
+        {
+            // HTTP-level failure (antiforgery / captcha / gateway): bring the
+            // original form content back, surface the status for diagnosability.
+            _registrationErrors.Add($"{TranslationResources.RegistrationProcessingFailedGeneric} (HTTP {(int)hre.StatusCode})");
         }
         catch (Exception)
         {

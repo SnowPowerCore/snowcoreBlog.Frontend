@@ -161,7 +161,6 @@
         using var tokenSource = new CancellationTokenSource();
 
         var antiforgery = GetState<AntiforgeryState>();
-        var verificationToken = antiforgery.RequestVerificationToken;
 
         _isProcessing = true;
         _statusMessage = TranslationResources.RegistrationStepWorkingGeneric;
@@ -175,7 +174,7 @@
                 {
                     Email = PasswordlessRegistration.Email,
                     VerificationToken = PasswordlessRegistration.VerificationToken
-                }, verificationToken, opt), o => o.WithCancellation(tokenSource.Token));
+                }, antiforgery.RequestVerificationToken, opt), o => o.WithCancellation(tokenSource.Token));
 
             var setupData = setupResponse.ToData<SetupReaderAccountAuthenticatorResultDto>(out var setupErrors);
             if (setupData is default(SetupReaderAccountAuthenticatorResultDto) && setupErrors.Count > 0)
@@ -229,7 +228,6 @@
         }
 
         var antiforgery = GetState<AntiforgeryState>();
-        var verificationToken = antiforgery.RequestVerificationToken;
 
         _isProcessing = true;
         _statusMessage = TranslationResources.RegistrationStepWorkingGeneric;
@@ -242,7 +240,7 @@
             var frames = httpClient.PostServerSentEventsAsync(
                 "create/confirm/totp/v1",
                 confirmRequest,
-                message => message.Headers.Add("RequestVerificationToken", verificationToken),
+                message => message.Headers.Add("RequestVerificationToken", antiforgery.RequestVerificationToken),
                 tokenSource.Token);
 
             var finalEvent = await StepProgressStreamReader.ReadAsync(
@@ -308,7 +306,6 @@
         await WebAuthn.Init();
 
         var antiforgery = GetState<AntiforgeryState>();
-        var verificationToken = antiforgery.RequestVerificationToken;
 
         _isProcessing = true;
         _statusMessage = TranslationResources.RegistrationStepWorkingGeneric;
@@ -318,7 +315,7 @@
         try
         {
             using var attestationResponse = await ReaderAccountApi.ExecuteAsync((opt, api) =>
-                api.RequestAttestationOptions(PasswordlessRegistration, verificationToken, opt), o => o.WithCancellation(tokenSource.Token));
+                api.RequestAttestationOptions(PasswordlessRegistration, antiforgery.RequestVerificationToken, opt), o => o.WithCancellation(tokenSource.Token));
             var attestationData = attestationResponse.ToData<CredentialCreateOptions>(out var attestationErrors, _jsonOptions);
             if (attestationData is default(CredentialCreateOptions) && attestationErrors.Count > 0)
             {
@@ -360,11 +357,14 @@
                 return;
             }
 
+            await antiforgery.GetAndSetRequestVerificationToken(tokenSource.Token);
+            antiforgery = GetState<AntiforgeryState>();
+
             var httpClient = HttpClientFactory.CreateClient(SseClientNames.ReadersManagement);
             var frames = httpClient.PostServerSentEventsAsync(
                 "create/confirm/email/v1",
                 confirmAccountCreation,
-                message => message.Headers.Add("RequestVerificationToken", verificationToken),
+                message => message.Headers.Add("RequestVerificationToken", antiforgery.RequestVerificationToken),
                 tokenSource.Token);
 
             var finalEvent = await StepProgressStreamReader.ReadAsync(

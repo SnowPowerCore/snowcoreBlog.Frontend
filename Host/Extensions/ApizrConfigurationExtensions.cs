@@ -1,6 +1,7 @@
 using Refit;
 using snowcoreBlog.Frontend.Host.Handlers;
 using snowcoreBlog.Frontend.Infrastructure.Context;
+using snowcoreBlog.Frontend.Infrastructure.Extensions;
 using snowcoreBlog.PublicApi.Api;
 
 namespace snowcoreBlog.Frontend.Host.Extensions;
@@ -31,11 +32,8 @@ public static class ApizrConfigurationExtensions
                 sp.GetRequiredService<IHttpContextAccessor>(),
                 excludeAuthCookies: false));
 
-        // Named client for the server-sent events flows of the Readers Management
-        // service. NOTE: the base address must keep its trailing slash so relative
-        // endpoint paths append to "/api/readers" instead of replacing its last
-        // segment during URI combination.
         serviceCollection.AddHttpClient("ReadersManagementSseClient")
+            .AddAntiforgeryRetryHandler()
             .ConfigureHttpClient(static c =>
             {
                 c.BaseAddress = new Uri("https://localhost/api/readers/");

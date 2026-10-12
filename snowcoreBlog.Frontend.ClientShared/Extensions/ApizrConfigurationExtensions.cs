@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Refit;
 using snowcoreBlog.Frontend.ClientShared.Handlers;
 using snowcoreBlog.Frontend.Infrastructure.Context;
+using snowcoreBlog.Frontend.Infrastructure.Extensions;
 using snowcoreBlog.PublicApi.Api;
 
 namespace snowcoreBlog.Frontend.ClientShared.Extensions;
@@ -27,7 +28,9 @@ public static class ApizrConfigurationExtensions
         {
             client.BaseAddress = new Uri("https://localhost/api/readers/");
             client.Timeout = TimeSpan.FromMinutes(3);
-        }).AddHttpMessageHandler<IncludeCookiesHandler>();
+        })
+        .AddAntiforgeryRetryHandler()
+        .AddHttpMessageHandler<IncludeCookiesHandler>();
 
         serviceCollection.ConfigureSnowcoreBlogBackendArticlesApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/articles")
