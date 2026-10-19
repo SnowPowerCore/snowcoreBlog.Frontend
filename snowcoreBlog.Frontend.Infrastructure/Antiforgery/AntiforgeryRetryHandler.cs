@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using snowcoreBlog.Frontend.Core.Interfaces.Antiforgery;
 using snowcoreBlog.PublicApi.Constants;
@@ -29,9 +30,14 @@ namespace snowcoreBlog.Frontend.Infrastructure.Antiforgery;
 /// The request body is buffered up front, making both attempts possible; the
 /// replay itself goes through <see cref="DelegatingHandler.SendAsync"/>'s inner
 /// pipeline, so the handler can never recurse on itself.
+/// <para>
+/// The handler pipeline is built once and cached by the HttpClientFactory, so
+/// it must not capture scoped services: the (scoped) refresher is resolved from
+/// a fresh DI scope for every request instead.
+/// </para>
 /// </remarks>
 public sealed class AntiforgeryRetryHandler(
-    IAntiforgeryTokenRefresher tokenRefresher,
+    IServiceScopeFactory scopeFactory,
     ILogger<AntiforgeryRetryHandler>? logger = null) : DelegatingHandler
 {
     /// <summary>Wire format of the antiforgery header shared with the backend services.</summary>
@@ -39,6 +45,9 @@ public sealed class AntiforgeryRetryHandler(
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        using var scope = scopeFactory.CreateScope();
+        var tokenRefresher = scope.ServiceProvider.GetRequiredService<IAntiforgeryTokenRefresher>();
+
         var hadToken = TryGetToken(request, out _);
         if (!hadToken)
         {

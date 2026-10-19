@@ -86,6 +86,10 @@ public static class ApizrConfigurationExtensions
             .WithRequestTimeout(TimeSpan.FromMinutes(1))
             .WithOperationTimeout(TimeSpan.FromMinutes(3))
             .ConfigureHttpClientBuilder(http => http
+                // Server-side clients forward cookies manually per request; a cookie
+                // container would replay stale Set-Cookies (from other users' requests)
+                // and corrupt the Cookie header through YARP's comma-joining.
+                .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { UseCookies = false })
                 .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     excludeAuthCookies: false))));
@@ -99,6 +103,7 @@ public static class ApizrConfigurationExtensions
             .WithRequestTimeout(TimeSpan.FromMinutes(1))
             .WithOperationTimeout(TimeSpan.FromMinutes(3))
             .ConfigureHttpClientBuilder(http => http
+                .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { UseCookies = false })
                 .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     excludeAuthCookies: false))));
@@ -112,6 +117,7 @@ public static class ApizrConfigurationExtensions
             .WithRequestTimeout(TimeSpan.FromMinutes(1))
             .WithOperationTimeout(TimeSpan.FromMinutes(3))
             .ConfigureHttpClientBuilder(http => http
+                .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { UseCookies = false })
                 .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     excludeAuthCookies: false))));

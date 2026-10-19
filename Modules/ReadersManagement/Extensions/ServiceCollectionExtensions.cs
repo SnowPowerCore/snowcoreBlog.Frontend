@@ -16,7 +16,8 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IPersistenceService, PersistenceService>();
         serviceCollection.AddTimeWarpStateRouting();
 
-        serviceCollection.AddSingleton<IAntiforgeryTokenRefresher, ReadersManagementAntiforgeryTokenRefresher>();
+        // Scoped: the implementation consumes the (scoped) TimeWarp IStore.
+        serviceCollection.AddScoped<IAntiforgeryTokenRefresher, ReadersManagementAntiforgeryTokenRefresher>();
 
         // ActualLab.Fusion: real-time nickname availability replica (no-op safe if configuration is null).
         if (configuration is not null)
