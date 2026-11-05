@@ -1,6 +1,6 @@
+using System.Reflection;
 using FluentAssertions;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Reflection;
 
 namespace snowcoreBlog.Frontend.SharedComponents.Tests.Utilities;
 
@@ -11,7 +11,7 @@ public class PropertyPathHelperTests
         public string Name { get; set; } = string.Empty;
         public int Age { get; set; }
         public NestedModel Nested { get; set; } = new();
-        public List<ItemModel> Items { get; set; } = new();
+        public List<ItemModel> Items { get; set; } = [];
     }
 
     private class NestedModel
@@ -62,11 +62,11 @@ public class PropertyPathHelperTests
         // Arrange
         var model = new TestModel
         {
-            Items = new List<ItemModel>
-            {
+            Items =
+            [
                 new() { Title = "First" },
                 new() { Title = "Second" }
-            }
+            ]
         };
         var editContext = new EditContext(model);
         var fieldIdentifier = new FieldIdentifier(model.Items[1], nameof(ItemModel.Title));
@@ -84,10 +84,10 @@ public class PropertyPathHelperTests
         // Arrange
         var model = new TestModel
         {
-            Items = new List<ItemModel>
-            {
+            Items =
+            [
                 new() { Title = "First" }
-            }
+            ]
         };
         var editContext = new EditContext(model);
         var fieldIdentifier = new FieldIdentifier(model.Items[0], nameof(ItemModel.Title));

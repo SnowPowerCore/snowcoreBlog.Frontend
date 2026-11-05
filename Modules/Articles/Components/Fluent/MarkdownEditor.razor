@@ -104,7 +104,7 @@
         if (_pendingSelection is { } selection)
         {
             _pendingSelection = null;
-            if (_module is not null && _textArea is not null)
+            if (_module is not default(IJSObjectReference) && _textArea is not default(FluentTextArea))
             {
                 await _module.InvokeVoidAsync("setSelection", _textArea.Element, selection.Start, selection.End);
             }
@@ -116,7 +116,7 @@
         _previewDebounce?.Cancel();
         _previewDebounce?.Dispose();
 
-        if (_module is not null)
+        if (_module is not default(IJSObjectReference))
         {
             try
             {
@@ -167,7 +167,7 @@
 
     private async Task<SelectionInfo> GetSelectionAsync()
     {
-        if (_module is not null && _textArea is not null)
+        if (_module is not default(IJSObjectReference) && _textArea is not default(FluentTextArea))
         {
             try
             {

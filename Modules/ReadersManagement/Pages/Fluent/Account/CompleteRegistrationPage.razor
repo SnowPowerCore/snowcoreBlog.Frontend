@@ -12,7 +12,9 @@
 @using snowcoreBlog.Frontend.SharedComponents.Resources.Icons
 @using snowcoreBlog.PublicApi.Api
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
+@using snowcoreBlog.PublicApi.Constants
 @using snowcoreBlog.PublicApi.Extensions
+@using snowcoreBlog.PublicApi.Utilities.Sse
 
 @page "/register/complete"
 @attribute [StreamRendering]
@@ -48,7 +50,7 @@
                         <AnimatedStatusLabel Text="@_statusMessage" @ref="_statusLabel" />
                     </FluentStack>
                 }
-                else if (_method is null)
+                else if (_method is default(RegistrationMethod))
                 {
                     <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Center">
                         <FluentButton OnClick="@(() => _method = RegistrationMethod.Passkey)" Appearance="Appearance.Neutral">
@@ -68,7 +70,7 @@
                 }
                 else
                 {
-                    @if (_authenticatorSetup is null)
+                    @if (_authenticatorSetup is default(SetupReaderAccountAuthenticatorResultDto))
                     {
                         <FluentButton OnClick="@SetupAuthenticatorAsync" Class="align-self-center" Appearance="Appearance.Neutral">
                             @TranslationResources.ContinueButtonLabel
@@ -119,6 +121,19 @@
     private string _totpCode = string.Empty;
 
     private DateTimeOffset VerificationTokenExpirationDate { get; set; } = DateTimeOffset.MinValue;
+
+    // Deterministic (GUID v5-style) key derived from the confirmation link payload:
+    // same Email + VerificationToken → same key across page reloads and retries,
+    // while a fresh registration (new token) naturally gets a fresh key.
+    private string BuildConfirmEmailIdempotencyKey()
+    {
+        var seed = $"{PasswordlessRegistration.Email}|{PasswordlessRegistration.VerificationToken}";
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(seed));
+        var guidBytes = hash.AsSpan(0, 16);
+        guidBytes[6] = (byte)((guidBytes[6] & 0x0F) | 0x50);
+        guidBytes[8] = (byte)((guidBytes[8] & 0x3F) | 0x80);
+        return new Guid(guidBytes).ToString();
+    }
 
     private RequestAttestationOptionsDto PasswordlessRegistration { get; set; } = new()
     {
@@ -195,7 +210,7 @@
             // On success, let every queued status finish its animation before
             // swapping the card content back. On any failure — including
             // exceptions — never block: restore the original content immediately.
-            if (playOutQueueOnExit && _statusLabel is not null)
+            if (playOutQueueOnExit && _statusLabel is not default(AnimatedStatusLabel))
             {
                 await _statusLabel.WaitForDrainedAsync();
             }
@@ -252,13 +267,13 @@
                 },
                 tokenSource.Token);
 
-            if (finalEvent is not null && finalEvent.StatusCode == (int)HttpStatusCode.OK)
+            if (finalEvent is not default(StepProgressFinalEvent) && finalEvent.StatusCode == (int)HttpStatusCode.OK)
             {
                 // Let every queued status finish its animation (including the final
                 // readable hold) before leaving the page.
                 playOutQueueOnExit = true;
 
-                if (_statusLabel is not null)
+                if (_statusLabel is not default(AnimatedStatusLabel))
                 {
                     await _statusLabel.WaitForDrainedAsync();
                 }
@@ -281,7 +296,7 @@
             // On success, let every queued status finish its animation before
             // swapping the card content back. On any failure — including
             // exceptions — never block: restore the original content immediately.
-            if (playOutQueueOnExit && _statusLabel is not null)
+            if (playOutQueueOnExit && _statusLabel is not default(AnimatedStatusLabel))
             {
                 await _statusLabel.WaitForDrainedAsync();
             }
@@ -364,7 +379,15 @@
             var frames = httpClient.PostServerSentEventsAsync(
                 "create/confirm/email/v1",
                 confirmAccountCreation,
-                message => message.Headers.Add("RequestVerificationToken", antiforgery.RequestVerificationToken),
+                message =>
+                {
+                    message.Headers.Add("RequestVerificationToken", antiforgery.RequestVerificationToken);
+                    // The confirm endpoint durably persists requests; the key has to be
+                    // STABLE per confirmation link so retried submits dedup server-side
+                    // (same key → replay of the persisted outcome) instead of creating a
+                    // second reader account.
+                    message.Headers.Add(HeaderKeyConstants.IdempotencyKey, BuildConfirmEmailIdempotencyKey());
+                },
                 tokenSource.Token);
 
             var finalEvent = await StepProgressStreamReader.ReadAsync(
@@ -376,13 +399,13 @@
                 },
                 tokenSource.Token);
 
-            if (finalEvent is not null && finalEvent.StatusCode == (int)HttpStatusCode.OK)
+            if (finalEvent is not default(StepProgressFinalEvent) && finalEvent.StatusCode == (int)HttpStatusCode.OK)
             {
                 // Let every queued status finish its animation (including the final
                 // readable hold) before leaving the page.
                 playOutQueueOnExit = true;
 
-                if (_statusLabel is not null)
+                if (_statusLabel is not default(AnimatedStatusLabel))
                 {
                     await _statusLabel.WaitForDrainedAsync();
                 }
@@ -405,7 +428,7 @@
             // On success, let every queued status finish its animation before
             // swapping the card content back. On any failure — including
             // exceptions — never block: restore the original content immediately.
-            if (playOutQueueOnExit && _statusLabel is not null)
+            if (playOutQueueOnExit && _statusLabel is not default(AnimatedStatusLabel))
             {
                 await _statusLabel.WaitForDrainedAsync();
             }

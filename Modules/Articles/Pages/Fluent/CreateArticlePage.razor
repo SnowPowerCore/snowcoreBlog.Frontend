@@ -183,7 +183,7 @@
     {
         await base.OnInitializedAsync();
 
-        if (AuthenticationStateTask is not null)
+        if (AuthenticationStateTask is not default(Task<AuthenticationState>))
         {
             var authState = await AuthenticationStateTask;
             var user = authState?.User;
@@ -207,7 +207,7 @@
     {
         _submitErrors.Clear();
 
-        if (_validationValidator is null || _isSubmitting)
+        if (_validationValidator is default(FormFluentValidationValidator) || _isSubmitting)
         {
             return;
         }

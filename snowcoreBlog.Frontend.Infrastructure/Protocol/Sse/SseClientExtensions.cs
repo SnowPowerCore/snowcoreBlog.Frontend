@@ -34,7 +34,7 @@ public static class SseClientExtensions
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
-        if (requestBody is not null)
+        if (requestBody is not default(object))
         {
             request.Content = new StringContent(
                 JsonSerializer.Serialize(requestBody, RequestSerializerOptions),

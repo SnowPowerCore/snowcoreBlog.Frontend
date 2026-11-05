@@ -3,7 +3,7 @@
 
 @inherits TimeWarpStateComponent
 
-@inject HttpClient HttpClient
+@inject IApizrManager<INotificationsApi> NotificationsApi
 
 @if (NotificationBarState.HasVisibleNotifications)
 {
@@ -57,11 +57,16 @@
         {
             await NotificationBarState.SetLoading(true);
 
-            var response = await HttpClient.GetFromJsonAsync<NotificationApiResponse>("/api/v1/notifications/active");
+            using var response = await NotificationsApi.ExecuteAsync(static (opt, api) => api.GetActiveNotifications(null, opt));
+            var notifications = response.ToData<List<NotificationDto>>(out var errors);
 
-            if (response?.Data is not default(IReadOnlyList<NotificationDto>))
+            if (errors.Count > 0)
             {
-                await NotificationBarState.SetNotifications(response.Data);
+                await NotificationBarState.SetError(errors.First());
+            }
+            else if (notifications is not default(List<NotificationDto>))
+            {
+                await NotificationBarState.SetNotifications(notifications);
             }
             else
             {
@@ -102,14 +107,4 @@
         NotificationTypeDto.FeatureUpdate => new Icons.Regular.Size20.Sparkle(),
         _ => new Icons.Regular.Size20.Info()
     };
-
-    /// <summary>
-    /// API response wrapper for notifications.
-    /// </summary>
-    private sealed record NotificationApiResponse
-    {
-        public IReadOnlyList<NotificationDto>? Data { get; init; }
-        public int DataCount { get; init; }
-        public int StatusCode { get; init; }
-    }
 }

@@ -4,6 +4,7 @@ using snowcoreBlog.Frontend.ClientShared.Handlers;
 using snowcoreBlog.Frontend.Infrastructure.Context;
 using snowcoreBlog.Frontend.Infrastructure.Extensions;
 using snowcoreBlog.PublicApi.Api;
+using snowcoreBlog.PublicApi.Extensions;
 
 namespace snowcoreBlog.Frontend.ClientShared.Extensions;
 
@@ -53,6 +54,16 @@ public static class ApizrConfigurationExtensions
 
         serviceCollection.ConfigureSnowcoreBlogBackendAuthorsManagementApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/authors")
+            .WithRefitSettings(new RefitSettings
+            {
+                ContentSerializer = new SystemTextJsonContentSerializer(serializerOptions)
+            })
+            .WithRequestTimeout(TimeSpan.FromMinutes(1))
+            .WithOperationTimeout(TimeSpan.FromMinutes(3))
+            .WithHttpMessageHandler<IncludeCookiesHandler>());
+
+        serviceCollection.ConfigureSnowcoreBlogBackendNotificationsApizrManagers(options => options
+            .WithBaseAddress("https://localhost/api/notifications")
             .WithRefitSettings(new RefitSettings
             {
                 ContentSerializer = new SystemTextJsonContentSerializer(serializerOptions)

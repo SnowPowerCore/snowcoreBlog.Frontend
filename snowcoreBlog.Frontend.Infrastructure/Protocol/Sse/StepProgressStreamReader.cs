@@ -39,7 +39,7 @@ public static class StepProgressStreamReader
             {
                 case StepProgressEventConstants.StepProgressEvent:
                     var progress = JsonSerializer.Deserialize<StepProgressEvent>(frame.Data, FrameDataOptions);
-                    if (progress is not null)
+                    if (progress is not default(StepProgressEvent))
                     {
                         onStepProgress(progress.Step);
                     }

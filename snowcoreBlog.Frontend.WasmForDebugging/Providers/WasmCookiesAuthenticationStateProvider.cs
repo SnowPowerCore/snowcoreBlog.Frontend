@@ -67,7 +67,7 @@ public sealed class WasmCookiesAuthenticationStateProvider(IUserService user, IC
             // Already inside the rotation window (e.g. a long-idle tab): rotate now,
             // then resolve the state again with the fresh pair.
             var refreshed = await TryRotateAsync();
-            if (refreshed is not null)
+            if (refreshed is not default(AuthenticationState))
                 state = refreshed;
         }
 
@@ -124,7 +124,7 @@ public sealed class WasmCookiesAuthenticationStateProvider(IUserService user, IC
             {
                 Console.WriteLine("[AuthRefresh] Rotation window entered, rotating JWT pair...");
                 var refreshed = await TryRotateAsync();
-                if (refreshed is not null)
+                if (refreshed is not default(AuthenticationState))
                 {
                     current = refreshed;
                     Console.WriteLine("[AuthRefresh] JWT pair rotated successfully.");

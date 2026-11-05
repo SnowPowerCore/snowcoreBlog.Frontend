@@ -1,7 +1,7 @@
 namespace snowcoreBlog.Frontend.Infrastructure.Protocol.Sse;
 
 /// <summary>
-/// Names of the named <see cref="System.Net.Http.HttpClient"/> registrations
+/// Names of the named <see cref="HttpClient"/> registrations
 /// used to consume server-sent events streams of the backend services.
 /// </summary>
 public static class SseClientNames

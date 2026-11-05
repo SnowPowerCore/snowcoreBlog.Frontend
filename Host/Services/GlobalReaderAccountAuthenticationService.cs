@@ -13,7 +13,6 @@ namespace snowcoreBlog.Frontend.Host.Services;
 
 public class GlobalReaderAccountAuthenticationService(IApizrManager<IReaderAccountManagementApi> readerAccountApi,
                                                 IApizrManager<IReaderAccountTokensApi> tokensApi,
-                                                IHttpClientFactory httpClientFactory,
                                                 AltchaSolver altchaSolver) : AuthenticationService<LoginByAssertionDto>
 {
     public override Task<AuthenticationResult> SignInAsync(LoginByAssertionDto signInPayload, CancellationToken cancellationToken = default)
@@ -126,12 +125,17 @@ public class GlobalReaderAccountAuthenticationService(IApizrManager<IReaderAccou
 
     private async Task<AuthenticationResult> RefreshInternalAsync(string refreshToken, CancellationToken cancellationToken)
     {
-        var client = httpClientFactory.CreateClient("ReadersManagementClient");
-        using var response = await client.PostAsJsonAsync("tokens/refresh/v1", refreshToken, cancellationToken);
-        if (!response.IsSuccessStatusCode)
-            return AuthenticationResult.Failure($"Token refresh failed: {(int)response.StatusCode}");
+        // Cookie-only proactive rotation through the Apizr-managed tokens API
+        // (same manager the sign-in flows use). The refreshed Set-Cookie pair
+        // is read from the IApiResponse headers, mirroring the login flow.
+        using var response = await tokensApi.ExecuteAsync(
+            (opt, api) => api.RefreshReaderJwtPair(refreshToken, opt),
+            o => o.WithCancellation(cancellationToken));
+        if (!response.IsSuccess)
+            return AuthenticationResult.Failure($"Token refresh failed: {(int?)response.ApiResponse?.StatusCode ?? -1}");
 
-        if (!response.Headers.TryGetValues("Set-Cookie", out var setCookieHeaders))
+        if (response.ApiResponse?.Headers is default(HttpResponseHeaders) ||
+            !response.ApiResponse.Headers.TryGetValues("Set-Cookie", out var setCookieHeaders))
             return AuthenticationResult.Failure("No authentication cookies in refresh response");
 
         return BuildResultFromCookies(setCookieHeaders);

@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
 
         // ActualLab.Fusion: real-time author display name availability replica
         // (no-op safe if configuration is null).
-        if (configuration is not null)
+        if (configuration is not default(IConfiguration))
             serviceCollection.AddFusionClient(configuration);
 
         serviceCollection.AddSingleton<ILayoutHook>(new LayoutHook(Order: 100, ComponentType: typeof(BecomeAuthorBanner)));

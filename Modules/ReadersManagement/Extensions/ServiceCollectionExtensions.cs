@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IAntiforgeryTokenRefresher, ReadersManagementAntiforgeryTokenRefresher>();
 
         // ActualLab.Fusion: real-time nickname availability replica (no-op safe if configuration is null).
-        if (configuration is not null)
+        if (configuration is not default(IConfiguration))
             serviceCollection.AddFusionClient(configuration);
 
         return serviceCollection;

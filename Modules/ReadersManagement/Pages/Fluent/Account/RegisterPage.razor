@@ -12,6 +12,7 @@
 @using snowcoreBlog.Frontend.SharedComponents.Resources.Icons
 @using snowcoreBlog.Frontend.SharedComponents.Validation
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
+@using snowcoreBlog.PublicApi.Utilities.Sse
 
 @page "/register"
 @attribute [StreamRendering]
@@ -243,13 +244,13 @@
                 },
                 tokenSource.Token);
 
-            if (finalEvent is not null && finalEvent.StatusCode == (int)HttpStatusCode.OK)
+            if (finalEvent is not default(StepProgressFinalEvent) && finalEvent.StatusCode == (int)HttpStatusCode.OK)
             {
                 // Let every queued status finish its animation (including the final
                 // readable hold) before leaving the page.
                 playOutQueueOnExit = true;
 
-                if (_statusLabel is not null)
+                if (_statusLabel is not default(AnimatedStatusLabel))
                 {
                     await _statusLabel.WaitForDrainedAsync();
                 }
@@ -263,7 +264,7 @@
             if (_registrationErrors.Count == 0)
                 _registrationErrors.Add(TranslationResources.RegistrationProcessingFailedGeneric);
         }
-        catch (System.Net.Http.HttpRequestException hre) when (hre.StatusCode is not null)
+        catch (System.Net.Http.HttpRequestException hre) when (hre.StatusCode is not default(HttpStatusCode))
         {
             // HTTP-level failure (antiforgery / captcha / gateway): bring the
             // original form content back, surface the status for diagnosability.
@@ -279,7 +280,7 @@
             // On success, let every queued status finish its animation before
             // swapping the card back to the form. On any failure — including
             // exceptions — never block: restore the original content immediately.
-            if (playOutQueueOnExit && _statusLabel is not null)
+            if (playOutQueueOnExit && _statusLabel is not default(AnimatedStatusLabel))
             {
                 await _statusLabel.WaitForDrainedAsync();
             }

@@ -52,7 +52,7 @@
 
 	public async ValueTask DisposeAsync()
 	{
-		if (_scrollModule is not null)
+		if (_scrollModule is not default(IJSObjectReference))
 		{
 			try
 			{

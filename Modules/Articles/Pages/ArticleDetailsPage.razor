@@ -29,7 +29,7 @@
             <FluentButton OnClick="@(() => Navigation.NavigateTo("/"))" Appearance="@Appearance.Neutral">Back to articles</FluentButton>
         </FluentStack>
     }
-    else if (_article is not null)
+    else if (_article is not default(ArticleDto))
     {
         <article class="article-page">
             @if (!string.IsNullOrWhiteSpace(_article.CoverImageUrl))

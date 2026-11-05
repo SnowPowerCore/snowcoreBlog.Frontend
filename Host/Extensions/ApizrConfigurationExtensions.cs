@@ -3,6 +3,7 @@ using snowcoreBlog.Frontend.Host.Handlers;
 using snowcoreBlog.Frontend.Infrastructure.Context;
 using snowcoreBlog.Frontend.Infrastructure.Extensions;
 using snowcoreBlog.PublicApi.Api;
+using snowcoreBlog.PublicApi.Extensions;
 
 namespace snowcoreBlog.Frontend.Host.Extensions;
 
@@ -17,20 +18,6 @@ public static class ApizrConfigurationExtensions
         }
 
         serviceCollection.AddScoped<HttpContextCookiesPropagationHandler>();
-
-        serviceCollection.AddHttpClient("ReadersManagementClient")
-            .ConfigureHttpClient(static c =>
-            {
-                c.BaseAddress = new Uri("https://localhost/api/readers");
-                c.Timeout = TimeSpan.FromMinutes(1);
-            })
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-            {
-                UseCookies = false
-            })
-            .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
-                sp.GetRequiredService<IHttpContextAccessor>(),
-                excludeAuthCookies: false));
 
         serviceCollection.AddHttpClient("ReadersManagementSseClient")
             .AddAntiforgeryRetryHandler()
@@ -110,6 +97,20 @@ public static class ApizrConfigurationExtensions
 
         serviceCollection.ConfigureSnowcoreBlogBackendAuthorsManagementApizrManagers(options => options
             .WithBaseAddress("https://localhost/api/authors")
+            .WithRefitSettings(new RefitSettings
+            {
+                ContentSerializer = new SystemTextJsonContentSerializer(serializerOptions)
+            })
+            .WithRequestTimeout(TimeSpan.FromMinutes(1))
+            .WithOperationTimeout(TimeSpan.FromMinutes(3))
+            .ConfigureHttpClientBuilder(http => http
+                .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { UseCookies = false })
+                .AddHttpMessageHandler(sp => new HttpContextCookiesPropagationHandler(
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    excludeAuthCookies: false))));
+
+        serviceCollection.ConfigureSnowcoreBlogBackendNotificationsApizrManagers(options => options
+            .WithBaseAddress("https://localhost/api/notifications")
             .WithRefitSettings(new RefitSettings
             {
                 ContentSerializer = new SystemTextJsonContentSerializer(serializerOptions)

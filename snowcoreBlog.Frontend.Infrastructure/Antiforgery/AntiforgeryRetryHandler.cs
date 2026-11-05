@@ -63,7 +63,7 @@ public sealed class AntiforgeryRetryHandler(
         // Buffer the body once and swap it in as replayable content, so the
         // first send cannot consume the caller's content stream.
         byte[]? bufferedBody = null;
-        if (request.Content is not null)
+        if (request.Content is not default(HttpContent))
         {
             bufferedBody = await request.Content.ReadAsByteArrayAsync(cancellationToken);
             var bufferedContent = new ByteArrayContent(bufferedBody);
@@ -79,7 +79,7 @@ public sealed class AntiforgeryRetryHandler(
 
         // Only a bare 400 (empty body) is the antiforgery middleware rejecting
         // the token; anything else is a business answer that must not replay.
-        var failureBody = response.Content is null
+        var failureBody = response.Content is default(HttpContent)
             ? string.Empty
             : await ReadSnippetAsync(response.Content, cancellationToken);
         if (!string.IsNullOrWhiteSpace(failureBody))
@@ -106,7 +106,7 @@ public sealed class AntiforgeryRetryHandler(
             return false;
 
         token = values.FirstOrDefault(static v => !string.IsNullOrWhiteSpace(v));
-        return token is not null;
+        return !string.IsNullOrWhiteSpace(token);
     }
 
     private static async Task<string> ReadSnippetAsync(HttpContent content, CancellationToken cancellationToken)
@@ -142,7 +142,7 @@ public sealed class AntiforgeryRetryHandler(
 
         clone.Headers.Add(AntiforgeryHeaderName, refreshedToken);
 
-        if (original.Content is not null)
+        if (original.Content is not default(HttpContent))
         {
             var content = new ByteArrayContent(bufferedBody ?? []);
             foreach (var header in original.Content.Headers)

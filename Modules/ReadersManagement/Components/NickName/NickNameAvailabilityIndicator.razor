@@ -115,7 +115,7 @@
                 return (NickNameAvailabilityStatus.Invalid, candidate);
 
             // Before the first compute completes there is nothing to show yet.
-            if (State is null || State.Snapshot.IsInitial)
+            if (State is default(ComputedState<NickNameAvailability>) || State.Snapshot.IsInitial)
                 return (NickNameAvailabilityStatus.Idle, candidate);
 
             if (candidate != _computedCandidate)
@@ -139,7 +139,7 @@
     /// <summary>Cancels and disposes the in-flight request token, if any.</summary>
     private void CancelRequest()
     {
-        if (_requestCts is null)
+        if (_requestCts is default(CancellationTokenSource))
             return;
 
         _requestCts.Cancel();
@@ -156,7 +156,7 @@
 
         // Same candidate already in its debounce window (spurious parent
         // re-render): keep the running timer instead of restarting it.
-        if (_debounceCts is not null
+        if (_debounceCts is not default(CancellationTokenSource)
             && !_debounceCts.IsCancellationRequested
             && candidate == _pendingCandidate)
         {
