@@ -85,5 +85,5 @@
 		return s.Substring(0, max).TrimEnd() + "…";
 	}
 
-	private string FormatDate(DateTime? dt) => dt?.ToString("MMM d, yyyy") ?? string.Empty;
+	private string FormatDate(DateTimeOffset? dt) => dt?.ToString("MMM d, yyyy") ?? string.Empty;
 }
