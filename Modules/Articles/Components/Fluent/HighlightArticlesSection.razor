@@ -14,7 +14,7 @@
 	}
 	else
 	{
-		var three = Articles.OrderByDescending(a => a.PublishedAt ?? DateTime.MinValue).Take(3).ToArray();
+		var three = Articles.OrderByDescending(a => a.PublishedAt ?? DateTimeOffset.MinValue).Take(3).ToArray();
 		<div class="highlight-grid">
 			@if (three.Length >= 1)
 			{
