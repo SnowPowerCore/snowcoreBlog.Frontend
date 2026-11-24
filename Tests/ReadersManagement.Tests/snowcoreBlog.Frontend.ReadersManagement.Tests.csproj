@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Modules\ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj" />
+    <ProjectReference Include="..\..\Modules\ReadersManagement\snowcoreBlog.Frontend.ReadersManagement.csproj" />
   </ItemGroup>
 
 </Project>

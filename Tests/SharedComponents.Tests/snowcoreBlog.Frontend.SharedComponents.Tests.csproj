@@ -20,11 +20,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="bunit" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\snowcoreBlog.Frontend.Infrastructure\snowcoreBlog.Frontend.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\SharedComponents\snowcoreBlog.Frontend.SharedComponents.csproj" />
   </ItemGroup>
 
 </Project>

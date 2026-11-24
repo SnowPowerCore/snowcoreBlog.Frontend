@@ -4,4 +4,4 @@ namespace snowcoreBlog.Frontend.Infrastructure.Events;
 
 [EventHandler("onverifiedEvent", typeof(AltchaWidgetVerifiedEventArgs),
     enableStopPropagation: true, enablePreventDefault: true)]
-public static class EventHandlers { }
+public static class EventHandlers;

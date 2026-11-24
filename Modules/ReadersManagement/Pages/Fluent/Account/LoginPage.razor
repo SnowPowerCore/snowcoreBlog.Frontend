@@ -281,10 +281,14 @@
         }
             
         var assertion = default(AuthenticatorAssertionRawResponse);
-        
+
         try
         {
-            // Present options to user and get response (usernameless users will be asked by their authenticator, which credential they want to use to sign the challenge)
+            // Present options to user and get response. Assertion options are usernameless
+            // (no allowCredentials filter), so the native dialog may offer any passkey
+            // registered for this site — including one belonging to a different account
+            // than the email entered above. The backend resolves identity from the chosen
+            // passkey's owner, not from the entered email.
             assertion = await WebAuthn.VerifyAsync(data!);
         }
         catch (Exception e)

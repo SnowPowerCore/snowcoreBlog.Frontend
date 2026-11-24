@@ -39,15 +39,3 @@ public class BlazorHostBackedClientUserService(HttpClient hostClient, Navigation
         response.EnsureSuccessStatusCode();
     }
 }
-
-internal class BlazorHostBackedClientUserService<TSignInPayload>(HttpClient hostClient, NavigationManager navigator)
-    : BlazorHostBackedClientUserService(hostClient, navigator), IUserService<TSignInPayload>
-{
-    public async Task<AuthenticationOperationInfo> SignInAsync(TSignInPayload signInPayload, CancellationToken cancellationToken = default)
-    {
-        var response = await HostClient.PostAsJsonAsync($"{navigator.BaseUri}_auth/sign-in", signInPayload!, cancellationToken);
-        response.EnsureSuccessStatusCode();
-        
-        return (await response.Content.ReadFromJsonAsync<AuthenticationOperationInfo>(cancellationToken))!;
-    }
-}

@@ -6,7 +6,7 @@ partial class BannerDismissalState
 {
     public static class DismissBannerActionSet
     {
-        public sealed class Action : IAction { }
+        public sealed class Action : IAction;
 
         public sealed class Handler(IStore store) : ActionHandler<Action>(store)
         {

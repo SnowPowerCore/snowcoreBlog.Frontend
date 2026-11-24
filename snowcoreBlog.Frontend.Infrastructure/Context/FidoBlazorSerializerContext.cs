@@ -18,4 +18,4 @@ namespace snowcoreBlog.Frontend.Infrastructure.Context;
     typeof(FidoEnumConverter<ResidentKeyRequirement>),
     typeof(FidoEnumConverter<UserVerificationRequirement>)
 ])]
-public partial class FidoBlazorSerializerContext : JsonSerializerContext { }
+public partial class FidoBlazorSerializerContext : JsonSerializerContext;
