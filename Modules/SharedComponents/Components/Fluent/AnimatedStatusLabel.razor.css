@@ -1,8 +1,8 @@
+/* Width/centering handled by Bootstrap utilities in the markup; the swap
+   animation mechanics stay here. */
 .animated-status {
-    width: 100%;
     min-height: 1.7rem;
     overflow: hidden;
-    text-align: center;
 }
 
 .animated-status ::deep .animated-status__text {

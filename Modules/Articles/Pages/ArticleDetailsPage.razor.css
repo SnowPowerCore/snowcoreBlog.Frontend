@@ -1,57 +1,15 @@
+/* Layout/spacing handled by Bootstrap utilities in the markup. Only the 800px
+   cap, the cover crop and Fluent theme-token colors remain here. */
 .article-page {
     max-width: 800px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 1rem;
 }
 
 .article-cover {
-    display: block;
-    width: 100%;
     max-height: 380px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-}
-
-.article-header {
-    margin-bottom: 1.5rem;
-}
-
-.article-title {
-    margin: 0 0 0.5rem 0;
-    line-height: 1.25;
 }
 
 .article-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
     color: var(--neutral-foreground-hint);
-    font-size: 0.9rem;
-}
-
-.article-date {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-}
-
-.article-tags {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-}
-
-.article-status {
-    justify-content: center;
-    padding: 2rem 0;
-}
-
-.article-footer {
-    justify-content: center;
-    margin-top: 2rem;
 }
 
 /* Markdown content — explicit theme token so Bootstrap's body color does not leak in */

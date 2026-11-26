@@ -1,46 +1,15 @@
-.notification-bar-container {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    width: 100%;
-}
+/* Flex/spacing/sticky handled by Bootstrap utilities in the markup; the Fluent
+   theme-token color variants and small transition details stay here. */
 
 .notification-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.5rem 1rem;
     min-height: 40px;
-    gap: 0.5rem;
-}
-
-.notification-content {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    flex: 1;
-}
-
-.notification-icon {
-    flex-shrink: 0;
-}
-
-.notification-title {
-    font-weight: 600;
 }
 
 .notification-description {
     opacity: 0.9;
 }
 
-.notification-link {
-    margin-left: 0.5rem;
-}
-
 .notification-dismiss {
-    flex-shrink: 0;
-    opacity: 0.7;
     transition: opacity 0.2s ease;
 }
 
@@ -54,16 +23,19 @@
     color: var(--foreground-on-accent-rest);
 }
 
-/* Warning - Orange/Yellow tint */
+/* Warning - Orange/Yellow tint. Status surfaces are built from the FluentUI
+   semantic tokens (--warning/--success/--error) mixed with the current theme's
+   layer fill, so both the tint and the text polarity follow the active theme
+   with no media queries or data-theme selectors. */
 .notification-warning {
-    background-color: #FFF3CD;
-    color: #856404;
+    background-color: color-mix(in srgb, var(--warning) 24%, var(--neutral-fill-layer-rest));
+    color: color-mix(in srgb, var(--warning) 65%, var(--neutral-foreground-rest));
 }
 
 /* Success - Green tint */
 .notification-success {
-    background-color: #D4EDDA;
-    color: #155724;
+    background-color: color-mix(in srgb, var(--success) 22%, var(--neutral-fill-layer-rest));
+    color: color-mix(in srgb, var(--success) 65%, var(--neutral-foreground-rest));
 }
 
 /* Announcement - Accent with slightly different treatment */
@@ -80,30 +52,12 @@
 
 /* Outage - Red/Error tint */
 .notification-outage {
-    background-color: #F8D7DA;
-    color: #721C24;
+    background-color: color-mix(in srgb, var(--error) 22%, var(--neutral-fill-layer-rest));
+    color: color-mix(in srgb, var(--error) 65%, var(--neutral-foreground-rest));
 }
 
 /* Feature Update - Accent variation */
 .notification-feature {
     background-color: var(--accent-fill-rest);
     color: var(--foreground-on-accent-rest);
-}
-
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-    .notification-warning {
-        background-color: #5C4813;
-        color: #FFF3CD;
-    }
-
-    .notification-success {
-        background-color: #155724;
-        color: #D4EDDA;
-    }
-
-    .notification-outage {
-        background-color: #721C24;
-        color: #F8D7DA;
-    }
 }

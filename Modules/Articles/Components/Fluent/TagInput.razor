@@ -2,8 +2,8 @@
 
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
-<div class="tag-input">
-    <div class="tag-input-chips">
+<div class="tag-input d-flex flex-column gap-2 w-100">
+    <div class="tag-input-chips d-flex flex-wrap align-items-center gap-2">
         @if (Tags is { Length: > 0 })
         {
             @foreach (var tag in Tags)
@@ -22,11 +22,11 @@
         }
         else
         {
-            <span class="tag-input-empty">@TranslationResources.TagsFieldNoTagsLabel</span>
+            <span class="tag-input-empty small">@TranslationResources.TagsFieldNoTagsLabel</span>
         }
     </div>
 
-    <div class="tag-input-entry">
+    <div class="tag-input-entry d-flex gap-2 align-items-center">
         <FluentTextField @ref="_pendingTagField"
                          Value="@_pendingTag"
                          ValueChanged="@OnPendingTagChanged"

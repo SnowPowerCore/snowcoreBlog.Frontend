@@ -4,13 +4,13 @@
 @using snowcoreBlog.PublicApi.Extensions
 
 <div class="w-100">
-	<FluentStack Orientation="Orientation.Vertical" VerticalGap="8" class="section-header">
+	<FluentStack Orientation="Orientation.Vertical" VerticalGap="8" class="section-header w-100 mb-3">
 		<FluentLabel Typo="Typography.H2">Highlights</FluentLabel>
 		<FluentDivider />
 	</FluentStack>
 	@if (Articles is default(IEnumerable<ArticleDto>) || !Articles.Any())
 	{
-		<div class="no-articles">No articles yet.</div>
+		<div class="no-articles p-3">No articles yet.</div>
 	}
 	else
 	{
@@ -22,10 +22,10 @@
 					<FloatingCard class="d-block p-0 w-100 h-100 position-relative">
 						@if (!string.IsNullOrWhiteSpace(three[0].CoverImageUrl))
 						{
-							<img src="@three[0].CoverImageUrl" alt="@three[0].Title" class="highlight-image w-100 h-100 position-absolute top-0 start-0" />
+							<img src="@three[0].CoverImageUrl" alt="@three[0].Title" class="highlight-image d-block w-100 h-100 position-absolute top-0 start-0 object-fit-cover" />
 						}
 						<div class="highlight-overlay d-flex flex-column gap-2 position-absolute bottom-0 start-0 end-0 text-white" style="padding: calc(var(--design-unit) * 5px);">
-							<h3 class="title">@three[0].Title</h3>
+							<h3 class="title m-0">@three[0].Title</h3>
 							<p class="meta">@FormatDate(three[0].PublishedAt) • @string.Join(", ", three[0].AuthorUserIds ?? new Guid[0])</p>
 							<p class="excerpt">@Excerpt(three[0].Markdown)</p>
 						</div>
@@ -38,10 +38,10 @@
 					<FloatingCard class="d-block p-0 w-100 h-100 position-relative">
 						@if (!string.IsNullOrWhiteSpace(three[1].CoverImageUrl))
 						{
-							<img src="@three[1].CoverImageUrl" alt="@three[1].Title" class="highlight-image w-100 h-100 position-absolute top-0 start-0" />
+								<img src="@three[1].CoverImageUrl" alt="@three[1].Title" class="highlight-image d-block w-100 h-100 position-absolute top-0 start-0 object-fit-cover" />
 						}
 						<div class="highlight-overlay d-flex flex-column gap-1 position-absolute bottom-0 start-0 end-0 text-white" style="padding: calc(var(--design-unit) * 5px);">
-							<h4 class="title mb-0">@three[1].Title</h4>
+								<h4 class="title m-0">@three[1].Title</h4>
 							<p class="meta mb-0">@FormatDate(three[1].PublishedAt)</p>
 						</div>
 					</FloatingCard>
@@ -53,10 +53,10 @@
 					<FloatingCard class="d-block p-0 w-100 h-100 position-relative">
 						@if (!string.IsNullOrWhiteSpace(three[2].CoverImageUrl))
 						{
-							<img src="@three[2].CoverImageUrl" alt="@three[2].Title" class="highlight-image w-100 h-100 position-absolute top-0 start-0" />
+								<img src="@three[2].CoverImageUrl" alt="@three[2].Title" class="highlight-image d-block w-100 h-100 position-absolute top-0 start-0 object-fit-cover" />
 						}
 						<div class="highlight-overlay d-flex flex-column gap-1 position-absolute bottom-0 start-0 end-0 text-white" style="padding: calc(var(--design-unit) * 5px);">
-							<h4 class="title mb-0">@three[2].Title</h4>
+								<h4 class="title m-0">@three[2].Title</h4>
 							<p class="meta mb-0">@FormatDate(three[2].PublishedAt)</p>
 						</div>
 					</FloatingCard>

@@ -3,30 +3,30 @@
 @using snowcoreBlog.PublicApi.BusinessObjects.Dto
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
 
-<div class="articles-list-section">
-	<FluentStack Orientation="Orientation.Vertical" VerticalGap="8" class="section-header">
+<div class="articles-list-section w-100">
+	<FluentStack Orientation="Orientation.Vertical" VerticalGap="8" class="section-header w-100 mb-3">
 		<FluentLabel Typo="Typography.H2">More Articles</FluentLabel>
 		<FluentDivider />
 	</FluentStack>
     @if (Articles is default(IEnumerable<ArticleDto>) || !Articles.Skip(3).Any())
     {
-        <div class="no-more">No more articles.</div>
+        <div class="no-more p-3">No more articles.</div>
     }
     else
     {
-        <Masonry @ref="_masonry" class="row masonry" AutoRender="false" SizerClass="col-sm-1">
+        <Masonry @ref="_masonry" class="row masonry w-100" AutoRender="false" SizerClass="col-sm-1">
             @foreach (var a in Articles.Skip(3))
             {
                 <MasonryItem class="col-lg-4 col-md-6 mb-4">
-                    <a class="masonry-item-link" href="@GetArticleUrl(a)" aria-label="@a.Title">
-                        <FloatingCard Class="masonry-card p-0 position-relative d-flex flex-column">
+                    <a class="masonry-item-link d-block w-100 text-decoration-none text-reset" href="@GetArticleUrl(a)" aria-label="@a.Title">
+                        <FloatingCard Class="masonry-card d-block w-100 p-0 position-relative d-flex flex-column">
                             @if (!string.IsNullOrWhiteSpace(a.CoverImageUrl))
 							{
 								<img src="@a.CoverImageUrl" @onload="ImageLoadedAsync" alt="@a.Title" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" />
 							}
                             <div class="masonry-tint position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.85));"></div>
                             <div class="flex-grow-1" style="min-height: 200px;"></div>
-                            <div class="masonry-body d-flex flex-column gap-2 p-0 position-relative">
+                            <div class="masonry-body d-flex flex-column gap-2 p-0 position-relative text-white">
                                 <h4 class="title">@a.Title</h4>
                                 <p class="meta">@FormatDate(a.PublishedAt)</p>
                                 <p class="excerpt">@Excerpt(a.Markdown)</p>

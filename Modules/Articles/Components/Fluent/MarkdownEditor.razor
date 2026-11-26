@@ -5,7 +5,7 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
 <div class="markdown-editor">
-    <div class="markdown-editor-toolbar" role="toolbar" aria-label="@TranslationResources.MarkdownEditorToolbarLabel">
+    <div class="markdown-editor-toolbar d-flex align-items-center flex-wrap gap-1 py-1 px-2" role="toolbar" aria-label="@TranslationResources.MarkdownEditorToolbarLabel">
         <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorBoldLabel" OnClick="@(() => ApplyWrapAsync("**", "**", TranslationResources.MarkdownEditorBoldText))"><FluentIcon Value="@(new Icons.Regular.Size20.TextBold())" /></FluentButton>
         <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorItalicLabel" OnClick="@(() => ApplyWrapAsync("*", "*", TranslationResources.MarkdownEditorItalicText))"><FluentIcon Value="@(new Icons.Regular.Size20.TextItalic())" /></FluentButton>
         <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorStrikethroughLabel" OnClick="@(() => ApplyWrapAsync("~~", "~~", TranslationResources.MarkdownEditorStrikethroughText))"><FluentIcon Value="@(new Icons.Regular.Size20.TextStrikethrough())" /></FluentButton>
@@ -17,7 +17,7 @@
         <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorNumberListLabel" OnClick="@(() => ApplyLinePrefixAsync("1. "))"><FluentIcon Value="@(new Icons.Regular.Size20.TextNumberListLtr())" /></FluentButton>
         <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorLinkLabel" OnClick="@ApplyLinkAsync"><FluentIcon Value="@(new Icons.Regular.Size20.Link())" /></FluentButton>
         <FluentButton Appearance="Appearance.Stealth" Title="@TranslationResources.MarkdownEditorCodeBlockLabel" OnClick="@ApplyCodeBlockAsync"><FluentIcon Value="@(new Icons.Regular.Size20.Branch())" /></FluentButton>
-        <span class="markdown-editor-spacer"></span>
+        <span class="flex-grow-1"></span>
         <FluentSwitch @bind-Value="_previewVisible" Label="@TranslationResources.MarkdownEditorPreviewLabel" Class="markdown-editor-preview-toggle" />
     </div>
 
@@ -35,10 +35,10 @@
         </div>
         @if (_previewVisible)
         {
-            <div class="markdown-editor-preview markdown-body">
+            <div class="markdown-editor-preview markdown-body p-3">
                 @if (string.IsNullOrWhiteSpace(_previewHtml))
                 {
-                    <span class="markdown-editor-preview-empty">@TranslationResources.MarkdownEditorPreviewEmptyLabel</span>
+                    <span class="markdown-editor-preview-empty small">@TranslationResources.MarkdownEditorPreviewEmptyLabel</span>
                 }
                 else
                 {

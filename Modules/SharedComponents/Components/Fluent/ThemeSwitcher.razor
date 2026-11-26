@@ -1,0 +1,58 @@
+@using snowcoreBlog.Frontend.SharedComponents.Models
+@using snowcoreBlog.Frontend.SharedComponents.Services
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@inject ThemeService ThemeService
+
+<FluentButton Id="theme-switcher-button" IconEnd="@(GetTriggerIcon())" Appearance="Appearance.Lightweight" @onclick="ToggleMenu" />
+<FluentMenu @bind-Open="_menuOpen" Anchor="theme-switcher-button" VerticalInset="false">
+    <FluentMenuItem @onclick="@(() => SelectTheme(ThemePreference.Dark))">
+        <FluentIcon Value="@(new Icons.Regular.Size20.WeatherMoon())" Slot="start" />
+        Dark
+        @if (ThemeService.CurrentPreference == ThemePreference.Dark)
+        {
+            <FluentIcon Value="@(new Icons.Regular.Size20.Checkmark())" Slot="end" />
+        }
+    </FluentMenuItem>
+    <FluentMenuItem @onclick="@(() => SelectTheme(ThemePreference.Light))">
+        <FluentIcon Value="@(new Icons.Regular.Size20.WeatherSunny())" Slot="start" />
+        Light
+        @if (ThemeService.CurrentPreference == ThemePreference.Light)
+        {
+            <FluentIcon Value="@(new Icons.Regular.Size20.Checkmark())" Slot="end" />
+        }
+    </FluentMenuItem>
+    <FluentMenuItem @onclick="@(() => SelectTheme(ThemePreference.Device))">
+        <FluentIcon Value="@(new Icons.Regular.Size20.Desktop())" Slot="start" />
+        Device
+        @if (ThemeService.CurrentPreference == ThemePreference.Device)
+        {
+            <FluentIcon Value="@(new Icons.Regular.Size20.Checkmark())" Slot="end" />
+        }
+    </FluentMenuItem>
+</FluentMenu>
+
+@code
+{
+    private bool _menuOpen = false;
+
+    // Trigger glyph mirrors the active preference (moon/sun/desktop). No local
+    // subscription needed: the layout re-renders on every theme change, which
+    // cascades through the header into this component.
+    private Icon GetTriggerIcon() => ThemeService.CurrentPreference switch
+    {
+        ThemePreference.Light => new Icons.Regular.Size20.WeatherSunny(),
+        ThemePreference.Device => new Icons.Regular.Size20.Desktop(),
+        _ => new Icons.Regular.Size20.WeatherMoon()
+    };
+
+    private void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+    }
+
+    private void SelectTheme(ThemePreference preference)
+    {
+        _menuOpen = false;
+        ThemeService.SetPreference(preference);
+    }
+}

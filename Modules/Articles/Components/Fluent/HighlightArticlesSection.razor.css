@@ -1,18 +1,9 @@
-.g-3
-{
-    --bs-gutter-x: 1.5rem !important;
-}
-
-.section-header
-{
-    width: 100%;
-    margin-bottom: 1rem;
-}
+/* Flex/spacing handled by Bootstrap utilities in the markup; the highlight grid
+   (grid-template-areas), the photo scrim and Fluent token colors stay here. */
 
 .no-articles
 {
-    padding: 1rem;
-    color: var(--neutral-foreground, #666);
+    color: var(--neutral-foreground-rest);
 }
 
 .highlight-grid
@@ -68,22 +59,15 @@
     .highlight-item:nth-child(3) { grid-area: side2; }
 }
 
-.title
-{
-    margin: 0;
-}
-
+/* Meta sits on the dark photo scrim of the overlay (parent is .text-white),
+   so it inherits the overlay color instead of a theme token that would turn
+   unreadable in light mode. */
 .meta
 {
     margin: 0;
     font-size: 0.85rem;
-    color:var(--neutral-foreground, #666);
-}
-
-.highlight-image
-{
-    object-fit: cover;
-    display: block;
+    color: inherit;
+    opacity: 0.85;
 }
 
 .highlight-overlay

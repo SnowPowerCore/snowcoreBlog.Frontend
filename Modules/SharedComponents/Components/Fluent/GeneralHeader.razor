@@ -26,6 +26,7 @@
                                 }
                             </FluentStack>
                             <FluentDivider Class="ms-2" Style="height: 15px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
+                            <ThemeSwitcher />
                             <FluentButton Id="user-menu-button" IconEnd="@(new Icons.Regular.Size20.Person())" Appearance="Appearance.Lightweight" @onclick="ToggleUserMenu">
                                 @context.User.Identity?.Name
                             </FluentButton>
@@ -53,6 +54,7 @@
                             <FluentIcon Value="@(new Icons.Color.Size28.CodeBlock())" Class="cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))" />
                             <FluentLabel Class="mb-0 cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))">@Title</FluentLabel>
                             <FluentSpacer />
+                            <ThemeSwitcher />
                             <FluentButton Id="mobile-menu-button" IconEnd="@(new Icons.Filled.Size28.Navigation())" Appearance="Appearance.Lightweight" @onclick="ToggleMobileMenu" />
                             <FluentMenu @bind-Open="_mobileMenuOpen" Anchor="mobile-menu-button" VerticalInset="false">
                                 @foreach (var navLink in NavLinks)
@@ -99,6 +101,7 @@
                                 }
                                 <FluentDivider Class="align-self-center" Style="height: 16px;" Orientation="Orientation.Vertical" Role="DividerRole.Presentation" />
                                 <FluentSpacer Width="5" />
+                                <ThemeSwitcher />
                                 <FluentButton Appearance="Appearance.Accent" @onclick="@(() => HeaderItemNavigateTo(AccountLink))">
                                     Sign In
                                 </FluentButton>
@@ -113,6 +116,7 @@
                             <FluentIcon Value="@(new Icons.Color.Size28.CodeBlock())" Class="cursor-pointer" @onclick="@(() => HeaderItemNavigateTo(string.Empty))" />
                             <FluentLabel Class="mb-0" Style="cursor: pointer;" @onclick="@(() => HeaderItemNavigateTo(string.Empty))">@Title</FluentLabel>
                             <FluentSpacer />
+                            <ThemeSwitcher />
                             <FluentButton Class="ms-auto" Id="mobile-menu-button-nonauth" IconEnd="@(new Icons.Filled.Size28.Navigation())" Appearance="Appearance.Lightweight" @onclick="ToggleMobileMenu" />
                             <FluentMenu @bind-Open="_mobileMenuOpen" Anchor="mobile-menu-button-nonauth" VerticalInset="false">
                                 @foreach (var navLink in NavLinks)

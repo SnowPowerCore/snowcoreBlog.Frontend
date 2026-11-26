@@ -4,16 +4,19 @@
 @using Microsoft.FluentUI.AspNetCore.Components.DesignTokens
 @using System.Security.Claims
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.Frontend.SharedComponents.Services
 @using snowcoreBlog.Frontend.SharedComponents.LayoutHooks
 @using snowcoreBlog.PublicApi.Utilities.Dictionary
 
 @inherits LayoutComponentBase
+@implements IDisposable
 
 @inject BodyFont BodyFont
 @inject IUserService UserService
 @inject NavigationManager Navigation
+@inject ThemeService ThemeService
 
-<FluentDesignTheme Mode="DesignThemeModes.Dark" StorageName="theme" />
+<FluentDesignTheme Mode="@ThemeService.CurrentMode" ModeChanged="@HandleThemeModeChanged" StorageName="theme" />
 <FluentToastProvider />
 <FluentDialogProvider />
 <GlobalOverlay />
@@ -67,6 +70,32 @@
 @code
 {
     private FluentLayout _root = default!;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        // Re-render the layout (and with it FluentDesignTheme) whenever the theme
+        // preference changes, so the new mode attribute reaches the
+        // fluent-design-theme element which applies it and persists to storage.
+        ThemeService.OnThemeChanged += HandleThemeChanged;
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= HandleThemeChanged;
+    }
+
+    private void HandleThemeChanged()
+    {
+        StateHasChanged();
+    }
+
+    private Task HandleThemeModeChanged(DesignThemeModes mode)
+    {
+        ThemeService.SynchronizeFromDesignTheme(mode);
+        return Task.CompletedTask;
+    }
 
     // Base nav links shared by every header state. For an authenticated user
     // carrying the authorAccount claim (set by the AuthorsManagement claim

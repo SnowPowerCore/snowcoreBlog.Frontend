@@ -9,6 +9,9 @@ public static class ServiceCollectionExtensions
     {
         // Global overlay service for rendering modal content at root (used by GlobalOverlay)
         serviceCollection.AddSingleton<OverlayService>();
+
+        // Theme preference state; persistence is owned by FluentDesignTheme (StorageName="theme")
+        serviceCollection.AddScoped<ThemeService>();
         return serviceCollection;
     }
 }

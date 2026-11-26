@@ -1,50 +1,20 @@
-.articles-list-section
-{
-    width: 100%;
-}
-
-.section-header
-{
-    width: 100%;
-    margin-bottom: 1rem;
-}
+/* Layout/spacing handled by Bootstrap utilities in the markup (plus the Soenneker
+   masonry grid); Fluent token colors and the card visuals stay here. */
 
 .no-more
 {
-    padding: 1rem;
-    color: var(--neutral-foreground, #666);
+    color: var(--neutral-foreground-rest);
 }
 
-/* Masonry (Soenneker) + Bootstrap grid classes used for responsive columns */
-.masonry
-{
-    width: 100%;
-}
-
-.title
-{
-    margin: 0;
-}
-
+/* Meta sits on the dark photo tint of the card (parent is .text-white), so it
+   inherits the overlay color instead of a theme token that would turn
+   unreadable in light mode. */
 .meta
 {
     margin: 0;
     font-size: 0.85rem;
-    color:var(--neutral-foreground, #666);
-}
-
-.masonry-item-link
-{
-    display: block;
-    width: 100%;
-    text-decoration: none;
     color: inherit;
-}
-
-.masonry-card
-{
-    display: block;
-    width: 100%;
+    opacity: 0.85;
 }
 
 .masonry-thumb

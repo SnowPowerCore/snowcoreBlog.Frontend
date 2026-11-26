@@ -7,13 +7,13 @@
 
 @if (NotificationBarState.HasVisibleNotifications)
 {
-    <div class="notification-bar-container">
+    <div class="notification-bar-container sticky-top w-100">
         @foreach (var notification in NotificationBarState.VisibleNotifications)
         {
-            <div class="notification-bar @GetNotificationClass(notification.Type)" role="alert">
-                <div class="notification-content">
-                    <FluentIcon Value="@GetNotificationIcon(notification.Type)" Class="notification-icon" />
-                    <span class="notification-title">@notification.Title</span>
+            <div class="notification-bar d-flex align-items-center justify-content-between gap-2 px-3 py-2 @GetNotificationClass(notification.Type)" role="alert">
+                <div class="notification-content d-flex align-items-center flex-wrap gap-2 flex-grow-1">
+                    <FluentIcon Value="@GetNotificationIcon(notification.Type)" Class="notification-icon flex-shrink-0" />
+                    <span class="notification-title fw-semibold">@notification.Title</span>
                     @if (!string.IsNullOrWhiteSpace(notification.Description))
                     {
                         <span class="notification-description">— @notification.Description</span>
@@ -23,7 +23,7 @@
                         <FluentAnchor Href="@notification.LinkUrl" 
                                      Target="_blank" 
                                      Appearance="Appearance.Lightweight"
-                                     Class="notification-link">
+                                     Class="notification-link ms-2">
                             @(notification.LinkText ?? "Learn more")
                         </FluentAnchor>
                     }
@@ -31,7 +31,7 @@
                 @if (notification.IsDismissible)
                 {
                     <FluentButton Appearance="Appearance.Lightweight"
-                                 Class="notification-dismiss"
+                                 Class="notification-dismiss flex-shrink-0 opacity-75"
                                  IconEnd="@(new Icons.Regular.Size16.Dismiss())"
                                  Title="Dismiss"
                                  @onclick="@(() => DismissNotification(notification.Id))" />

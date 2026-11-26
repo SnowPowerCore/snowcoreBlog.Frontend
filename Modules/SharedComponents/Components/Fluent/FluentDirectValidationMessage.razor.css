@@ -1,7 +1,6 @@
+/* Flex layout handled by Bootstrap utilities in the markup; Fluent token
+   color and type ramp stay here. */
 .validation-message {
     color: var(--error);
     font-size: var(--type-ramp-minus-1-font-size);
-    display: flex;
-    align-items: center;
-    column-gap: 4px;
 }

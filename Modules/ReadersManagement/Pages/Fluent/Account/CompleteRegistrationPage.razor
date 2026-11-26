@@ -50,7 +50,7 @@
                         <AnimatedStatusLabel Text="@_statusMessage" @ref="_statusLabel" />
                     </FluentStack>
                 }
-                else if (_method is default(RegistrationMethod))
+                else if (_method is null)
                 {
                     <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Center">
                         <FluentButton OnClick="@(() => _method = RegistrationMethod.Passkey)" Appearance="Appearance.Neutral">
