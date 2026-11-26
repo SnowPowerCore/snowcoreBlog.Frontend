@@ -1,0 +1,129 @@
+@using System.Net
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Microsoft.AspNetCore.Components.Forms
+@using snowcoreBlog.Frontend.ReadersManagement.Components.Register
+@using snowcoreBlog.Frontend.ReadersManagement.Features.Register
+@using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.Frontend.SharedComponents.Providers
+@using snowcoreBlog.PublicApi.BusinessObjects.Dto
+
+@page "/register/contact"
+@attribute [StreamRendering]
+@inherits TimeWarpStateComponent
+
+@inject NavigationManager Navigation
+@inject IValidator<RequestCreateReaderAccountDto> RequestCreateReaderAccountValidator
+
+<FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())" MaxContentWidth="48rem">
+    <RegularSizeContent>
+        <RegisterOobeLayout Icon="@(new Icons.Color.Size24.ContactCard())" Step="1" TotalSteps="3"
+            Title="@TranslationResources.RegisterContactStepTitle"
+            Subtitle="@TranslationResources.RegisterContactStepSubtitle">
+            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount">
+                <FormTrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChangedAsync" />
+
+                <FluentStack Orientation="Orientation.Vertical">
+                    <FluentTextField InputMode="InputMode.Email" Name="email" Label="@TranslationResources.EmailFieldLabel" @bind-Value=@CreateNewAccount.Email Required />
+                    <FluentSpacer />
+                    <FluentTextField InputMode="InputMode.Telephone" Name="phoneNumber" Label="@TranslationResources.PhoneNumberFieldLabel" @bind-Value=@CreateNewAccount.PhoneNumber />
+                    <FluentSpacer />
+                    <FluentCheckbox @bind-Value="@CreateNewAccount.InitialEmailConsent" Required>
+                        @TranslationResources.InitialEmailConsentInfoLabel1<br/>@TranslationResources.InitialEmailConsentInfoLabel2
+                    </FluentCheckbox>
+                    <FluentSpacer />
+                </FluentStack>
+
+                @foreach (var error in _stepErrors)
+                {
+                    <FluentSpacer />
+                    <FluentDirectValidationMessage Message="@error" />
+                }
+
+                <FluentSpacer />
+                <FluentSpacer />
+                <FluentSpacer />
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.End" HorizontalGap="5">
+                    @* OOBE footer: Back on the left, Next (accent) on the right. *@
+                    <FluentButton OnClick="@(() => Navigation.NavigateTo("register"))" Appearance="Appearance.Outline">
+                        @TranslationResources.RegisterBackButtonLabel
+                    </FluentButton>
+                    <FluentButton OnClick="GoToPersonalStepAsync" Appearance="Appearance.Accent">
+                        @TranslationResources.ContinueButtonLabel
+                    </FluentButton>
+                </FluentStack>
+            </EditForm>
+        </RegisterOobeLayout>
+    </RegularSizeContent>
+</FlexibleFloatingCard>
+
+@code
+{
+    public const string ReaderAccountRegisterFormName = "ReaderAccountRegisterContactForm";
+
+    /// <summary>DTO properties validated (and surfaced) on this step only.</summary>
+    private static readonly HashSet<string> StepProperties = new()
+    {
+        nameof(RequestCreateReaderAccountDto.Email),
+        nameof(RequestCreateReaderAccountDto.PhoneNumber),
+        nameof(RequestCreateReaderAccountDto.InitialEmailConsent)
+    };
+
+    private readonly RequestCreateReaderAccountDto _emptyState = new()
+    {
+        Email = string.Empty,
+        FirstName = string.Empty,
+        NickName = string.Empty,
+        InitialEmailConsent = false,
+        ConfirmedAgreement = false
+    };
+
+    private List<string> _stepErrors = [];
+
+    [SupplyParameterFromForm(FormName = ReaderAccountRegisterFormName)]
+    private RequestCreateReaderAccountDto? CreateNewAccount { get; set; }
+
+    public RegisterContactPage()
+    {
+        CreateNewAccount = _emptyState;
+    }
+
+    protected override void OnParametersSet()
+    {
+        CreateNewAccount ??= _emptyState;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            // Resume where the visitor left off: the model lives in sessionStorage.
+            CreateNewAccount = GetState<RegisterState>().CurrentModel ?? _emptyState;
+        }
+    }
+
+    private async Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
+    {
+        _stepErrors.Clear();
+
+        // Persist the current input so the next step / navigation can restore it.
+        await GetState<RegisterState>().SetCurrentInput(CreateNewAccount);
+    }
+
+    private async Task GoToPersonalStepAsync()
+    {
+        _stepErrors.Clear();
+
+        var errors = RegisterStepValidation.ValidateStep(
+            RequestCreateReaderAccountValidator, CreateNewAccount ?? _emptyState, StepProperties);
+        if (errors.Count is not 0)
+        {
+            _stepErrors.AddRange(errors);
+            return;
+        }
+
+        await GetState<RegisterState>().SetCurrentInput(CreateNewAccount);
+        Navigation.NavigateTo("register/personal");
+    }
+}

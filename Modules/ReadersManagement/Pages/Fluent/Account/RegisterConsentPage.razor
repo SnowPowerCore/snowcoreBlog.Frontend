@@ -1,0 +1,228 @@
+@using System.Net
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Microsoft.AspNetCore.Components.Forms
+@using snowcoreBlog.Frontend.Infrastructure.Events
+@using snowcoreBlog.Frontend.Infrastructure.Protocol.Sse
+@using snowcoreBlog.Frontend.ReadersManagement.Components.Register
+@using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
+@using snowcoreBlog.Frontend.ReadersManagement.Features.Register
+@using snowcoreBlog.Frontend.SharedComponents.Components.Altcha
+@using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.Frontend.SharedComponents.Providers
+@using snowcoreBlog.Frontend.SharedComponents.Resources.Icons
+@using snowcoreBlog.Frontend.SharedComponents.Validation
+@using snowcoreBlog.PublicApi.BusinessObjects.Dto
+@using snowcoreBlog.PublicApi.Utilities.Sse
+
+@page "/register/consent"
+@attribute [StreamRendering]
+@inherits TimeWarpStateComponent
+
+@inject NavigationManager Navigation
+@inject IValidator<RequestCreateReaderAccountDto> RequestCreateReaderAccountValidator
+@inject IHttpClientFactory HttpClientFactory
+
+<FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())" MaxContentWidth="48rem">
+    <RegularSizeContent>
+        <RegisterOobeLayout Icon="@(new Icons.Color.Size24.CheckmarkCircle())" Step="3" TotalSteps="3"
+            Title="@TranslationResources.RegisterConsentStepTitle"
+            Subtitle="@TranslationResources.RegisterConsentStepSubtitle">
+            @if (_isProcessing)
+            {
+                @* While the backend processes the registration, the right pane content is
+                   swapped for a progress indicator and the live step status message. On any
+                   failure the original form content below is brought back to visibility. *@
+                <FluentStack Class="py-5" Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Center">
+                    <FluentProgressRing />
+                    <FluentSpacer />
+                    <AnimatedStatusLabel Text="@_statusMessage" @ref="_statusLabel" />
+                </FluentStack>
+            }
+            else
+            {
+                <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount">
+                    <FormTrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChangedAsync" />
+
+                    <FluentStack Orientation="Orientation.Vertical">
+                        <FluentCheckbox @bind-Value="@CreateNewAccount.ConfirmedAgreement" Required>
+                            @TranslationResources.ConfirmedAgreementInfoLabel1<FluentAnchor
+                                Id="termsAndConditionsInfo" Appearance="Appearance.Hypertext"
+                                Href="javascript: void(0);">@TranslationResources.ConfirmedAgreementInfoLabel2</FluentAnchor>@TranslationResources.ConfirmedAgreementInfoLabel3
+                        </FluentCheckbox>
+                        <FluentSpacer />
+                        <AltchaWidget
+                            ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
+                            OnVerified="HandleOnVerified"/>
+                    </FluentStack>
+
+                    @foreach (var error in _registrationErrors)
+                    {
+                        <FluentSpacer />
+                        <FluentDirectValidationMessage Message="@error" />
+                    }
+
+                    <FluentSpacer />
+                    <FluentSpacer />
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.End" HorizontalGap="5">
+                        <FluentButton OnClick="@(() => Navigation.NavigateTo("register/personal"))" Appearance="Appearance.Outline">
+                            @TranslationResources.RegisterBackButtonLabel
+                        </FluentButton>
+                        <FluentButton OnClick="SubmitRegistrationAsync" Appearance="Appearance.Accent">
+                            @TranslationResources.RegisterButtonLabel
+                        </FluentButton>
+                    </FluentStack>
+                </EditForm>
+            }
+        </RegisterOobeLayout>
+    </RegularSizeContent>
+</FlexibleFloatingCard>
+
+@code
+{
+    public const string ReaderAccountRegisterFormName = "ReaderAccountRegisterConsentForm";
+
+    private bool _isProcessing = false;
+    private string _statusMessage = string.Empty;
+    private AnimatedStatusLabel? _statusLabel;
+    private List<string> _registrationErrors = [];
+
+    private readonly RequestCreateReaderAccountDto _emptyState = new()
+    {
+        Email = string.Empty,
+        FirstName = string.Empty,
+        NickName = string.Empty,
+        InitialEmailConsent = false,
+        ConfirmedAgreement = false
+    };
+
+    private string? Captcha { get; set; } = string.Empty;
+
+    [SupplyParameterFromForm(FormName = ReaderAccountRegisterFormName)]
+    private RequestCreateReaderAccountDto? CreateNewAccount { get; set; }
+
+    public RegisterConsentPage()
+    {
+        CreateNewAccount = _emptyState;
+    }
+
+    protected override void OnParametersSet()
+    {
+        CreateNewAccount ??= _emptyState;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            // The model was filled in on the earlier steps and lives in sessionStorage.
+            CreateNewAccount = GetState<RegisterState>().CurrentModel ?? _emptyState;
+        }
+    }
+
+    private async Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
+    {
+        _registrationErrors.Clear();
+        await GetState<RegisterState>().SetCurrentInput(CreateNewAccount);
+    }
+
+    private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
+    {
+        Captcha = verifyArgs.Payload;
+    }
+
+    private async Task SubmitRegistrationAsync()
+    {
+        _registrationErrors.Clear();
+
+        var requestData = CreateNewAccount ?? _emptyState;
+
+        // Final gate: validate the WHOLE model — every step's fields must be valid
+        // before the backend flow starts (earlier steps are normally already valid).
+        var validation = RequestCreateReaderAccountValidator.Validate(requestData);
+        if (!validation.IsValid)
+        {
+            _registrationErrors.AddRange(validation.Errors.Select(error => error.ErrorMessage));
+            return;
+        }
+
+        if (string.IsNullOrEmpty(Captcha))
+            return;
+
+        var antiforgery = GetState<AntiforgeryState>();
+
+        _isProcessing = true;
+        _statusMessage = TranslationResources.RegistrationStepWorkingGeneric;
+
+        var playOutQueueOnExit = false;
+
+        try
+        {
+            using var tokenSource = new CancellationTokenSource();
+            var httpClient = HttpClientFactory.CreateClient(SseClientNames.ReadersManagement);
+
+            var frames = httpClient.PostServerSentEventsAsync(
+                "create/request/email/v1",
+                requestData,
+                message =>
+                {
+                    message.Headers.Add("RequestVerificationToken", antiforgery.RequestVerificationToken);
+                    message.Headers.Add("RequestCaptcha", Captcha);
+                },
+                tokenSource.Token);
+
+            var finalEvent = await StepProgressStreamReader.ReadAsync(
+                frames,
+                stepCode =>
+                {
+                    _statusMessage = RegistrationProgressMessages.ForStep(stepCode);
+                    StateHasChanged();
+                },
+                tokenSource.Token);
+
+            if (finalEvent is not default(StepProgressFinalEvent) && finalEvent.StatusCode == (int)HttpStatusCode.OK)
+            {
+                // Let every queued status finish its animation (including the final
+                // readable hold) before leaving the page.
+                playOutQueueOnExit = true;
+
+                if (_statusLabel is not default(AnimatedStatusLabel))
+                {
+                    await _statusLabel.WaitForDrainedAsync();
+                }
+
+                await GetState<RegisterState>().SetCurrentInput(_emptyState);
+                Navigation.NavigateTo("register/info/confirm");
+                return;
+            }
+
+            _registrationErrors.AddRange(finalEvent?.Response?.Errors ?? []);
+            if (_registrationErrors.Count == 0)
+                _registrationErrors.Add(TranslationResources.RegistrationProcessingFailedGeneric);
+        }
+        catch (System.Net.Http.HttpRequestException hre) when (hre.StatusCode is not default(HttpStatusCode))
+        {
+            // HTTP-level failure (antiforgery / captcha / gateway): bring the
+            // original form content back, surface the status for diagnosability.
+            _registrationErrors.Add($"{TranslationResources.RegistrationProcessingFailedGeneric} (HTTP {(int)hre.StatusCode})");
+        }
+        catch (Exception)
+        {
+            // Network / protocol failure: bring the original form content back and show a generic error.
+            _registrationErrors.Add(TranslationResources.RegistrationProcessingFailedGeneric);
+        }
+        finally
+        {
+            // On success, let every queued status finish its animation before
+            // swapping the card back to the form. On any failure — including
+            // exceptions — never block: restore the original content immediately.
+            if (playOutQueueOnExit && _statusLabel is not default(AnimatedStatusLabel))
+            {
+                await _statusLabel.WaitForDrainedAsync();
+            }
+
+            _isProcessing = false;
+        }
+    }
+}

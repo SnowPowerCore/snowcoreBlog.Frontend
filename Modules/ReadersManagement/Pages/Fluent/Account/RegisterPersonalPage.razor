@@ -1,0 +1,134 @@
+@using System.Net
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Microsoft.AspNetCore.Components.Forms
+@using snowcoreBlog.Frontend.ReadersManagement.Components.NickName
+@using snowcoreBlog.Frontend.ReadersManagement.Components.Register
+@using snowcoreBlog.Frontend.ReadersManagement.Features.Register
+@using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
+@using snowcoreBlog.Frontend.SharedComponents.Providers
+@using snowcoreBlog.PublicApi.BusinessObjects.Dto
+
+@page "/register/personal"
+@attribute [StreamRendering]
+@inherits TimeWarpStateComponent
+
+@inject NavigationManager Navigation
+@inject IValidator<RequestCreateReaderAccountDto> RequestCreateReaderAccountValidator
+
+<FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())" MaxContentWidth="48rem">
+    <RegularSizeContent>
+        <RegisterOobeLayout Icon="@(new Icons.Color.Size24.Person())" Step="2" TotalSteps="3"
+            Title="@TranslationResources.RegisterPersonalStepTitle"
+            Subtitle="@TranslationResources.RegisterPersonalStepSubtitle">
+            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount">
+                <FormTrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChangedAsync" />
+
+                <FluentStack Orientation="Orientation.Vertical">
+                    <FluentTextField Name="firstName" Label="@TranslationResources.FirstNameFieldLabel" @bind-Value=@CreateNewAccount.FirstName Required />
+                    <FluentSpacer />
+                    <FluentTextField Name="lastName" Label="@TranslationResources.LastNameFieldLabel" @bind-Value=@CreateNewAccount.LastName />
+                    <FluentSpacer />
+                    <FluentTextField Name="nickName"
+                                      Label="@TranslationResources.NickNameFieldLabel"
+                                      @bind-Value=@CreateNewAccount.NickName
+                                      Immediate="true"
+                                      Required />
+                    <NickNameAvailabilityIndicator Candidate="@CreateNewAccount.NickName" />
+                </FluentStack>
+
+                @foreach (var error in _stepErrors)
+                {
+                    <FluentSpacer />
+                    <FluentDirectValidationMessage Message="@error" />
+                }
+
+                <FluentSpacer />
+                <FluentSpacer />
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.End" HorizontalGap="5">
+                    <FluentButton OnClick="@(() => Navigation.NavigateTo("register/contact"))" Appearance="Appearance.Outline">
+                        @TranslationResources.RegisterBackButtonLabel
+                    </FluentButton>
+                    <FluentButton OnClick="GoToConsentStepAsync" Appearance="Appearance.Accent">
+                        @TranslationResources.ContinueButtonLabel
+                    </FluentButton>
+                </FluentStack>
+            </EditForm>
+        </RegisterOobeLayout>
+    </RegularSizeContent>
+</FlexibleFloatingCard>
+
+@code
+{
+    public const string ReaderAccountRegisterFormName = "ReaderAccountRegisterPersonalForm";
+
+    /// <summary>DTO properties validated (and surfaced) on this step only.</summary>
+    private static readonly HashSet<string> StepProperties = new()
+    {
+        nameof(RequestCreateReaderAccountDto.FirstName),
+        nameof(RequestCreateReaderAccountDto.LastName),
+        nameof(RequestCreateReaderAccountDto.NickName)
+    };
+
+    private readonly RequestCreateReaderAccountDto _emptyState = new()
+    {
+        Email = string.Empty,
+        FirstName = string.Empty,
+        NickName = string.Empty,
+        InitialEmailConsent = false,
+        ConfirmedAgreement = false
+    };
+
+    private List<string> _stepErrors = [];
+
+    [SupplyParameterFromForm(FormName = ReaderAccountRegisterFormName)]
+    private RequestCreateReaderAccountDto? CreateNewAccount { get; set; }
+
+    public RegisterPersonalPage()
+    {
+        CreateNewAccount = _emptyState;
+    }
+
+    protected override void OnParametersSet()
+    {
+        CreateNewAccount ??= _emptyState;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            // Resume where the visitor left off: the model lives in sessionStorage.
+            CreateNewAccount = GetState<RegisterState>().CurrentModel ?? _emptyState;
+        }
+    }
+
+    private async Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
+    {
+        _stepErrors.Clear();
+
+        // Persist the current input so the next step / navigation can restore it.
+        // Nickname availability needs no dispatch here: the re-render triggered by
+        // this handler flows the fresh CreateNewAccount.NickName down to
+        // NickNameAvailabilityIndicator.Candidate, which debounces and recomputes
+        // its Fusion-backed ComputedState on its own.
+        await GetState<RegisterState>().SetCurrentInput(CreateNewAccount);
+    }
+
+    private async Task GoToConsentStepAsync()
+    {
+        _stepErrors.Clear();
+
+        var errors = RegisterStepValidation.ValidateStep(
+            RequestCreateReaderAccountValidator, CreateNewAccount ?? _emptyState, StepProperties);
+        if (errors.Count is not 0)
+        {
+            _stepErrors.AddRange(errors);
+            return;
+        }
+
+        await GetState<RegisterState>().SetCurrentInput(CreateNewAccount);
+        Navigation.NavigateTo("register/consent");
+    }
+}

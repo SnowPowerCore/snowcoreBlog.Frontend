@@ -1,0 +1,14 @@
+<div class="oobe">
+    <div class="oobe-icon-pane">
+        <FluentIcon Width="120px" Value="@Icon" />
+    </div>
+    <div class="oobe-content-pane">
+        @if (Step is not null)
+        {
+            <RegisterStepHeader Step="@Step.Value" TotalSteps="@TotalSteps"
+                Title="@Title" Subtitle="@Subtitle" />
+        }
+        @ChildContent
+    </div>
+</div>
+

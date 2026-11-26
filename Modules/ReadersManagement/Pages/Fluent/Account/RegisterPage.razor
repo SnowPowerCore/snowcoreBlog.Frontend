@@ -1,291 +1,52 @@
-﻿@using System.Net
-@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
-@using Microsoft.AspNetCore.Components.Forms
-@using snowcoreBlog.Frontend.Infrastructure.Events
-@using snowcoreBlog.Frontend.Infrastructure.Protocol.Sse
-@using snowcoreBlog.Frontend.ReadersManagement.Components.NickName
-@using snowcoreBlog.Frontend.ReadersManagement.Features.Antiforgery
-@using snowcoreBlog.Frontend.ReadersManagement.Features.Register
-@using snowcoreBlog.Frontend.SharedComponents.Components.Altcha
+﻿@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using snowcoreBlog.Frontend.ReadersManagement.Components.Register
 @using snowcoreBlog.Frontend.SharedComponents.Components.Fluent
-@using snowcoreBlog.Frontend.SharedComponents.Providers
 @using snowcoreBlog.Frontend.SharedComponents.Resources.Icons
-@using snowcoreBlog.Frontend.SharedComponents.Validation
-@using snowcoreBlog.PublicApi.BusinessObjects.Dto
-@using snowcoreBlog.PublicApi.Utilities.Sse
 
 @page "/register"
 @attribute [StreamRendering]
 @inherits TimeWarpStateComponent
 
 @inject NavigationManager Navigation
-@inject IValidator<RequestCreateReaderAccountDto> RequestCreateReaderAccountValidator
-@inject IHttpClientFactory HttpClientFactory
 
-<FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())" MaxContentWidth="30rem">
+<FlexibleFloatingCard FloatingIcon="@(new Icons.Color.Size24.BuildingPeople())" MaxContentWidth="44rem">
     <RegularSizeContent>
-        <FluentStack Class="px-3" Orientation="Orientation.Vertical">
-            @if (_isProcessing)
-            {
-                @* While the backend processes the registration, the whole card content is
-                   swapped for a progress indicator and the live step status message. On any
-                   failure the original form content below is brought back to visibility. *@
-                <FluentStack Class="py-5" Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Center">
-                    <FluentProgressRing />
-                    <FluentSpacer />
-                    <AnimatedStatusLabel Text="@_statusMessage" @ref="_statusLabel" />
+        <RegisterOobeLayout Icon="@(new Icons.Color.Size24.BuildingPeople())">
+            <FluentStack Class="py-4" Orientation="Orientation.Vertical">
+                <FluentLabel Typo="Typography.H2" Alignment="HorizontalAlignment.Start">
+                    @TranslationResources.RegisterWelcomeTitle
+                </FluentLabel>
+                <FluentSpacer />
+                <FluentLabel Alignment="HorizontalAlignment.Start">
+                    @TranslationResources.RegisterWelcomeSubtitle
+                </FluentLabel>
+                <FluentSpacer />
+
+                @* OOBE welcome has no steps yet — the wizard starts on /register/contact. *@
+                <FluentButton OnClick="@(() => Navigation.NavigateTo("register/contact"))"
+                    Class="align-self-end" Appearance="Appearance.Accent">
+                    @TranslationResources.RegisterGetStartedButtonLabel
+                </FluentButton>
+
+                <FluentSpacer />
+                <FluentDivider Class="w-100" Orientation="Orientation.Horizontal"
+                    Role="DividerRole.Presentation" />
+                <FluentSpacer />
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
+                    VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
+                    <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
+                    <FluentSpacer Width="5" />
+                    <FluentLabel>@TranslationResources.LoginPromptLabel</FluentLabel>
                 </FluentStack>
-            }
-            else
-            {
-            <EditForm class="w-100" FormName="@ReaderAccountRegisterFormName" Model="@CreateNewAccount" OnSubmit="@SubmitFormAsync" @ref="_editForm">
-                <FormFluentValidationValidator @ref="_fluentValidationValidator" Validator="@RequestCreateReaderAccountValidator" />
-                <FormTrackFieldsChangeProvider OnFieldChanged="OnRegisterFormFieldChangedAsync"/>
-
-                <FluentWizard StepperPosition="StepperPosition.Top" StepSequence="WizardStepSequence.Linear" OnFinish="OnWizardFinish">
-                    <Steps>
-                        <FluentWizardStep Label="Contact">
-                            <FluentStack Orientation="Orientation.Vertical">
-                                <FluentSpacer />
-                                <FluentTextField InputMode="InputMode.Email" Name="email" Label="@TranslationResources.EmailFieldLabel" @bind-Value=@CreateNewAccount.Email Required />
-                                <FluentValidationMessage For=@(() => CreateNewAccount.Email) />
-                                <FluentSpacer />
-                                <FluentTextField InputMode="InputMode.Telephone" Name="phoneNumber" Label="@TranslationResources.PhoneNumberFieldLabel" @bind-Value=@CreateNewAccount.PhoneNumber />
-                                <FluentValidationMessage For=@(() => CreateNewAccount.PhoneNumber) />
-                                <FluentSpacer />
-                                <FluentCheckbox @bind-Value="@CreateNewAccount.InitialEmailConsent" Required>
-                                    @TranslationResources.InitialEmailConsentInfoLabel1<br/>@TranslationResources.InitialEmailConsentInfoLabel2
-                                </FluentCheckbox>
-                                <FluentValidationMessage For=@(() => CreateNewAccount.InitialEmailConsent) />
-                            </FluentStack>
-                        </FluentWizardStep>
-
-                        <FluentWizardStep Label="Personal">
-                            <FluentStack Orientation="Orientation.Vertical">
-                                <FluentTextField Name="firstName" Label="@TranslationResources.FirstNameFieldLabel" @bind-Value=@CreateNewAccount.FirstName Required />
-                                <FluentValidationMessage For=@(() => CreateNewAccount.FirstName) />
-                                <FluentSpacer />
-                                <FluentTextField Name="lastName" Label="@TranslationResources.LastNameFieldLabel" @bind-Value=@CreateNewAccount.LastName />
-                                <FluentValidationMessage For=@(() => CreateNewAccount.LastName) />
-                                <FluentSpacer />
-                                <FluentTextField Name="nickName"
-                                                  Label="@TranslationResources.NickNameFieldLabel"
-                                                  @bind-Value=@CreateNewAccount.NickName
-                                                  Immediate="true"
-                                                  Required />
-                                <FluentValidationMessage For=@(() => CreateNewAccount.NickName) />
-                                <NickNameAvailabilityIndicator Candidate="@CreateNewAccount.NickName" />
-                            </FluentStack>
-                        </FluentWizardStep>
-
-                        <FluentWizardStep Label="Consent">
-                            <FluentStack Orientation="Orientation.Vertical">
-                                <FluentCheckbox @bind-Value="@CreateNewAccount.ConfirmedAgreement" Required>
-                                    @TranslationResources.ConfirmedAgreementInfoLabel1<FluentAnchor
-                                        Id="termsAndConditionsInfo" Appearance="Appearance.Hypertext"
-                                        Href="javascript: void(0);">@TranslationResources.ConfirmedAgreementInfoLabel2</FluentAnchor>@TranslationResources.ConfirmedAgreementInfoLabel3
-                                </FluentCheckbox>
-                                <FluentValidationMessage For=@(() => CreateNewAccount.ConfirmedAgreement) />
-                                <FluentSpacer />
-                                <AltchaWidget
-                                    ChallengeUrl="https://localhost/api/readers/captcha/challenge/v1"
-                                    OnVerified="HandleOnVerified"/>
-                            </FluentStack>
-                        </FluentWizardStep>
-                    </Steps>
-                </FluentWizard>
-
-                @foreach(var error in _registrationErrors)
-                {
-                    <FluentSpacer />
-                    <FluentDirectValidationMessage Message="@error" />
-                }
-            </EditForm>
-            }
-            <FluentSpacer />
-            <FluentSpacer />
-            <FluentDivider Class="w-100" Orientation="Orientation.Horizontal"
-                Role="DividerRole.Presentation" />
-            <FluentSpacer />
-            <FluentSpacer />
-            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="0"
-                VerticalGap="0" VerticalAlignment="VerticalAlignment.Center">
-                <FluentRandomIdIcon Width="24px" Value="@(new InformationIcon())" />
-                <FluentSpacer Width="5" />
-                <FluentLabel>@TranslationResources.LoginPromptLabel</FluentLabel>
+                <FluentSpacer />
+                <FluentButton OnClick="@(() => Navigation.NavigateTo("login"))" Class="align-self-end" Appearance="Appearance.Outline">
+                    @TranslationResources.LoginButtonLabel
+                </FluentButton>
             </FluentStack>
-            <FluentSpacer />
-            <FluentSpacer />
-            <FluentButton OnClick="@(() => Navigation.NavigateTo("login"))" Class="align-self-end" Appearance="Appearance.Outline">
-                @TranslationResources.LoginButtonLabel
-            </FluentButton>
-            <FluentSpacer />
-            <FluentSpacer />
-        </FluentStack>
+        </RegisterOobeLayout>
     </RegularSizeContent>
 </FlexibleFloatingCard>
 
 @code
 {
-    public const string ReaderAccountRegisterFormName = "ReaderAccountRegisterForm";
-    private bool _isProcessing = false;
-    private string _statusMessage = string.Empty;
-    private AnimatedStatusLabel? _statusLabel;
-    private List<string> _registrationErrors = [];
-
-    // reference to the outer EditForm so the wizard can trigger submit programmatically
-    private EditForm? _editForm;
-
-    private FormFluentValidationValidator? _fluentValidationValidator;
-    private readonly RequestCreateReaderAccountDto _emptyState = new() { Email = string.Empty, FirstName = string.Empty, NickName = string.Empty, InitialEmailConsent = false, ConfirmedAgreement = false };
-
-    private RegisterState RegisterState => GetState<RegisterState>();
-
-    private string? Captcha { get; set; } = string.Empty;
-
-    [SupplyParameterFromForm(FormName = ReaderAccountRegisterFormName)]
-    private RequestCreateReaderAccountDto? CreateNewAccount { get; set; }
-
-    public RegisterPage()
-    {
-        CreateNewAccount = _emptyState;
-    }
-
-    protected override void OnParametersSet()
-    {
-        CreateNewAccount ??= _emptyState;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (firstRender)
-        {
-            CreateNewAccount = RegisterState.CurrentModel ?? _emptyState;
-        }
-    }
-
-    private async Task OnRegisterFormFieldChangedAsync(FieldChangedEventArgs? e)
-    {
-        _registrationErrors.Clear();
-
-        // Persist the current input so the wizard / navigation can restore it.
-        // Nickname availability needs no dispatch here: the re-render triggered by
-        // this handler flows the fresh CreateNewAccount.NickName down to
-        // NickNameAvailabilityIndicator.Candidate, which debounces and recomputes
-        // its Fusion-backed ComputedState on its own.
-        await RegisterState.SetCurrentInput(CreateNewAccount);
-    }
-
-    private void HandleOnVerified(AltchaWidgetVerifiedEventArgs verifyArgs)
-    {
-        Captcha = verifyArgs.Payload;
-    }
-
-    private async Task OnWizardFinish()
-    {
-        // Try to use the EditForm's EditContext if available so existing submit logic keeps working
-        if (_editForm is not default(EditForm) && _editForm.EditContext is not default(EditContext))
-        {
-            await SubmitFormAsync(_editForm.EditContext);
-            return;
-        }
-
-        // Fallback: create an EditContext from the model
-        var editContext = new EditContext(CreateNewAccount ?? _emptyState);
-        await SubmitFormAsync(editContext);
-    }
-
-    private async Task SubmitFormAsync(EditContext editContext)
-    {
-        _registrationErrors.Clear();
-
-        if (_fluentValidationValidator is default(FormFluentValidationValidator))
-            return;
-
-        var success = await _fluentValidationValidator.ValidateAsync();
-        if (!success)
-            return;
-
-        if (string.IsNullOrEmpty(Captcha))
-            return;
-
-        var requestData = (RequestCreateReaderAccountDto)editContext.Model;
-
-        var antiforgery = GetState<AntiforgeryState>();
-
-        _isProcessing = true;
-        _statusMessage = TranslationResources.RegistrationStepWorkingGeneric;
-
-        var playOutQueueOnExit = false;
-
-        try
-        {
-            using var tokenSource = new CancellationTokenSource();
-            var httpClient = HttpClientFactory.CreateClient(SseClientNames.ReadersManagement);
-
-            var frames = httpClient.PostServerSentEventsAsync(
-                "create/request/email/v1",
-                requestData,
-                message =>
-                {
-                    message.Headers.Add("RequestVerificationToken", antiforgery.RequestVerificationToken);
-                    message.Headers.Add("RequestCaptcha", Captcha);
-                },
-                tokenSource.Token);
-
-            var finalEvent = await StepProgressStreamReader.ReadAsync(
-                frames,
-                stepCode =>
-                {
-                    _statusMessage = RegistrationProgressMessages.ForStep(stepCode);
-                    StateHasChanged();
-                },
-                tokenSource.Token);
-
-            if (finalEvent is not default(StepProgressFinalEvent) && finalEvent.StatusCode == (int)HttpStatusCode.OK)
-            {
-                // Let every queued status finish its animation (including the final
-                // readable hold) before leaving the page.
-                playOutQueueOnExit = true;
-
-                if (_statusLabel is not default(AnimatedStatusLabel))
-                {
-                    await _statusLabel.WaitForDrainedAsync();
-                }
-
-                await RegisterState.SetCurrentInput(_emptyState);
-                Navigation.NavigateTo("register/info/confirm");
-                return;
-            }
-
-            _registrationErrors.AddRange(finalEvent?.Response?.Errors ?? []);
-            if (_registrationErrors.Count == 0)
-                _registrationErrors.Add(TranslationResources.RegistrationProcessingFailedGeneric);
-        }
-        catch (System.Net.Http.HttpRequestException hre) when (hre.StatusCode is not default(HttpStatusCode))
-        {
-            // HTTP-level failure (antiforgery / captcha / gateway): bring the
-            // original form content back, surface the status for diagnosability.
-            _registrationErrors.Add($"{TranslationResources.RegistrationProcessingFailedGeneric} (HTTP {(int)hre.StatusCode})");
-        }
-        catch (Exception)
-        {
-            // Network / protocol failure: bring the original form content back and show a generic error.
-            _registrationErrors.Add(TranslationResources.RegistrationProcessingFailedGeneric);
-        }
-        finally
-        {
-            // On success, let every queued status finish its animation before
-            // swapping the card back to the form. On any failure — including
-            // exceptions — never block: restore the original content immediately.
-            if (playOutQueueOnExit && _statusLabel is not default(AnimatedStatusLabel))
-            {
-                await _statusLabel.WaitForDrainedAsync();
-            }
-
-            _isProcessing = false;
-        }
-    }
 }

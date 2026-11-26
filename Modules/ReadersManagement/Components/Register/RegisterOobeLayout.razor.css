@@ -1,0 +1,40 @@
+.oobe {
+    display: grid;
+    grid-template-columns: minmax(11rem, 1fr) minmax(0, 1.6fr);
+    align-items: center;
+    gap: 2rem;
+}
+
+.oobe-icon-pane {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+}
+
+.oobe-content-pane {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    padding: 1.25rem 1.25rem 1.25rem 0;
+}
+
+::deep .oobe-content-pane .fluent-progress-ring,
+::deep .oobe-content-pane .fluent-progress {
+    width: 100%;
+}
+
+@media (max-width: 47.99rem) {
+    .oobe {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .oobe-icon-pane {
+        padding: 1.5rem 0 0.75rem;
+    }
+
+    .oobe-content-pane {
+        padding: 0 1.25rem 1.25rem;
+    }
+}
